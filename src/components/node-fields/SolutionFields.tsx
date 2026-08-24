@@ -1,7 +1,6 @@
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { TextAreaField, TextField } from "./DraftFields"
 import type { SolutionNode } from "@/lib/pm-types"
 
 interface SolutionFieldsProps {
@@ -12,16 +11,15 @@ interface SolutionFieldsProps {
 export function SolutionFields({ node, onUpdate }: SolutionFieldsProps) {
   return (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={node.description || ""}
-          onChange={(e) => onUpdate({ description: e.target.value })}
-          rows={3}
-          placeholder="Describe the solution..."
-        />
-      </div>
+      <TextAreaField
+        key={`${node.id}-description`}
+        id="description"
+        label="Description"
+        value={node.description}
+        onCommit={(value) => onUpdate({ description: value })}
+        rows={3}
+        placeholder="Describe the solution..."
+      />
 
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
@@ -55,25 +53,23 @@ export function SolutionFields({ node, onUpdate }: SolutionFieldsProps) {
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="startDate">Start Date</Label>
-        <Input
-          id="startDate"
-          type="date"
-          value={node.startDate || ""}
-          onChange={(e) => onUpdate({ startDate: e.target.value })}
-        />
-      </div>
+      <TextField
+        key={`${node.id}-startDate`}
+        id="startDate"
+        label="Start Date"
+        type="date"
+        value={node.startDate}
+        onCommit={(value) => onUpdate({ startDate: value })}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="endDate">End Date</Label>
-        <Input
-          id="endDate"
-          type="date"
-          value={node.endDate || ""}
-          onChange={(e) => onUpdate({ endDate: e.target.value })}
-        />
-      </div>
+      <TextField
+        key={`${node.id}-endDate`}
+        id="endDate"
+        label="End Date"
+        type="date"
+        value={node.endDate}
+        onCommit={(value) => onUpdate({ endDate: value })}
+      />
     </>
   )
 }
