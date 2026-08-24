@@ -91,34 +91,17 @@ export function OutcomeFields({ node, onUpdate }: OutcomeFieldsProps) {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        <div className="space-y-2">
-          <Label htmlFor="baseline">Baseline</Label>
-          <Input
-            id="baseline"
-            type="number"
-            value={node.baseline || ""}
-            onChange={(e) => onUpdate({ baseline: Number(e.target.value) })}
+        {numericFields.map(({ key, label }) => (
+          <NumberField
+            key={key}
+            id={key}
+            label={label}
+            value={node[key]}
+            onCommit={(val) => onUpdate({ [key]: val } as Partial<OutcomeNode>)}
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="current">Current</Label>
-          <Input
-            id="current"
-            type="number"
-            value={node.current || ""}
-            onChange={(e) => onUpdate({ current: Number(e.target.value) })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="target">Target</Label>
-          <Input
-            id="target"
-            type="number"
-            value={node.target || ""}
-            onChange={(e) => onUpdate({ target: Number(e.target.value) })}
-          />
-        </div>
+        ))}
       </div>
+
 
       <div className="space-y-2">
         <Label htmlFor="timeframe">Timeframe</Label>
