@@ -56,4 +56,12 @@ export const useUIStore = create<UIStore>((set, get) => ({
 
   setCollapsedOpportunities: (ids: Set<string>) => set({ collapsedOpportunities: ids }),
   setCollapsedSolutions: (ids: Set<string>) => set({ collapsedSolutions: ids }),
+
+  resetTreeViewState: () =>
+    set({
+      selectedNodeId: null,
+      focusedNodeId: null,
+      collapsedOpportunities: new Set(),
+      collapsedSolutions: new Set(),
+    }),
 }))
