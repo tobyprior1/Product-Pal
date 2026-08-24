@@ -119,6 +119,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   setUserId: (userId) => set({ userId }),
 
   selectTree: async (treeId: string) => {
+    useUIStore.getState().resetTreeViewState();
     set({ isLoading: true });
 
     try {
