@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import { TextAreaField } from "./DraftFields"
 import type { OpportunityNode } from "@/lib/pm-types"
 
 interface OpportunityFieldsProps {
@@ -12,16 +12,15 @@ interface OpportunityFieldsProps {
 export function OpportunityFields({ node, onUpdate }: OpportunityFieldsProps) {
   return (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="evidenceSummary">Evidence Summary</Label>
-        <Textarea
-          id="evidenceSummary"
-          value={node.evidenceSummary || ""}
-          onChange={(e) => onUpdate({ evidenceSummary: e.target.value })}
-          rows={3}
-          placeholder="Summarize the evidence for this opportunity..."
-        />
-      </div>
+      <TextAreaField
+        key={`${node.id}-evidenceSummary`}
+        id="evidenceSummary"
+        label="Evidence Summary"
+        value={node.evidenceSummary}
+        onCommit={(value) => onUpdate({ evidenceSummary: value })}
+        rows={3}
+        placeholder="Summarize the evidence for this opportunity..."
+      />
 
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
