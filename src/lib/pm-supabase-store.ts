@@ -119,6 +119,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   setUserId: (userId) => set({ userId }),
 
   selectTree: async (treeId: string) => {
+    useUIStore.getState().resetTreeViewState();
     set({ isLoading: true });
 
     try {
@@ -498,6 +499,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   },
 
   createNewTree: async (name = "New Tree") => {
+    useUIStore.getState().resetTreeViewState();
     const userId = get().userId;
     if (!userId) throw new Error("User not authenticated");
 
@@ -536,6 +538,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   },
 
   loadSampleTree: async () => {
+    useUIStore.getState().resetTreeViewState();
     // Sample tree works entirely client-side - no database persistence
     const newTree: Tree = {
       id: generateUUID(),
