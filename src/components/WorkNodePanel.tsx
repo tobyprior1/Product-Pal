@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useNavigate } from "react-router-dom"
+import { TextField } from "./node-fields/DraftFields"
 import { OutcomeFields } from "./node-fields/OutcomeFields"
 import { OpportunityFields } from "./node-fields/OpportunityFields"
 import { SolutionFields } from "./node-fields/SolutionFields"
@@ -94,14 +95,13 @@ export function WorkNodePanel({ nodeId, onClose }: WorkNodePanelProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={selectedNode.title}
-            onChange={(e) => updateNode(selectedNode.id, { title: e.target.value })}
-          />
-        </div>
+        <TextField
+          key={`${selectedNode.id}-title`}
+          id="title"
+          label="Title"
+          value={selectedNode.title}
+          onCommit={(value) => updateNode(selectedNode.id, { title: value })}
+        />
 
         {selectedNode.type === "Outcome" && (
           <OutcomeFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />

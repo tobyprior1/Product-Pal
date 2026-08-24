@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { TextField } from "./node-fields/DraftFields"
 import { OutcomeFields } from "./node-fields/OutcomeFields"
 import { OpportunityFields } from "./node-fields/OpportunityFields"
 import { SolutionFields } from "./node-fields/SolutionFields"
