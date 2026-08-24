@@ -538,6 +538,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   },
 
   loadSampleTree: async () => {
+    useUIStore.getState().resetTreeViewState();
     // Sample tree works entirely client-side - no database persistence
     const newTree: Tree = {
       id: generateUUID(),
