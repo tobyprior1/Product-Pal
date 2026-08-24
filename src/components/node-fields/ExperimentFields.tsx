@@ -1,7 +1,6 @@
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { TextAreaField, TextField } from "./DraftFields"
 import type { ExperimentNode } from "@/lib/pm-types"
 
 interface ExperimentFieldsProps {
@@ -12,27 +11,25 @@ interface ExperimentFieldsProps {
 export function ExperimentFields({ node, onUpdate }: ExperimentFieldsProps) {
   return (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="hypothesis">Hypothesis</Label>
-        <Textarea
-          id="hypothesis"
-          value={node.hypothesis || ""}
-          onChange={(e) => onUpdate({ hypothesis: e.target.value })}
-          rows={2}
-          placeholder="We believe that..."
-        />
-      </div>
+      <TextAreaField
+        key={`${node.id}-hypothesis`}
+        id="hypothesis"
+        label="Hypothesis"
+        value={node.hypothesis}
+        onCommit={(value) => onUpdate({ hypothesis: value })}
+        rows={2}
+        placeholder="We believe that..."
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="method">Method</Label>
-        <Textarea
-          id="method"
-          value={node.method || ""}
-          onChange={(e) => onUpdate({ method: e.target.value })}
-          rows={2}
-          placeholder="How will you test this?"
-        />
-      </div>
+      <TextAreaField
+        key={`${node.id}-method`}
+        id="method"
+        label="Method"
+        value={node.method}
+        onCommit={(value) => onUpdate({ method: value })}
+        rows={2}
+        placeholder="How will you test this?"
+      />
 
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
@@ -69,37 +66,34 @@ export function ExperimentFields({ node, onUpdate }: ExperimentFieldsProps) {
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="startDate">Start Date</Label>
-        <Input
-          id="startDate"
-          type="date"
-          value={node.dateRange.start || ""}
-          onChange={(e) => onUpdate({ dateRange: { ...node.dateRange, start: e.target.value } })}
-        />
-      </div>
+      <TextField
+        key={`${node.id}-startDate`}
+        id="startDate"
+        label="Start Date"
+        type="date"
+        value={node.dateRange.start}
+        onCommit={(value) => onUpdate({ dateRange: { ...node.dateRange, start: value } })}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="endDate">End Date</Label>
-        <Input
-          id="endDate"
-          type="date"
-          value={node.dateRange.end || ""}
-          onChange={(e) => onUpdate({ dateRange: { ...node.dateRange, end: e.target.value } })}
-        />
-      </div>
+      <TextField
+        key={`${node.id}-endDate`}
+        id="endDate"
+        label="End Date"
+        type="date"
+        value={node.dateRange.end}
+        onCommit={(value) => onUpdate({ dateRange: { ...node.dateRange, end: value } })}
+      />
 
       {node.status === "completed" && (
-        <div className="space-y-2">
-          <Label htmlFor="resultSummary">Result Summary</Label>
-          <Textarea
-            id="resultSummary"
-            value={node.resultSummary || ""}
-            onChange={(e) => onUpdate({ resultSummary: e.target.value })}
-            rows={3}
-            placeholder="What did you learn?"
-          />
-        </div>
+        <TextAreaField
+          key={`${node.id}-resultSummary`}
+          id="resultSummary"
+          label="Result Summary"
+          value={node.resultSummary}
+          onCommit={(value) => onUpdate({ resultSummary: value })}
+          rows={3}
+          placeholder="What did you learn?"
+        />
       )}
     </>
   )
