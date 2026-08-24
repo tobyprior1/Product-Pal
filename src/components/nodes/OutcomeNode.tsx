@@ -8,13 +8,25 @@ import { formatTimeframeDisplay } from "@/lib/pm-utils"
 import type { OutcomeNode as OutcomeNodeType } from "@/lib/pm-types"
 import { AddChildButton } from "@/components/AddChildButton"
 
+const fmt = (value?: number) => (value === undefined || value === null ? "—" : `${value}`)
+
 export const OutcomeNode = memo(({ data }: NodeProps) => {
   const nodeData = data as unknown as OutcomeNodeType
   const isLocked = useUIStore((state) => state.isLocked)
   const timeframe = formatTimeframeDisplay(nodeData)
-  const progress = nodeData.baseline && nodeData.current && nodeData.target 
-    ? ((nodeData.current - nodeData.baseline) / (nodeData.target - nodeData.baseline)) * 100
+  const hasMetrics =
+    nodeData.baseline !== undefined ||
+    nodeData.current !== undefined ||
+    nodeData.target !== undefined
+  const canComputeProgress =
+    nodeData.baseline !== undefined &&
+    nodeData.current !== undefined &&
+    nodeData.target !== undefined &&
+    nodeData.target !== nodeData.baseline
+  const progress = canComputeProgress
+    ? ((nodeData.current! - nodeData.baseline!) / (nodeData.target! - nodeData.baseline!)) * 100
     : 0
+
 
   const handleAddChild = () => {
     window.dispatchEvent(
