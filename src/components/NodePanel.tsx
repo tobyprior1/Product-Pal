@@ -103,14 +103,13 @@ export function NodePanel() {
       </div>
 
       <div className="p-4 space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={selectedNode.title}
-            onChange={(e) => updateNode(selectedNode.id, { title: e.target.value })}
-          />
-        </div>
+        <TextField
+          key={`${selectedNode.id}-title`}
+          id="title"
+          label="Title"
+          value={selectedNode.title}
+          onCommit={(value) => updateNode(selectedNode.id, { title: value })}
+        />
 
         {selectedNode.type === "Outcome" && (
           <OutcomeFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
