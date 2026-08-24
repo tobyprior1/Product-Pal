@@ -16,6 +16,7 @@ interface UIStore {
   toggleSolutionCollapse: (solutionId: string) => void
   setCollapsedOpportunities: (ids: Set<string>) => void
   setCollapsedSolutions: (ids: Set<string>) => void
+  resetTreeViewState: () => void
 }
 
 export const useUIStore = create<UIStore>((set, get) => ({
