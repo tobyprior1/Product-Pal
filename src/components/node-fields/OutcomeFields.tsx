@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -11,6 +11,10 @@ interface OutcomeFieldsProps {
 
 type NumericKey = "baseline" | "current" | "target"
 
+function formatNumber(value: number | undefined) {
+  return value === undefined ? "" : String(value)
+}
+
 function NumberField({
   id,
   label,
@@ -22,39 +26,59 @@ function NumberField({
   value: number | undefined
   onCommit: (value: number | undefined) => void
 }) {
-  const [draft, setDraft] = useState(value === undefined || value === null ? "" : String(value))
+  const [draft, setDraft] = useState(() => formatNumber(value))
+  const isEditing = useRef(false)
 
-  // Keep local draft in sync when the node value changes externally
   useEffect(() => {
-    const external = value === undefined || value === null ? "" : String(value)
-    if (draft !== "" && Number(draft) === value) return
-    if (draft === external) return
-    setDraft(external)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!isEditing.current) setDraft(formatNumber(value))
   }, [value])
+
+  const reset = () => {
+    setDraft(formatNumber(value))
+    isEditing.current = false
+  }
+
+  const commit = () => {
+    isEditing.current = false
+    const trimmed = draft.trim()
+
+    if (trimmed === "") {
+      setDraft("")
+      if (value !== undefined) onCommit(undefined)
+      return
+    }
+
+    const parsed = Number(trimmed)
+    if (!Number.isFinite(parsed)) {
+      setDraft(formatNumber(value))
+      return
+    }
+
+    setDraft(String(parsed))
+    if (parsed !== value) onCommit(parsed)
+  }
 
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
-        type="number"
+        type="text"
         inputMode="decimal"
         value={draft}
-        onChange={(e) => {
-          const raw = e.target.value
-          setDraft(raw)
-          if (raw.trim() === "") {
-            onCommit(undefined)
-            return
-          }
-          const parsed = Number(raw)
-          if (!Number.isNaN(parsed)) onCommit(parsed)
+        onFocus={() => {
+          isEditing.current = true
         }}
-        onBlur={() => {
-          if (draft.trim() === "") return
-          const parsed = Number(draft)
-          setDraft(Number.isNaN(parsed) ? "" : String(parsed))
+        onChange={(e) => {
+          setDraft(e.target.value)
+        }}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur()
+          if (e.key === "Escape") {
+            reset()
+            e.currentTarget.blur()
+          }
         }}
       />
     </div>
@@ -93,8 +117,8 @@ export function OutcomeFields({ node, onUpdate }: OutcomeFieldsProps) {
       <div className="grid grid-cols-3 gap-2">
         {numericFields.map(({ key, label }) => (
           <NumberField
-            key={key}
-            id={key}
+            key={`${node.id}-${key}`}
+            id={`${node.id}-${key}`}
             label={label}
             value={node[key]}
             onCommit={(val) => onUpdate({ [key]: val } as Partial<OutcomeNode>)}
