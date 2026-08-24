@@ -45,6 +45,10 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
         )}
 
         {nodeData.metric && (
+          <p className="text-xs font-medium text-gray-700">{nodeData.metric}</p>
+        )}
+
+        {hasMetrics && (
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">BASELINE</span>
@@ -52,9 +56,9 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
               <span className="text-gray-500">TARGET</span>
             </div>
             <div className="flex justify-between text-sm font-semibold text-gray-900">
-              <span>{nodeData.baseline}%</span>
-              <span>{nodeData.current}%</span>
-              <span>{nodeData.target}%</span>
+              <span>{fmt(nodeData.baseline)}</span>
+              <span>{fmt(nodeData.current)}</span>
+              <span>{fmt(nodeData.target)}</span>
             </div>
             {progress > 0 && (
               <div className="space-y-1">
