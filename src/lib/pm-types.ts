@@ -3,7 +3,7 @@ export type UUID = string
 export type ExperimentDecision = "ship" | "kill" | "iterate" | null
 export type ExperimentStatus = "backlog" | "planned" | "in-build" | "running" | "completed"
 export type OpportunityStatus = "in-discovery" | "backlog" | "validated" | "invalidated"
-export type SolutionStatus = "Now" | "Next" | "Later" | "Done" | "Backlog"
+export type SolutionStatus = "Now" | "Next" | "Later" | "Planned" | "Done" | "Backlog"
 export type InterviewStatus = "pending" | "processing" | "analyzed" | "applied"
 
 export interface Project {
