@@ -107,6 +107,18 @@ const Project = () => {
     setLoading(true);
     try {
       await createNewTree("New Outcome", id);
+
+      // Seed the tree with its root Outcome node and open it straight away
+      const outcomeId = generateUUID();
+      await useDataStore.getState().addNode({
+        id: outcomeId,
+        parentId: null,
+        type: "Outcome",
+        title: "New Outcome",
+        ...createNodeMetadata(),
+      } as OSTNode);
+      useUIStore.getState().setSelectedNodeId(outcomeId);
+
       navigate("/editor");
     } catch (error) {
       console.error("Error creating tree:", error);
@@ -114,6 +126,7 @@ const Project = () => {
       setLoading(false);
     }
   };
+
 
   const handleLoadSample = async () => {
     setLoading(true);
