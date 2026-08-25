@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { OSTNode, TreeSnapshot, Tree, Interview } from "./pm-types";
+import type { OSTNode, TreeSnapshot, Tree, Interview, Project } from "./pm-types";
 import { supabase } from "@/integrations/supabase/client";
 import { generateUUID, createTimestamp, updateNodeMetadata } from "./pm-utils";
 import { useUIStore } from "./pm-ui-store";
