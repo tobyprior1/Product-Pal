@@ -50,8 +50,7 @@ const Index = () => {
   } = useDataStore();
 
   const [user, setUser] = useState<User | null>(null);
-  const [pendingAction, setPendingAction] = useState<string | null>(null);
-  const loading = pendingAction !== null;
+  const { isPending, run, actionProps } = usePendingAction();
 
   const [treeDeleteOpen, setTreeDeleteOpen] = useState(false);
   const [treeToDelete, setTreeToDelete] = useState<string | null>(null);
