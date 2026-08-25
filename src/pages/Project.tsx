@@ -52,7 +52,8 @@ const Project = () => {
     userId,
   } = useDataStore();
 
-  const [loading, setLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const loading = pendingAction !== null;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [treeToDelete, setTreeToDelete] = useState<string | null>(null);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
@@ -90,14 +91,14 @@ const Project = () => {
   }
 
   const handleSelectTree = async (treeId: string) => {
-    setLoading(true);
+    setPendingAction(`tree:${treeId}`);
     try {
       await selectTree(treeId);
       navigate("/editor");
     } catch (error) {
       console.error("Error selecting tree:", error);
     } finally {
-      setLoading(false);
+      setPendingAction(null);
     }
   };
 
@@ -108,7 +109,7 @@ const Project = () => {
     }
     if (!id) return;
 
-    setLoading(true);
+    setPendingAction("new-tree");
     try {
       await createNewTree("New Outcome", id);
 
@@ -135,20 +136,20 @@ const Project = () => {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setPendingAction(null);
     }
   };
 
 
   const handleLoadSample = async () => {
-    setLoading(true);
+    setPendingAction("sample");
     try {
       await useDataStore.getState().loadSampleTree();
       navigate("/editor");
     } catch (error) {
       console.error("Error loading sample tree:", error);
     } finally {
-      setLoading(false);
+      setPendingAction(null);
     }
   };
 
@@ -252,7 +253,7 @@ const Project = () => {
             {userId && (
               <Button onClick={handleNewTree} disabled={loading}>
                 <Plus className="h-4 w-4 mr-2" />
-                {loading ? "Creating..." : "New Outcome"}
+                {pendingAction === "new-tree" ? "Creating..." : "New Outcome"}
               </Button>
             )}
           </div>
@@ -268,7 +269,7 @@ const Project = () => {
                 {userId && (
                   <Button onClick={handleNewTree} disabled={loading}>
                     <Plus className="h-4 w-4 mr-2" />
-                    {loading ? "Creating..." : "Create Outcome"}
+                    {pendingAction === "new-tree" ? "Creating..." : "Create Outcome"}
                   </Button>
                 )}
               </div>
@@ -337,7 +338,7 @@ const Project = () => {
                     className="w-full"
                     disabled={loading}
                   >
-                    {loading ? "Loading..." : "Open Outcome"}
+                    {pendingAction === `tree:${tree.id}` ? "Loading..." : "Open Outcome"}
                   </Button>
                 </Card>
               ))}

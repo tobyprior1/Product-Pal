@@ -50,7 +50,8 @@ const Index = () => {
   } = useDataStore();
 
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const loading = pendingAction !== null;
 
   const [treeDeleteOpen, setTreeDeleteOpen] = useState(false);
   const [treeToDelete, setTreeToDelete] = useState<string | null>(null);
@@ -83,14 +84,14 @@ const Index = () => {
 
 
   const handleSelectTree = async (treeId: string) => {
-    setLoading(true);
+    setPendingAction(`tree:${treeId}`);
     try {
       await selectTree(treeId);
       navigate("/editor");
     } catch (error) {
       console.error("Error selecting tree:", error);
     } finally {
-      setLoading(false);
+      setPendingAction(null);
     }
   };
 
@@ -368,7 +369,7 @@ const Index = () => {
                           className="w-full"
                           disabled={loading}
                         >
-                          {loading ? "Loading..." : "Open Outcome"}
+                          {pendingAction === `tree:${tree.id}` ? "Loading..." : "Open Outcome"}
                         </Button>
                       </Card>
                     ))}
