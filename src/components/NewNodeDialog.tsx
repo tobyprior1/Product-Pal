@@ -46,6 +46,9 @@ export function NewNodeDialog({ open, onOpenChange, preselectedParentId, presele
     return nodeType === "Opportunity" && preselectedParent?.type === "Opportunity"
   }, [nodeType, preselectedParent])
 
+  // Each tree represents a single Outcome, so only one root Outcome is allowed
+  const hasRootOutcome = useMemo(() => nodes.some((n) => n.type === "Outcome"), [nodes])
+
   const potentialParents = useMemo(() => {
     switch (nodeType) {
       case "Outcome":
