@@ -36,6 +36,7 @@ export function getStatusBorderColor(type: string, status?: string): string {
     Now: "border-purple-300 dark:border-purple-700",
     Next: "border-blue-300 dark:border-blue-700",
     Later: "border-gray-300 dark:border-gray-700",
+    Planned: "border-violet-300 dark:border-violet-700",
     Backlog: "border-orange-300 dark:border-orange-700",
     Done: "border-green-300 dark:border-green-700",
     planned: "border-yellow-300 dark:border-yellow-700",
