@@ -9,15 +9,20 @@ import { calculatePriorityScore, getPriorityBadgeColor } from "@/lib/pm-utils"
 interface WorkOpportunitySectionProps {
   opportunity: OpportunityNode
   onItemClick: (nodeId: string) => void
+  depth?: number
 }
 
-export function WorkOpportunitySection({ opportunity, onItemClick }: WorkOpportunitySectionProps) {
+export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: WorkOpportunitySectionProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const getNodeChildren = useDataStore((state) => state.getNodeChildren)
   const getOpportunityStats = useDataStore((state) => state.getOpportunityStats)
 
   const children = getNodeChildren(opportunity.id)
+  const subOpportunities = children.filter(
+    (n) => n.type === "Opportunity" && (n as any).status !== "invalidated",
+  )
   const allSolutions = children.filter((n) => n.type === "Solution" && n.status !== "Done")
+
 
   const timeframePriority: Record<string, number> = {
     Now: 1,
@@ -132,9 +137,23 @@ export function WorkOpportunitySection({ opportunity, onItemClick }: WorkOpportu
       </div>
 
       {/* Expanded Content */}
-      {isExpanded && (solutions.length > 0 || directExperiments.length > 0) && (
+      {isExpanded && (solutions.length > 0 || directExperiments.length > 0 || subOpportunities.length > 0) && (
         <div className="border-t border-border bg-muted/30">
           <div className="p-4 space-y-2">
+            {/* Sub-opportunities */}
+            {subOpportunities.length > 0 && (
+              <div className="space-y-2 mb-2">
+                {subOpportunities.map((sub) => (
+                  <WorkOpportunitySection
+                    key={sub.id}
+                    opportunity={sub as any}
+                    onItemClick={onItemClick}
+                    depth={depth + 1}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* Solutions */}
             {solutions.map((solution) => {
               const solutionExperiments = getNodeChildren(solution.id).filter(
@@ -216,9 +235,9 @@ export function WorkOpportunitySection({ opportunity, onItemClick }: WorkOpportu
       )}
 
       {/* Empty state */}
-      {isExpanded && solutions.length === 0 && directExperiments.length === 0 && (
+      {isExpanded && solutions.length === 0 && directExperiments.length === 0 && subOpportunities.length === 0 && (
         <div className="border-t border-border p-4 text-center text-sm text-muted-foreground">
-          No active solutions or experiments
+          No active sub-opportunities, solutions or experiments
         </div>
       )}
     </div>
