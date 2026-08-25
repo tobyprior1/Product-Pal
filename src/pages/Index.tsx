@@ -79,33 +79,8 @@ const Index = () => {
     [trees]
   );
 
-  const handleNewTree = async () => {
-    if (!userId) {
-      navigate("/auth");
-      return;
-    }
-    setLoading(true);
-    try {
-      await createNewTree("My Opportunity Tree");
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error creating tree:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleLoadSample = async () => {
-    setLoading(true);
-    try {
-      await useDataStore.getState().loadSampleTree();
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error loading sample tree:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleSelectTree = async (treeId: string) => {
     setLoading(true);
