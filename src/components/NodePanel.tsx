@@ -1,9 +1,13 @@
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { useUIStore } from "@/lib/pm-ui-store"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { X, Focus, Trash2 } from "lucide-react"
+import { X, Focus, Trash2, MoreHorizontal } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import {
   AlertDialog,
@@ -18,7 +22,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { TextField } from "./node-fields/DraftFields"
 import { OutcomeFields } from "./node-fields/OutcomeFields"
-import { OpportunityFields } from "./node-fields/OpportunityFields"
+import { OpportunityFields, OpportunityPrioritisation } from "./node-fields/OpportunityFields"
+import { PanelSection } from "./node-fields/PanelSection"
 import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
 import { AddChildPanelButton } from "./AddChildPanelButton"
@@ -86,20 +91,28 @@ export function NodePanel() {
           <Badge variant="outline">{selectedNode.type}</Badge>
         </div>
         <div className="flex items-center gap-1">
-          <Button
-            variant={focusedNodeId === selectedNode.id ? "default" : "ghost"}
-            size="icon"
-            onClick={focusedNodeId === selectedNode.id ? handleDeactivateFocus : handleActivateFocus}
-            title={focusedNodeId === selectedNode.id ? "Exit Focus Mode" : "Activate Focus Mode"}
-          >
-            <Focus className="w-4 h-4" />
-          </Button>
           <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </AlertDialogTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" title="More actions">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onSelect={focusedNodeId === selectedNode.id ? handleDeactivateFocus : handleActivateFocus}
+                >
+                  <Focus className="w-4 h-4 mr-2" />
+                  {focusedNodeId === selectedNode.id ? "Exit focus mode" : "Focus on this node"}
+                </DropdownMenuItem>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem onSelect={(event) => event.preventDefault()} className="text-destructive">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete node
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete this node?</AlertDialogTitle>
@@ -119,35 +132,46 @@ export function NodePanel() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button variant="ghost" size="icon" onClick={handleClose}>
+          <Button variant="ghost" size="icon" onClick={handleClose} title="Close">
             <X className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
       <div className="p-4 space-y-4">
-        <TextField
-          key={`${selectedNode.id}-title`}
-          id="title"
-          label="Title"
-          value={selectedNode.title}
-          onCommit={(value) => updateNode(selectedNode.id, { title: value })}
-        />
+        <PanelSection title="Details">
+          <TextField
+            key={`${selectedNode.id}-title`}
+            id="title"
+            label="Title"
+            value={selectedNode.title}
+            onCommit={(value) => updateNode(selectedNode.id, { title: value })}
+          />
 
-        {selectedNode.type === "Outcome" && (
-          <OutcomeFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
-        )}
+          {selectedNode.type === "Outcome" && (
+            <OutcomeFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
+          )}
+
+          {selectedNode.type === "Opportunity" && (
+            <OpportunityFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
+          )}
+
+          {selectedNode.type === "Solution" && (
+            <SolutionFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
+          )}
+
+          {selectedNode.type === "Experiment" && (
+            <ExperimentFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
+          )}
+        </PanelSection>
 
         {selectedNode.type === "Opportunity" && (
-          <OpportunityFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
-        )}
-
-        {selectedNode.type === "Solution" && (
-          <SolutionFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
-        )}
-
-        {selectedNode.type === "Experiment" && (
-          <ExperimentFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
+          <PanelSection title="Prioritisation">
+            <OpportunityPrioritisation
+              node={selectedNode}
+              onUpdate={(updates) => updateNode(selectedNode.id, updates)}
+            />
+          </PanelSection>
         )}
 
         {childKind && (
