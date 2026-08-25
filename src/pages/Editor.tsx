@@ -9,7 +9,6 @@ import { NewNodeDialog } from "@/components/NewNodeDialog";
 const Editor = () => {
   const currentTree = useDataStore((state) => state.currentTree);
   const userId = useDataStore((state) => state.userId);
-  const createNewTree = useDataStore((state) => state.createNewTree);
   const navigate = useNavigate();
   const [newNodeDialogOpen, setNewNodeDialogOpen] = useState(false);
   const [preselectedParentId, setPreselectedParentId] = useState<string>();
@@ -22,14 +21,12 @@ const Editor = () => {
       return;
     }
 
-    // Create a new tree if none exists
+    // No tree open (e.g. after a refresh) - go back to the dashboard instead of
+    // silently creating an unassigned tree.
     if (!currentTree) {
-      createNewTree("My Opportunity Tree").catch((error) => {
-        console.error("Error creating tree:", error);
-        navigate("/");
-      });
+      navigate("/");
     }
-  }, [currentTree, userId, navigate, createNewTree]);
+  }, [currentTree, userId, navigate]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
