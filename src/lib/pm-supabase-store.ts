@@ -513,6 +513,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
       user_id: userId,
       name: tree.name,
       description: tree.description,
+      project_id: tree.projectId,
       created_at: tree.createdAt,
       updated_at: tree.updatedAt,
     });
