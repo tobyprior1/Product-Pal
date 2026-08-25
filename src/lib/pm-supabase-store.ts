@@ -323,7 +323,9 @@ export const useDataStore = create<DataStore>((set, get) => ({
       // currentTree reference at the freshly fetched row.
       const openTree = get().currentTree;
       const refreshedCurrentTree = openTree
-        ? trees.find((t) => t.id === openTree.id) ?? null
+        ? openTree.isSample
+          ? openTree
+          : trees.find((t) => t.id === openTree.id) ?? null
         : null;
 
       set({
@@ -520,6 +522,10 @@ export const useDataStore = create<DataStore>((set, get) => ({
   setCurrentTree: async (tree) => {
     const userId = get().userId;
     if (!userId) return;
+    if (tree.isSample) {
+      set({ currentTree: tree });
+      return;
+    }
 
     const { error } = await supabase.from("trees").upsert({
       id: tree.id,
@@ -542,6 +548,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   updateTreeMetadata: async () => {
     const tree = get().currentTree;
     if (!tree) return;
+    if (tree.isSample) return;
 
     const updatedTree = {
       ...tree,
@@ -592,6 +599,10 @@ export const useDataStore = create<DataStore>((set, get) => ({
     const state = get();
     const tree = state.currentTree;
     if (!tree) return;
+    if (tree.isSample) {
+      notifySampleReadOnly();
+      return;
+    }
 
     const dbNode = ostNodeToDbNode(node, tree.id);
 
@@ -609,6 +620,10 @@ export const useDataStore = create<DataStore>((set, get) => ({
     const state = get();
     const tree = state.currentTree;
     if (!tree) return;
+    if (tree.isSample) {
+      notifySampleReadOnly();
+      return;
+    }
 
     const metadata = updateNodeMetadata(userId);
     const updatedNode = state.nodes.find((n) => n.id === id);
@@ -630,6 +645,10 @@ export const useDataStore = create<DataStore>((set, get) => ({
 
   deleteNode: async (id) => {
     const state = get();
+    if (state.currentTree?.isSample) {
+      notifySampleReadOnly();
+      return;
+    }
     const nodesToDelete = new Set<string>([id]);
 
     const findChildren = (parentId: string) => {
@@ -706,6 +725,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
       createdAt: createTimestamp(),
       updatedAt: createTimestamp(),
       ownerId: undefined, // No owner for demo tree
+      isSample: true,
     };
 
     const seedNodes = getSeedData();
@@ -780,6 +800,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
     const state = get();
     const tree = state.currentTree;
     if (!tree) return;
+    if (tree.isSample) return;
 
     const counter = state.snapshotCounter + 1;
     const now = new Date();

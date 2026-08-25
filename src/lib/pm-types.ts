@@ -13,6 +13,8 @@ export interface Project {
   createdAt: string
   updatedAt: string
   ownerId?: string
+  /** Demo tree loaded client-side only; never persisted to the database */
+  isSample?: boolean
 }
 
 export interface Tree {
