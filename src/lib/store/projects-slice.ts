@@ -63,7 +63,7 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
 
     try {
       const updatedAt = new Date().toISOString();
-      const dbUpdates: Record<string, unknown> = { updated_at: updatedAt };
+      const dbUpdates: { updated_at: string; name?: string; description?: string } = { updated_at: updatedAt };
       if (updates.name !== undefined) dbUpdates.name = updates.name;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
 
