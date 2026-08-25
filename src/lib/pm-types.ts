@@ -6,10 +6,20 @@ export type OpportunityStatus = "in-discovery" | "backlog" | "validated" | "inva
 export type SolutionStatus = "Now" | "Next" | "Later" | "Done" | "Backlog"
 export type InterviewStatus = "pending" | "processing" | "analyzed" | "applied"
 
+export interface Project {
+  id: UUID
+  name: string
+  description?: string
+  createdAt: string
+  updatedAt: string
+  ownerId?: string
+}
+
 export interface Tree {
   id: UUID
   name: string
   description?: string
+  projectId?: UUID | null
   createdAt: string
   updatedAt: string
   ownerId?: string

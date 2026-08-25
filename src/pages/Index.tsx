@@ -20,23 +20,53 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDataStore } from "@/lib/pm-supabase-store";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { Trash2, Pencil } from "lucide-react";
+import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Trash2, TreePine } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { createNewTree, trees, selectTree, deleteTree, renameTree, userId } = useDataStore();
+  const {
+    createNewTree,
+    createProject,
+    updateProject,
+    deleteProject,
+    trees,
+    projects,
+    selectTree,
+    deleteTree,
+    renameTree,
+    assignTreeToProject,
+    userId,
+  } = useDataStore();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const [treeDeleteOpen, setTreeDeleteOpen] = useState(false);
   const [treeToDelete, setTreeToDelete] = useState<string | null>(null);
-  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [treeRenameOpen, setTreeRenameOpen] = useState(false);
   const [treeToRename, setTreeToRename] = useState<{ id: string; name: string } | null>(null);
-  const [newTreeName, setNewTreeName] = useState("");
+  const [treeRenameValue, setTreeRenameValue] = useState("");
+
+  const [projectCreateOpen, setProjectCreateOpen] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+
+  const [projectEditOpen, setProjectEditOpen] = useState(false);
+  const [projectToEdit, setProjectToEdit] = useState<{ id: string; name: string; description?: string } | null>(null);
+
+  const [projectDeleteOpen, setProjectDeleteOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -44,12 +74,16 @@ const Index = () => {
     });
   }, []);
 
+  const unassignedTrees = useMemo(
+    () => trees.filter((t) => !t.projectId).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
+    [trees]
+  );
+
   const handleNewTree = async () => {
     if (!userId) {
       navigate("/auth");
       return;
     }
-
     setLoading(true);
     try {
       await createNewTree("My Opportunity Tree");
@@ -62,7 +96,6 @@ const Index = () => {
   };
 
   const handleLoadSample = async () => {
-    // Sample tree doesn't require authentication
     setLoading(true);
     try {
       await useDataStore.getState().loadSampleTree();
@@ -86,33 +119,81 @@ const Index = () => {
     }
   };
 
-  const handleDeleteClick = (treeId: string, e: React.MouseEvent) => {
+  const handleDeleteTreeClick = (treeId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setTreeToDelete(treeId);
-    setDeleteDialogOpen(true);
+    setTreeDeleteOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmTreeDelete = async () => {
     if (treeToDelete) {
       await deleteTree(treeToDelete);
       setTreeToDelete(null);
-      setDeleteDialogOpen(false);
+      setTreeDeleteOpen(false);
     }
   };
 
-  const handleRenameClick = (treeId: string, currentName: string, e: React.MouseEvent) => {
+  const handleRenameTreeClick = (treeId: string, currentName: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setTreeToRename({ id: treeId, name: currentName });
-    setNewTreeName(currentName);
-    setRenameDialogOpen(true);
+    setTreeRenameValue(currentName);
+    setTreeRenameOpen(true);
   };
 
-  const handleConfirmRename = async () => {
-    if (treeToRename && newTreeName.trim()) {
-      await renameTree(treeToRename.id, newTreeName.trim());
+  const handleConfirmTreeRename = async () => {
+    if (treeToRename && treeRenameValue.trim()) {
+      await renameTree(treeToRename.id, treeRenameValue.trim());
       setTreeToRename(null);
-      setNewTreeName("");
-      setRenameDialogOpen(false);
+      setTreeRenameValue("");
+      setTreeRenameOpen(false);
+    }
+  };
+
+  const handleCreateProject = async () => {
+    if (!userId || !projectName.trim()) return;
+    try {
+      await createProject(projectName.trim(), projectDescription.trim() || undefined);
+      setProjectName("");
+      setProjectDescription("");
+      setProjectCreateOpen(false);
+    } catch (error) {
+      console.error("Error creating project:", error);
+    }
+  };
+
+  const handleEditProjectClick = (project: { id: string; name: string; description?: string }, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setProjectToEdit(project);
+    setProjectName(project.name);
+    setProjectDescription(project.description || "");
+    setProjectEditOpen(true);
+  };
+
+  const handleUpdateProject = async () => {
+    if (!projectToEdit || !projectName.trim()) return;
+    await updateProject(projectToEdit.id, {
+      name: projectName.trim(),
+      description: projectDescription.trim() || undefined,
+    });
+    setProjectToEdit(null);
+    setProjectName("");
+    setProjectDescription("");
+    setProjectEditOpen(false);
+  };
+
+  const handleDeleteProjectClick = (projectId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setProjectToDelete(projectId);
+    setProjectDeleteOpen(true);
+  };
+
+  const handleConfirmProjectDelete = async () => {
+    if (projectToDelete) {
+      await deleteProject(projectToDelete);
+      setProjectToDelete(null);
+      setProjectDeleteOpen(false);
     }
   };
 
@@ -126,9 +207,7 @@ const Index = () => {
       <div className="flex justify-end mb-4 gap-2">
         {user ? (
           <>
-            <span className="text-sm text-muted-foreground self-center">
-              {user.email}
-            </span>
+            <span className="text-sm text-muted-foreground self-center">{user.email}</span>
             <Button variant="outline" onClick={handleSignOut}>
               Sign Out
             </Button>
@@ -141,39 +220,69 @@ const Index = () => {
       </div>
 
       <div className="flex-1 flex items-center justify-center">
-        <div className="max-w-2xl w-full space-y-8">
+        <div className="max-w-4xl w-full space-y-8">
           <div className="text-center space-y-4">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground">
-              Product Pal
-            </h1>
+            <h1 className="text-5xl font-bold tracking-tight text-foreground">Product Pal</h1>
             <p className="text-lg text-muted-foreground">
               Plan your product strategy, prioritise the right opportunities, and ship outcomes with confidence.
             </p>
-
           </div>
 
-          <div className="space-y-6">
-            {trees.length > 0 && (
+          {userId && (
+            <div className="space-y-6">
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold text-foreground">Your Trees</h2>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {trees.map((tree) => (
-                    <Card 
-                      key={tree.id} 
-                      className="p-6 space-y-4 hover:border-primary/50 transition-all cursor-pointer hover:shadow-md group"
-                      onClick={() => handleSelectTree(tree.id)}
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-lg font-semibold text-foreground flex-1">
-                            {tree.name}
-                          </h3>
-                          <div className="flex gap-1">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-semibold text-foreground">Projects</h2>
+                  <Button onClick={() => setProjectCreateOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Project
+                  </Button>
+                </div>
+
+                {projects.length === 0 ? (
+                  <Card className="p-6 border-dashed text-center">
+                    <p className="text-muted-foreground">
+                      No projects yet. Create one to start organising your trees.
+                    </p>
+                  </Card>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {projects.map((project) => (
+                      <Card
+                        key={project.id}
+                        className="p-5 hover:border-primary/50 transition-all hover:shadow-md group"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <Link
+                            to={`/projects/${project.id}`}
+                            className="flex-1 min-w-0"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="bg-primary/10 p-2 rounded-lg">
+                                <Folder className="h-5 w-5 text-primary" />
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="text-lg font-semibold text-foreground truncate">
+                                  {project.name}
+                                </h3>
+                                <p className="text-xs text-muted-foreground">
+                                  {trees.filter((t) => t.projectId === project.id).length} trees
+                                </p>
+                              </div>
+                            </div>
+                            {project.description && (
+                              <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
+                                {project.description}
+                              </p>
+                            )}
+                          </Link>
+
+                          <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
                               className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-muted-foreground hover:text-foreground"
-                              onClick={(e) => handleRenameClick(tree.id, tree.name, e)}
+                              onClick={(e) => handleEditProjectClick(project, e)}
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -181,53 +290,132 @@ const Index = () => {
                               variant="ghost"
                               size="icon"
                               className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={(e) => handleDeleteClick(tree.id, e)}
+                              onClick={(e) => handleDeleteProjectClick(project.id, e)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              asChild
+                            >
+                              <Link to={`/projects/${project.id}`}>
+                                <ArrowRight className="h-4 w-4" />
+                              </Link>
+                            </Button>
                           </div>
                         </div>
-                        {tree.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {tree.description}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                          Last updated: {new Date(tree.updatedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectTree(tree.id);
-                        }} 
-                        className="w-full"
-                        disabled={loading}
-                      >
-                        {loading ? "Loading..." : "Open Tree"}
-                      </Button>
-                    </Card>
-                  ))}
-                </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
 
-            <Card className="p-6 space-y-4 border-dashed hover:border-primary/50 transition-colors">
-              <div className="space-y-2 text-center">
-                <h2 className="text-xl font-semibold text-foreground">
-                  {user ? "Create New Tree" : "Get Started"}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {user
-                    ? "Begin with a blank canvas and create your tree from scratch."
-                    : "Sign in to create and save your opportunity solution trees."}
-                </p>
-              </div>
-              <Button onClick={handleNewTree} className="w-full" disabled={loading} size="lg">
-                {loading ? "Creating..." : user ? "Create New Tree" : "Sign In to Start"}
-              </Button>
-            </Card>
-          </div>
+              {unassignedTrees.length > 0 && (
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-semibold text-foreground">Unassigned Trees</h2>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {unassignedTrees.map((tree) => (
+                      <Card
+                        key={tree.id}
+                        className="p-5 space-y-4 hover:border-primary/50 transition-all cursor-pointer hover:shadow-md group"
+                        onClick={() => handleSelectTree(tree.id)}
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="bg-muted p-2 rounded-lg">
+                                <TreePine className="h-5 w-5 text-muted-foreground" />
+                              </div>
+                              <h3 className="text-lg font-semibold text-foreground truncate flex-1">
+                                {tree.name}
+                              </h3>
+                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={(e) => handleRenameTreeClick(tree.id, tree.name, e as unknown as React.MouseEvent)}
+                                >
+                                  <Pencil className="h-4 w-4 mr-2" />
+                                  Rename
+                                </DropdownMenuItem>
+                                {projects.length > 0 && (
+                                  <>
+                                    {projects.map((project) => (
+                                      <DropdownMenuItem
+                                        key={project.id}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          assignTreeToProject(tree.id, project.id);
+                                        }}
+                                      >
+                                        <Folder className="h-4 w-4 mr-2" />
+                                        Move to {project.name}
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </>
+                                )}
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={(e) => handleDeleteTreeClick(tree.id, e as unknown as React.MouseEvent)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                          {tree.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {tree.description}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Last updated: {new Date(tree.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectTree(tree.id);
+                          }}
+                          className="w-full"
+                          disabled={loading}
+                        >
+                          {loading ? "Loading..." : "Open Tree"}
+                        </Button>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <Card className="p-6 space-y-4 border-dashed hover:border-primary/50 transition-colors">
+            <div className="space-y-2 text-center">
+              <h2 className="text-xl font-semibold text-foreground">{user ? "Create New Tree" : "Get Started"}</h2>
+              <p className="text-sm text-muted-foreground">
+                {user
+                  ? "Begin with a blank canvas and create your tree from scratch."
+                  : "Sign in to create and save your opportunity solution trees."}
+              </p>
+            </div>
+            <Button onClick={handleNewTree} className="w-full" disabled={loading} size="lg">
+              {loading ? "Creating..." : user ? "Create New Tree" : "Sign In to Start"}
+            </Button>
+          </Card>
 
           <div className="pt-8 border-t border-border">
             <div className="space-y-3 text-sm text-muted-foreground">
@@ -256,19 +444,19 @@ const Index = () => {
         </div>
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialog open={treeDeleteOpen} onOpenChange={setTreeDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Tree</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this tree? This action cannot be undone.
-              All nodes, experiments, solutions, and associated data will be permanently deleted.
+              Are you sure you want to delete this tree? This action cannot be undone. All nodes,
+              experiments, solutions, and associated data will be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleConfirmDelete}
+              onClick={handleConfirmTreeDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
@@ -277,40 +465,133 @@ const Index = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+      <Dialog open={treeRenameOpen} onOpenChange={setTreeRenameOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rename Tree</DialogTitle>
-            <DialogDescription>
-              Enter a new name for your tree.
-            </DialogDescription>
+            <DialogDescription>Enter a new name for your tree.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="tree-name">Tree Name</Label>
               <Input
                 id="tree-name"
-                value={newTreeName}
-                onChange={(e) => setNewTreeName(e.target.value)}
+                value={treeRenameValue}
+                onChange={(e) => setTreeRenameValue(e.target.value)}
                 placeholder="Enter tree name"
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && newTreeName.trim()) {
-                    handleConfirmRename();
+                  if (e.key === "Enter" && treeRenameValue.trim()) {
+                    handleConfirmTreeRename();
                   }
                 }}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRenameDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setTreeRenameOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmRename} disabled={!newTreeName.trim()}>
+            <Button onClick={handleConfirmTreeRename} disabled={!treeRenameValue.trim()}>
               Rename
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={projectCreateOpen} onOpenChange={setProjectCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Project</DialogTitle>
+            <DialogDescription>Give your project a name and optional description.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-project-name">Project Name</Label>
+              <Input
+                id="new-project-name"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="e.g. Q3 Growth"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-project-description">Description</Label>
+              <Input
+                id="new-project-description"
+                value={projectDescription}
+                onChange={(e) => setProjectDescription(e.target.value)}
+                placeholder="Optional description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setProjectCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateProject} disabled={!projectName.trim()}>
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={projectEditOpen} onOpenChange={setProjectEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+            <DialogDescription>Update the project name and description.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-project-name">Project Name</Label>
+              <Input
+                id="edit-project-name"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Enter project name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-project-description">Description</Label>
+              <Input
+                id="edit-project-description"
+                value={projectDescription}
+                onChange={(e) => setProjectDescription(e.target.value)}
+                placeholder="Enter project description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setProjectEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateProject} disabled={!projectName.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={projectDeleteOpen} onOpenChange={setProjectDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this project? Its trees will become unassigned and
+              will not be deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmProjectDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
