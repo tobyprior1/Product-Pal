@@ -91,6 +91,7 @@ const Project = () => {
   }
 
   const handleSelectTree = async (treeId: string) => {
+    if (loading) return;
     setPendingAction(`tree:${treeId}`);
     try {
       await selectTree(treeId);
@@ -102,14 +103,15 @@ const Project = () => {
     }
   };
 
-  const handleNewTree = async () => {
+  const handleNewTree = async (actionId: "new-header" | "new-empty") => {
+    if (loading) return;
     if (!userId) {
       navigate("/auth");
       return;
     }
     if (!id) return;
 
-    setPendingAction("new-tree");
+    setPendingAction(actionId);
     try {
       await createNewTree("New Outcome", id);
 
@@ -142,6 +144,7 @@ const Project = () => {
 
 
   const handleLoadSample = async () => {
+    if (loading) return;
     setPendingAction("sample");
     try {
       await useDataStore.getState().loadSampleTree();
@@ -251,9 +254,14 @@ const Project = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold text-foreground">Outcomes</h2>
             {userId && (
-              <Button onClick={handleNewTree} disabled={loading}>
+              <Button
+                onClick={() => handleNewTree("new-header")}
+                disabled={pendingAction === "new-header"}
+                aria-disabled={loading}
+                className={loading && pendingAction !== "new-header" ? "pointer-events-none" : undefined}
+              >
                 <Plus className="h-4 w-4 mr-2" />
-                {pendingAction === "new-tree" ? "Creating..." : "New Outcome"}
+                {pendingAction === "new-header" ? "Creating..." : "New Outcome"}
               </Button>
             )}
           </div>
@@ -267,9 +275,14 @@ const Project = () => {
                   Create a new outcome to start planning this project.
                 </p>
                 {userId && (
-                  <Button onClick={handleNewTree} disabled={loading}>
+                  <Button
+                    onClick={() => handleNewTree("new-empty")}
+                    disabled={pendingAction === "new-empty"}
+                    aria-disabled={loading}
+                    className={loading && pendingAction !== "new-empty" ? "pointer-events-none" : undefined}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
-                    {pendingAction === "new-tree" ? "Creating..." : "Create Outcome"}
+                    {pendingAction === "new-empty" ? "Creating..." : "Create Outcome"}
                   </Button>
                 )}
               </div>
@@ -335,8 +348,9 @@ const Project = () => {
                       e.stopPropagation();
                       handleSelectTree(tree.id);
                     }}
-                    className="w-full"
-                    disabled={loading}
+                    disabled={pendingAction === `tree:${tree.id}`}
+                    aria-disabled={loading}
+                    className={`w-full ${loading && pendingAction !== `tree:${tree.id}` ? "pointer-events-none" : ""}`}
                   >
                     {pendingAction === `tree:${tree.id}` ? "Loading..." : "Open Outcome"}
                   </Button>
@@ -366,8 +380,9 @@ const Project = () => {
                 <Button
                   variant="link"
                   onClick={handleLoadSample}
-                  disabled={loading}
-                  className="h-auto p-0 text-primary"
+                  disabled={pendingAction === "sample"}
+                  aria-disabled={loading}
+                  className={`h-auto p-0 text-primary ${loading && pendingAction !== "sample" ? "pointer-events-none" : ""}`}
                 >
                   Load a sample outcome to explore
                 </Button>
