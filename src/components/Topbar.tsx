@@ -85,7 +85,7 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Link
               to={currentTree ? backTo : "/"}
-              className="flex items-center gap-2 group min-w-0 overflow-hidden"
+              className="flex items-center gap-2 group min-w-0 overflow-hidden whitespace-nowrap"
               title={currentTree ? "Back to project" : "Home"}
             >
               {currentTree && (
