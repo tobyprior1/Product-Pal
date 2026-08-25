@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDataStore } from "@/lib/pm-supabase-store";
 import Index from "./pages/Index";
@@ -21,37 +21,49 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const { setUserId, loadUserData } = useDataStore();
+  const loadedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Load user data at most once per signed-in user. Token refreshes and
+    // window-focus events must never trigger a reload, otherwise the open
+    // tree/nodes would be cleared while the user is idle.
+    const syncUser = (userId: string | null) => {
+      setUserId(userId);
+
+      if (!userId) {
+        loadedUserIdRef.current = null;
+        return;
+      }
+
+      if (loadedUserIdRef.current === userId) return;
+      loadedUserIdRef.current = userId;
+
+      setTimeout(() => {
+        loadUserData();
+      }, 0);
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        const userId = session?.user?.id || null;
-        setUserId(userId);
-        
-        // Load user data when logged in
-        if (userId && event === 'SIGNED_IN') {
-          setTimeout(() => {
-            loadUserData();
-          }, 0);
+        if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          // Session-only change: keep the current in-memory state as is.
+          setUserId(session?.user?.id ?? null);
+          return;
         }
+
+        syncUser(session?.user?.id ?? null);
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const userId = session?.user?.id || null;
-      setUserId(userId);
-      
-      if (userId) {
-        setTimeout(() => {
-          loadUserData();
-        }, 0);
-      }
+      syncUser(session?.user?.id ?? null);
     });
 
     return () => subscription.unsubscribe();
   }, [setUserId, loadUserData]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
