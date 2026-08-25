@@ -31,7 +31,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Trash2, TreePine } from "lucide-react";
+import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Target, Trash2 } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -289,7 +289,7 @@ const Index = () => {
 
               {unassignedTrees.length > 0 && (
                 <div className="space-y-4">
-                  <h2 className="text-2xl font-semibold text-foreground">Unassigned Trees</h2>
+                  <h2 className="text-2xl font-semibold text-foreground">Unassigned Outcomes</h2>
                   <div className="grid gap-4 md:grid-cols-2">
                     {unassignedTrees.map((tree) => (
                       <Card
@@ -301,7 +301,7 @@ const Index = () => {
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <div className="bg-muted p-2 rounded-lg">
-                                <TreePine className="h-5 w-5 text-muted-foreground" />
+                                <Target className="h-5 w-5 text-muted-foreground" />
                               </div>
                               <h3 className="text-lg font-semibold text-foreground truncate flex-1">
                                 {tree.name}
@@ -368,7 +368,7 @@ const Index = () => {
                           className="w-full"
                           disabled={loading}
                         >
-                          {loading ? "Loading..." : "Open Tree"}
+                          {loading ? "Loading..." : "Open Outcome"}
                         </Button>
                       </Card>
                     ))}
@@ -398,9 +398,9 @@ const Index = () => {
       <AlertDialog open={treeDeleteOpen} onOpenChange={setTreeDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Tree</AlertDialogTitle>
+            <AlertDialogTitle>Delete Outcome</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this tree? This action cannot be undone. All nodes,
+              Are you sure you want to delete this outcome? This action cannot be undone. All nodes,
               experiments, solutions, and associated data will be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -419,17 +419,17 @@ const Index = () => {
       <Dialog open={treeRenameOpen} onOpenChange={setTreeRenameOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename Tree</DialogTitle>
-            <DialogDescription>Enter a new name for your tree.</DialogDescription>
+            <DialogTitle>Rename Outcome</DialogTitle>
+            <DialogDescription>Enter a new name for your outcome.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="tree-name">Tree Name</Label>
+              <Label htmlFor="tree-name">Outcome Name</Label>
               <Input
                 id="tree-name"
                 value={treeRenameValue}
                 onChange={(e) => setTreeRenameValue(e.target.value)}
-                placeholder="Enter tree name"
+                placeholder="Enter outcome name"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && treeRenameValue.trim()) {
                     handleConfirmTreeRename();

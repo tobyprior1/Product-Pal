@@ -106,7 +106,7 @@ const Project = () => {
 
     setLoading(true);
     try {
-      await createNewTree("New Tree", id);
+      await createNewTree("New Outcome", id);
       navigate("/editor");
     } catch (error) {
       console.error("Error creating tree:", error);
@@ -223,11 +223,11 @@ const Project = () => {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-foreground">Trees</h2>
+            <h2 className="text-2xl font-semibold text-foreground">Outcomes</h2>
             {userId && (
               <Button onClick={handleNewTree} disabled={loading}>
                 <Plus className="h-4 w-4 mr-2" />
-                {loading ? "Creating..." : "New Tree"}
+                {loading ? "Creating..." : "New Outcome"}
               </Button>
             )}
           </div>
@@ -236,14 +236,14 @@ const Project = () => {
             <Card className="p-8 text-center border-dashed">
               <div className="space-y-3">
                 <FolderOpen className="h-10 w-10 mx-auto text-muted-foreground" />
-                <h3 className="text-lg font-medium text-foreground">No trees yet</h3>
+                <h3 className="text-lg font-medium text-foreground">No outcomes yet</h3>
                 <p className="text-sm text-muted-foreground">
-                  Create a new tree to start planning this project.
+                  Create a new outcome to start planning this project.
                 </p>
                 {userId && (
                   <Button onClick={handleNewTree} disabled={loading}>
                     <Plus className="h-4 w-4 mr-2" />
-                    {loading ? "Creating..." : "Create Tree"}
+                    {loading ? "Creating..." : "Create Outcome"}
                   </Button>
                 )}
               </div>
@@ -312,7 +312,7 @@ const Project = () => {
                     className="w-full"
                     disabled={loading}
                   >
-                    {loading ? "Loading..." : "Open Tree"}
+                    {loading ? "Loading..." : "Open Outcome"}
                   </Button>
                 </Card>
               ))}
@@ -325,7 +325,7 @@ const Project = () => {
             <p className="font-medium text-foreground">Quick Tips:</p>
             <ul className="space-y-2 list-disc list-inside">
               <li>
-                Start with your desired <strong className="text-foreground">Outcome</strong>
+                Name your <strong className="text-foreground">Outcome</strong> — the goal you want to move
               </li>
               <li>
                 Add <strong className="text-foreground">Opportunities</strong> that ladder into it
@@ -343,7 +343,7 @@ const Project = () => {
                   disabled={loading}
                   className="h-auto p-0 text-primary"
                 >
-                  Load a sample tree to explore
+                  Load a sample outcome to explore
                 </Button>
               </li>
             </ul>
@@ -355,9 +355,9 @@ const Project = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Tree</AlertDialogTitle>
+            <AlertDialogTitle>Delete Outcome</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this tree? This action cannot be undone.
+              Are you sure you want to delete this outcome? This action cannot be undone.
               All nodes, experiments, solutions, and associated data will be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -376,17 +376,17 @@ const Project = () => {
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename Tree</DialogTitle>
-            <DialogDescription>Enter a new name for your tree.</DialogDescription>
+            <DialogTitle>Rename Outcome</DialogTitle>
+            <DialogDescription>Enter a new name for your outcome.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="tree-name">Tree Name</Label>
+              <Label htmlFor="tree-name">Outcome Name</Label>
               <Input
                 id="tree-name"
                 value={newTreeName}
                 onChange={(e) => setNewTreeName(e.target.value)}
-                placeholder="Enter tree name"
+                placeholder="Enter outcome name"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && newTreeName.trim()) {
                     handleConfirmRename();
@@ -448,7 +448,7 @@ const Project = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this project? Its trees will become unassigned
+              Are you sure you want to delete this project? Its outcomes will become unassigned
               and will not be deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
