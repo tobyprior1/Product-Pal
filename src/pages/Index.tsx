@@ -147,7 +147,7 @@ const Index = () => {
               Product Pal
             </h1>
             <p className="text-lg text-muted-foreground">
-              Your product strategy sidekick — build and visualise opportunity solution trees
+              Plan your product strategy, prioritise the right opportunities, and ship outcomes with confidence.
             </p>
 
           </div>
