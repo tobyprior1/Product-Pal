@@ -8,7 +8,11 @@ interface ExperimentFieldsProps {
   onUpdate: (updates: Partial<ExperimentNode>) => void
 }
 
+const compactLabel = "text-xs font-medium text-muted-foreground"
+
 export function ExperimentFields({ node, onUpdate }: ExperimentFieldsProps) {
+  const isCompleted = node.status === "completed"
+
   return (
     <>
       <TextAreaField
@@ -31,60 +35,69 @@ export function ExperimentFields({ node, onUpdate }: ExperimentFieldsProps) {
         placeholder="How will you test this?"
       />
 
-      <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
-        <Select value={node.status} onValueChange={(value) => onUpdate({ status: value as any })}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="backlog">Backlog</SelectItem>
-            <SelectItem value="planned">Planned</SelectItem>
-            <SelectItem value="in-build">In Build</SelectItem>
-            <SelectItem value="running">Running</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {node.status === "completed" && (
-        <div className="space-y-2">
-          <Label htmlFor="decision">Decision</Label>
-          <Select
-            value={node.decision || ""}
-            onValueChange={(value) => onUpdate({ decision: value as any })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select decision" />
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="status" className={compactLabel}>
+            Status
+          </Label>
+          <Select value={node.status} onValueChange={(value) => onUpdate({ status: value as any })}>
+            <SelectTrigger id="status" className="h-9">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ship">Ship</SelectItem>
-              <SelectItem value="iterate">Iterate</SelectItem>
-              <SelectItem value="kill">Kill</SelectItem>
+              <SelectItem value="backlog">Backlog</SelectItem>
+              <SelectItem value="planned">Planned</SelectItem>
+              <SelectItem value="in-build">In Build</SelectItem>
+              <SelectItem value="running">Running</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         </div>
-      )}
 
-      <TextField
-        key={`${node.id}-startDate`}
-        id="startDate"
-        label="Start Date"
-        type="date"
-        value={node.dateRange.start}
-        onCommit={(value) => onUpdate({ dateRange: { ...node.dateRange, start: value } })}
-      />
+        {isCompleted && (
+          <div className="space-y-1.5">
+            <Label htmlFor="decision" className={compactLabel}>
+              Decision
+            </Label>
+            <Select value={node.decision || ""} onValueChange={(value) => onUpdate({ decision: value as any })}>
+              <SelectTrigger id="decision" className="h-9">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ship">Ship</SelectItem>
+                <SelectItem value="iterate">Iterate</SelectItem>
+                <SelectItem value="kill">Kill</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
 
-      <TextField
-        key={`${node.id}-endDate`}
-        id="endDate"
-        label="End Date"
-        type="date"
-        value={node.dateRange.end}
-        onCommit={(value) => onUpdate({ dateRange: { ...node.dateRange, end: value } })}
-      />
+      <div className="grid grid-cols-2 gap-2">
+        <TextField
+          key={`${node.id}-startDate`}
+          id="startDate"
+          label="Start"
+          type="date"
+          value={node.dateRange.start}
+          onCommit={(value) => onUpdate({ dateRange: { ...node.dateRange, start: value } })}
+          labelClassName={compactLabel}
+          className="space-y-1.5"
+        />
 
-      {node.status === "completed" && (
+        <TextField
+          key={`${node.id}-endDate`}
+          id="endDate"
+          label="End"
+          type="date"
+          value={node.dateRange.end}
+          onCommit={(value) => onUpdate({ dateRange: { ...node.dateRange, end: value } })}
+          labelClassName={compactLabel}
+          className="space-y-1.5"
+        />
+      </div>
+
+      {isCompleted && (
         <TextAreaField
           key={`${node.id}-resultSummary`}
           id="resultSummary"
