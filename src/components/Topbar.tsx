@@ -97,9 +97,9 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
               <span className="font-semibold tracking-tight text-foreground">Product Pal</span>
               {currentTree && breadcrumbLabel && (
                 <>
-                  <span className="h-4 w-px bg-border mx-1" />
+                  <span className="h-4 w-px bg-border mx-1 shrink-0" />
                   <span
-                    className="text-sm text-muted-foreground truncate max-w-[140px] sm:max-w-[180px] md:max-w-[240px] hidden sm:block"
+                    className="text-sm text-muted-foreground truncate min-w-0 max-w-full max-w-[120px] sm:max-w-[160px] md:max-w-[200px] lg:max-w-[260px]"
                     title={breadcrumbLabel}
                   >
                     {breadcrumbLabel}
