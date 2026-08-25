@@ -149,35 +149,35 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
               const opportunities = getAllOpportunitiesUnderOutcome(outcome.id)
 
               return (
-                <div key={outcome.id} className="border-b border-border">
+                <div key={outcome.id} className="border-b-2 border-border">
                   <button
                     onClick={() => onItemClick(outcome.id)}
-                    className="w-full bg-muted/20 px-2 font-medium text-sm border-b border-border h-[41px] flex items-center hover:bg-muted/30 hover:text-primary text-left transition-colors cursor-pointer"
+                    className="w-full bg-purple-50 dark:bg-purple-950/30 border-l-4 border-l-purple-400 px-2 border-b border-border h-[41px] flex items-center gap-2 hover:bg-purple-100 dark:hover:bg-purple-950/50 text-left transition-colors cursor-pointer"
                   >
-                    {outcome.title}
+                    <Target className="w-4 h-4 flex-shrink-0 text-purple-600 dark:text-purple-300" />
+                    <span className="font-semibold text-sm uppercase tracking-wide truncate">{outcome.title}</span>
                   </button>
 
                   {opportunities.map((opportunity) => {
-                    const solutions = getNodeChildren(opportunity.id).filter(
-                      (n) => n.type === "Solution",
-                    ) as SolutionNode[]
-
-                    const solutionsWithDates = solutions
-                      .filter((s) => s.startDate && s.status !== "Done" && s.status !== "Backlog")
-                      .sort((a, b) => new Date(a.startDate!).getTime() - new Date(b.startDate!).getTime())
-
-                    if (solutionsWithDates.length === 0) return null
+                    const roadmapSolutions = getRoadmapSolutions(opportunity.id)
 
                     return (
                       <div key={opportunity.id}>
                         <button
                           onClick={() => onItemClick(opportunity.id)}
-                          className="w-full bg-muted/10 px-2 text-sm border-b border-border pl-6 h-[41px] flex items-center hover:bg-muted/20 hover:text-primary text-left transition-colors cursor-pointer"
+                          className="w-full bg-amber-50/60 dark:bg-amber-950/20 border-l-4 border-l-amber-300 px-2 text-sm border-b border-border pl-4 h-[41px] flex items-center gap-2 hover:bg-amber-100/60 dark:hover:bg-amber-950/40 text-left transition-colors cursor-pointer"
                         >
-                          {opportunity.title}
+                          <Lightbulb className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 dark:text-amber-300" />
+                          <span className="font-medium truncate">{opportunity.title}</span>
                         </button>
 
-                        {solutionsWithDates.map((solution) => {
+                        {roadmapSolutions.length === 0 && (
+                          <div className="px-2 pl-10 h-[41px] flex items-center border-b border-border border-l-4 border-l-transparent text-xs text-muted-foreground italic">
+                            No scheduled solutions
+                          </div>
+                        )}
+
+                        {roadmapSolutions.map((solution) => {
                           const experiments = getNodeChildren(solution.id).filter(
                             (n) => n.type === "Experiment",
                           ) as ExperimentNode[]
@@ -188,8 +188,8 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
 
                           return (
                             <div key={solution.id}>
-                              <div className="p-3 border-b border-border flex items-center gap-2 pl-12 h-12 hover:bg-muted/50">
-                                {experimentsWithDates.length > 0 && (
+                              <div className="px-2 pl-8 border-b border-border border-l-4 border-l-blue-300 flex items-center gap-2 h-12 hover:bg-muted/50">
+                                {experimentsWithDates.length > 0 ? (
                                   <button
                                     onClick={() => toggleSolution(solution.id)}
                                     className="flex-shrink-0 hover:bg-muted rounded p-0.5"
@@ -200,7 +200,10 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                                       <ChevronRight className="w-4 h-4" />
                                     )}
                                   </button>
+                                ) : (
+                                  <span className="w-5 flex-shrink-0" />
                                 )}
+                                <Zap className="w-3.5 h-3.5 flex-shrink-0 text-blue-600 dark:text-blue-300" />
                                 <button
                                   onClick={() => onItemClick(solution.id)}
                                   className="flex-1 text-left hover:text-primary text-sm truncate"
@@ -216,15 +219,16 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                                 experimentsWithDates.map((experiment) => (
                                   <div
                                     key={experiment.id}
-                                    className="p-3 border-b border-border flex items-center gap-2 pl-20 h-12 hover:bg-muted/50"
+                                    className="px-2 pl-16 border-b border-border border-l-4 border-l-teal-200 flex items-center gap-2 h-12 hover:bg-muted/50"
                                   >
+                                    <FlaskConical className="w-3 h-3 flex-shrink-0 text-teal-600 dark:text-teal-300" />
                                     <button
                                       onClick={() => onItemClick(experiment.id)}
-                                      className="flex-1 text-left hover:text-primary text-sm truncate"
+                                      className="flex-1 text-left hover:text-primary text-xs text-muted-foreground truncate"
                                     >
                                       {experiment.title}
                                     </button>
-                                    <Badge variant="outline" className="text-xs flex-shrink-0">
+                                    <Badge variant="outline" className="text-[10px] flex-shrink-0">
                                       {capitalizeStatus(experiment.status)}
                                     </Badge>
                                   </div>
@@ -236,6 +240,7 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                     )
                   })}
                 </div>
+
               )
             })}
           </div>
