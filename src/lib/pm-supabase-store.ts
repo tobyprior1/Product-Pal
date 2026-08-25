@@ -281,6 +281,24 @@ export const useDataStore = create<DataStore>((set, get) => ({
     set({ isLoading: true });
 
     try {
+      // Load all projects
+      const { data: projectsData, error: projectsError } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
+
+      if (projectsError) throw projectsError;
+
+      const projects: Project[] = (projectsData || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        createdAt: p.created_at,
+        updatedAt: p.updated_at,
+        ownerId: p.user_id,
+      }));
+
       // Load all trees
       const { data: treesData, error: treesError } = await supabase
         .from("trees")
@@ -294,77 +312,195 @@ export const useDataStore = create<DataStore>((set, get) => ({
         id: t.id,
         name: t.name,
         description: t.description,
+        projectId: t.project_id,
         createdAt: t.created_at,
         updatedAt: t.updated_at,
         ownerId: t.user_id,
       }));
 
-      // Load the most recent tree's data
-      if (trees.length > 0) {
-        const tree = trees[0];
-
-        // Load nodes for this tree
-        const { data: nodesData, error: nodesError } = await supabase
-          .from("nodes")
-          .select("*")
-          .eq("tree_id", tree.id);
-
-        if (nodesError) throw nodesError;
-
-        const nodes = (nodesData || []).map(dbNodeToOSTNode);
-
-        // Load snapshots
-        const { data: snapshotsData, error: snapshotsError } = await supabase
-          .from("snapshots")
-          .select("*")
-          .eq("tree_id", tree.id)
-          .order("created_at", { ascending: true });
-
-        if (snapshotsError) throw snapshotsError;
-
-        const snapshots: TreeSnapshot[] = (snapshotsData || []).map((s) => ({
-          id: s.id,
-          label: s.label,
-          timestamp: new Date(s.created_at).getTime(),
-          nodes: s.nodes_data as unknown as OSTNode[],
-        }));
-
-        // Load interviews
-        const { data: interviewsData, error: interviewsError } = await supabase
-          .from("interviews")
-          .select("*")
-          .eq("tree_id", tree.id);
-
-        if (interviewsError) throw interviewsError;
-
-        const interviews: Interview[] = (interviewsData || []).map((i) => ({
-          id: i.id,
-          treeId: i.tree_id,
-          transcript: i.transcript,
-          participantName: i.participant_name,
-          conductedAt: i.conducted_at,
-          videoUrl: i.video_url,
-          uploadedAt: i.uploaded_at,
-          status: i.status as any,
-          createdBy: i.created_by,
-        }));
-
-        set({
-          currentTree: tree,
-          trees,
-          nodes,
-          snapshots,
-          currentSnapshotIndex: snapshots.length - 1,
-          snapshotCounter: snapshots.length,
-          interviews,
-          isLoading: false,
-        });
-      } else {
-        set({ trees, isLoading: false });
-      }
+      set({
+        projects,
+        trees,
+        currentTree: null,
+        nodes: [],
+        snapshots: [],
+        currentSnapshotIndex: -1,
+        snapshotCounter: 0,
+        interviews: [],
+        isLoading: false,
+      });
     } catch (error) {
       console.error("Error loading user data:", error);
       set({ isLoading: false });
+    }
+  },
+
+  loadProjects: async () => {
+    const userId = get().userId;
+    if (!userId) return;
+
+    try {
+      const { data: projectsData, error: projectsError } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
+
+      if (projectsError) throw projectsError;
+
+      const projects: Project[] = (projectsData || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        createdAt: p.created_at,
+        updatedAt: p.updated_at,
+        ownerId: p.user_id,
+      }));
+
+      set({ projects });
+    } catch (error) {
+      console.error("Error loading projects:", error);
+    }
+  },
+
+  createProject: async (name: string, description?: string) => {
+    const userId = get().userId;
+    if (!userId) throw new Error("User not authenticated");
+
+    const newProject: Project = {
+      id: generateUUID(),
+      name,
+      description,
+      createdAt: createTimestamp(),
+      updatedAt: createTimestamp(),
+      ownerId: userId,
+    };
+
+    const { error } = await supabase.from("projects").insert({
+      id: newProject.id,
+      user_id: userId,
+      name: newProject.name,
+      description: newProject.description,
+      created_at: newProject.createdAt,
+      updated_at: newProject.updatedAt,
+    });
+
+    if (error) {
+      console.error("Error creating project:", error);
+      throw error;
+    }
+
+    set({ projects: [...get().projects, newProject] });
+    return newProject.id;
+  },
+
+  updateProject: async (id: string, updates: Partial<Project>) => {
+    const userId = get().userId;
+    if (!userId) return;
+
+    try {
+      const dbUpdates: any = {};
+      if (updates.name !== undefined) dbUpdates.name = updates.name;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      dbUpdates.updated_at = new Date().toISOString();
+
+      const { error } = await supabase.from("projects").update(dbUpdates).eq("id", id);
+
+      if (error) throw error;
+
+      const projects = get().projects.map((p) =>
+        p.id === id
+          ? { ...p, ...updates, updatedAt: new Date().toISOString() }
+          : p
+      );
+
+      set({ projects });
+
+      toast({
+        title: "Project updated",
+        description: "Your project has been successfully updated.",
+      });
+    } catch (error) {
+      console.error("Error updating project:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update project. Please try again.",
+        variant: "destructive",
+      });
+    }
+  },
+
+  deleteProject: async (id: string) => {
+    try {
+      const { error } = await supabase.from("projects").delete().eq("id", id);
+
+      if (error) throw error;
+
+      const projects = get().projects.filter((p) => p.id !== id);
+      const trees = get().trees.map((t) =>
+        t.projectId === id ? { ...t, projectId: null } : t
+      );
+      const currentTree = get().currentTree;
+
+      set({
+        projects,
+        trees,
+        ...(currentTree?.projectId === id && {
+          currentTree: { ...currentTree, projectId: null },
+        }),
+      });
+
+      toast({
+        title: "Project deleted",
+        description: "Your project has been deleted. Its trees are now unassigned.",
+      });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive",
+      });
+    }
+  },
+
+  assignTreeToProject: async (treeId: string, projectId: string | null) => {
+    try {
+      const { error } = await supabase
+        .from("trees")
+        .update({ project_id: projectId, updated_at: new Date().toISOString() })
+        .eq("id", treeId);
+
+      if (error) throw error;
+
+      const trees = get().trees.map((t) =>
+        t.id === treeId
+          ? { ...t, projectId, updatedAt: new Date().toISOString() }
+          : t
+      );
+
+      const currentTree = get().currentTree;
+
+      set({
+        trees,
+        ...(currentTree?.id === treeId && {
+          currentTree: { ...currentTree, projectId, updatedAt: new Date().toISOString() },
+        }),
+      });
+
+      toast({
+        title: projectId ? "Tree moved to project" : "Tree unassigned",
+        description: projectId
+          ? "Your tree has been moved to the selected project."
+          : "Your tree is no longer assigned to a project.",
+      });
+    } catch (error) {
+      console.error("Error assigning tree to project:", error);
+      toast({
+        title: "Error",
+        description: "Failed to move tree. Please try again.",
+        variant: "destructive",
+      });
     }
   },
 
