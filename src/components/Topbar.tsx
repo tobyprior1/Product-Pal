@@ -80,12 +80,12 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
   return (
     <>
       <div className="px-3 pt-3 pb-1">
-        <nav className="relative h-14 flex items-center justify-between px-3 rounded-2xl border border-border bg-background/80 backdrop-blur-md shadow-sm">
+        <nav className="relative h-14 flex items-center px-3 rounded-2xl border border-border bg-background/80 backdrop-blur-md shadow-sm">
           {/* Left: brand + view switcher + breadcrumb */}
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <Link
               to={currentTree ? backTo : "/"}
-              className="flex items-center gap-2 group shrink-0 min-w-0"
+              className="flex items-center gap-2 group min-w-0 overflow-hidden whitespace-nowrap"
               title={currentTree ? "Back to project" : "Home"}
             >
               {currentTree && (
@@ -97,9 +97,9 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
               <span className="font-semibold tracking-tight text-foreground">Product Pal</span>
               {currentTree && breadcrumbLabel && (
                 <>
-                  <span className="h-4 w-px bg-border mx-1" />
+                  <span className="h-4 w-px bg-border mx-1 shrink-0" />
                   <span
-                    className="text-sm text-muted-foreground truncate max-w-[140px] sm:max-w-[180px] md:max-w-[240px] hidden sm:block"
+                    className="text-sm text-muted-foreground truncate min-w-0 max-w-full max-w-[120px] sm:max-w-[160px] md:max-w-[200px] lg:max-w-[260px]"
                     title={breadcrumbLabel}
                   >
                     {breadcrumbLabel}
@@ -113,15 +113,16 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
             {isTreeView ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-muted-foreground hover:text-foreground h-8"
-                  >
-                    <ActiveIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{activeView.label}</span>
-                    <ChevronDown className="w-3 h-3 opacity-60" />
-                  </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-muted-foreground hover:text-foreground h-8"
+                  title={activeView.label}
+                >
+                  <ActiveIcon className="w-4 h-4" />
+                  <span className="hidden lg:inline">{activeView.label}</span>
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                   {views.map(({ to, label, icon: Icon }) => (
@@ -153,7 +154,7 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
 
           {/* Center: canvas action pill */}
           {isEditorView && (
-            <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-0.5 p-1 rounded-xl border border-border bg-muted/60">
+            <div className="flex-1 min-w-0 hidden md:flex items-center justify-center gap-0.5 p-1 rounded-xl border border-border bg-muted/60">
               <Button
                 onClick={undo}
                 disabled={!canUndo}
@@ -199,7 +200,7 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
           )}
 
           {/* Right: global actions */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-end gap-1 min-w-0 flex-1">
             {isEditorView && (
               <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl border border-border bg-muted/40">
                 <Button
