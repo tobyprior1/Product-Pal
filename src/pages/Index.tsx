@@ -361,16 +361,22 @@ const Index = () => {
                             Last updated: {new Date(tree.updatedAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectTree(tree.id);
-                          }}
-                          className="w-full"
-                          disabled={loading}
-                        >
-                          {pendingAction === `tree:${tree.id}` ? "Loading..." : "Open Outcome"}
-                        </Button>
+                        {(() => {
+                          const actionId = `tree:${tree.id}`;
+                          const { className, ...props } = actionProps(actionId);
+                          return (
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectTree(tree.id);
+                              }}
+                              {...props}
+                              className={cn("w-full", className)}
+                            >
+                              {isPending(actionId) ? "Loading..." : "Open Outcome"}
+                            </Button>
+                          );
+                        })()}
                       </Card>
                     ))}
                   </div>
