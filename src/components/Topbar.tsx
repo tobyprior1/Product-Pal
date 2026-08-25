@@ -82,27 +82,57 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
     <>
       <div className="px-3 pt-3 pb-1">
         <nav className="relative h-14 flex items-center justify-between px-3 rounded-2xl border border-border bg-background/80 backdrop-blur-md shadow-sm">
-          {/* Left: breadcrumb */}
-          <div className="flex items-center gap-3 min-w-0">
+          {/* Left: brand + view switcher + breadcrumb */}
+          <div className="flex items-center gap-2 min-w-0">
             <Link
               to={currentTree ? backTo : "/"}
               className="flex items-center gap-2 group shrink-0"
               title={currentTree ? "Back to project" : "Home"}
             >
-              {currentTree && (
-                <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-              )}
               <span className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-sm group-hover:opacity-90 transition-opacity">
                 P
               </span>
               <span className="font-semibold tracking-tight text-foreground">Product Pal</span>
+              {currentTree && (
+                <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              )}
             </Link>
+
+            <div className="h-4 w-px bg-border" />
+
+            {isTreeView ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-muted-foreground hover:text-foreground h-8"
+                  >
+                    <ActiveIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{activeView.label}</span>
+                    <ChevronDown className="w-3 h-3 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {views.map(({ to, label, icon: Icon }) => (
+                    <DropdownMenuItem key={to} asChild>
+                      <Link to={to} className="gap-2 cursor-pointer">
+                        <Icon className="w-4 h-4" />
+                        {label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <span className="hidden sm:inline text-sm text-muted-foreground">Tree View</span>
+            )}
 
             {currentTree && breadcrumbLabel && (
               <>
                 <div className="h-4 w-px bg-border" />
                 <span
-                  className="text-sm text-muted-foreground truncate max-w-[160px] sm:max-w-[200px] md:max-w-[260px] hidden sm:block"
+                  className="text-sm text-muted-foreground truncate max-w-[140px] sm:max-w-[180px] md:max-w-[240px] hidden sm:block"
                   title={breadcrumbLabel}
                 >
                   {breadcrumbLabel}
@@ -171,28 +201,6 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
 
           {/* Right: global actions */}
           <div className="flex items-center gap-1">
-            {isTreeView && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                    <ActiveIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{activeView.label}</span>
-                    <ChevronDown className="w-3 h-3 opacity-60" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {views.map(({ to, label, icon: Icon }) => (
-                    <DropdownMenuItem key={to} asChild>
-                      <Link to={to} className="gap-2 cursor-pointer">
-                        <Icon className="w-4 h-4" />
-                        {label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-
             {isEditorView && (
               <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl border border-border bg-muted/40">
                 <Button
