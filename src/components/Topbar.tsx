@@ -19,7 +19,6 @@ import {
   ChevronLeft,
   Share2,
   FileImage,
-  Home,
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
@@ -265,17 +264,6 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground"
-              title="Home"
-              asChild
-            >
-              <Link to="/">
-                <Home className="w-4 h-4" />
-              </Link>
-            </Button>
           </div>
         </nav>
       </div>
