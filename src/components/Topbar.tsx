@@ -18,7 +18,6 @@ import {
   ChevronDown,
   Share2,
   FileImage,
-  ArrowLeft,
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
