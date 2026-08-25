@@ -27,6 +27,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDataStore } from "@/lib/pm-supabase-store";
+import { useUIStore } from "@/lib/pm-ui-store";
+import { generateUUID, createNodeMetadata } from "@/lib/pm-utils";
+import type { OSTNode } from "@/lib/pm-types";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, MoreVertical, Pencil, Trash2, Plus, FolderOpen } from "lucide-react";
@@ -107,6 +110,18 @@ const Project = () => {
     setLoading(true);
     try {
       await createNewTree("New Outcome", id);
+
+      // Seed the tree with its root Outcome node and open it straight away
+      const outcomeId = generateUUID();
+      await useDataStore.getState().addNode({
+        id: outcomeId,
+        parentId: null,
+        type: "Outcome",
+        title: "New Outcome",
+        ...createNodeMetadata(),
+      } as OSTNode);
+      useUIStore.getState().setSelectedNodeId(outcomeId);
+
       navigate("/editor");
     } catch (error) {
       console.error("Error creating tree:", error);
@@ -114,6 +129,7 @@ const Project = () => {
       setLoading(false);
     }
   };
+
 
   const handleLoadSample = async () => {
     setLoading(true);
