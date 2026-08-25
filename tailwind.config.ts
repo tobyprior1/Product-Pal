@@ -47,8 +47,37 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        outcome: {
+          DEFAULT: "hsl(var(--outcome))",
+          surface: "hsl(var(--outcome-surface))",
+          "surface-strong": "hsl(var(--outcome-surface-strong))",
+          border: "hsl(var(--outcome-border))",
+          soft: "hsl(var(--outcome-soft))",
+        },
+        opportunity: {
+          DEFAULT: "hsl(var(--opportunity))",
+          surface: "hsl(var(--opportunity-surface))",
+          "surface-strong": "hsl(var(--opportunity-surface-strong))",
+          border: "hsl(var(--opportunity-border))",
+          soft: "hsl(var(--opportunity-soft))",
+        },
+        solution: {
+          DEFAULT: "hsl(var(--solution))",
+          surface: "hsl(var(--solution-surface))",
+          "surface-strong": "hsl(var(--solution-surface-strong))",
+          border: "hsl(var(--solution-border))",
+          soft: "hsl(var(--solution-soft))",
+        },
+        experiment: {
+          DEFAULT: "hsl(var(--experiment))",
+          surface: "hsl(var(--experiment-surface))",
+          "surface-strong": "hsl(var(--experiment-surface-strong))",
+          border: "hsl(var(--experiment-border))",
+          soft: "hsl(var(--experiment-soft))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
+
           foreground: "hsl(var(--sidebar-foreground))",
           primary: "hsl(var(--sidebar-primary))",
           "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
