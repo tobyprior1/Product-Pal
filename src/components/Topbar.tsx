@@ -154,7 +154,7 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
 
           {/* Center: canvas action pill */}
           {isEditorView && (
-            <div className="flex-1 min-w-0 hidden md:flex items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl border border-border bg-muted/60">
+            <div className="flex-1 min-w-0 hidden md:flex items-center justify-center gap-0.5 py-1 px-0 rounded-xl border border-border bg-muted/60">
               <Button
                 onClick={undo}
                 disabled={!canUndo}
