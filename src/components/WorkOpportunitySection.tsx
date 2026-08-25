@@ -120,6 +120,10 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
               </div>
             </div>
 
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-purple-600 mb-1">
+              {depth > 0 ? "Sub-opportunity" : "Opportunity"}
+            </div>
+
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span>
                 {stats.solutionsCount} solution{stats.solutionsCount !== 1 ? "s" : ""}
