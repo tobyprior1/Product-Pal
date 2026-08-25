@@ -141,7 +141,7 @@ export function NewNodeDialog({ open, onOpenChange, preselectedParentId, presele
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Outcome">Outcome</SelectItem>
+                {!hasRootOutcome && <SelectItem value="Outcome">Outcome</SelectItem>}
                 <SelectItem value="Opportunity">Opportunity</SelectItem>
                 <SelectItem value="Solution">Solution</SelectItem>
                 <SelectItem value="Experiment">Experiment</SelectItem>
