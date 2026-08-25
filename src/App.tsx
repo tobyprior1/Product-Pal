@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDataStore } from "@/lib/pm-supabase-store";
 import Index from "./pages/Index";
+import Project from "./pages/Project";
 import Editor from "./pages/Editor";
 import Roadmap from "./pages/Roadmap";
 import Work from "./pages/Work";
