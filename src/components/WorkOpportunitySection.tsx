@@ -137,9 +137,23 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
       </div>
 
       {/* Expanded Content */}
-      {isExpanded && (solutions.length > 0 || directExperiments.length > 0) && (
+      {isExpanded && (solutions.length > 0 || directExperiments.length > 0 || subOpportunities.length > 0) && (
         <div className="border-t border-border bg-muted/30">
           <div className="p-4 space-y-2">
+            {/* Sub-opportunities */}
+            {subOpportunities.length > 0 && (
+              <div className="space-y-2 mb-2">
+                {subOpportunities.map((sub) => (
+                  <WorkOpportunitySection
+                    key={sub.id}
+                    opportunity={sub as any}
+                    onItemClick={onItemClick}
+                    depth={depth + 1}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* Solutions */}
             {solutions.map((solution) => {
               const solutionExperiments = getNodeChildren(solution.id).filter(
