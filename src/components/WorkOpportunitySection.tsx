@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { OSTNode, OpportunityNode } from "@/lib/pm-types"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, ChevronRight, Lightbulb } from "lucide-react"
+import { ChevronDown, ChevronRight, Lightbulb, Zap, FlaskConical } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { calculatePriorityScore, getPriorityBadgeColor } from "@/lib/pm-utils"
