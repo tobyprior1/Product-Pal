@@ -86,15 +86,26 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
           <div className="flex items-center gap-2 min-w-0">
             <Link
               to={currentTree ? backTo : "/"}
-              className="flex items-center gap-2 group shrink-0"
+              className="flex items-center gap-2 group shrink-0 min-w-0"
               title={currentTree ? "Back to project" : "Home"}
             >
+              {currentTree && (
+                <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+              )}
               <span className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-sm group-hover:opacity-90 transition-opacity">
                 P
               </span>
               <span className="font-semibold tracking-tight text-foreground">Product Pal</span>
-              {currentTree && (
-                <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              {currentTree && breadcrumbLabel && (
+                <>
+                  <span className="h-4 w-px bg-border mx-1" />
+                  <span
+                    className="text-sm text-muted-foreground truncate max-w-[140px] sm:max-w-[180px] md:max-w-[240px] hidden sm:block"
+                    title={breadcrumbLabel}
+                  >
+                    {breadcrumbLabel}
+                  </span>
+                </>
               )}
             </Link>
 
@@ -128,17 +139,6 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
               <span className="hidden sm:inline text-sm text-muted-foreground">Tree View</span>
             )}
 
-            {currentTree && breadcrumbLabel && (
-              <>
-                <div className="h-4 w-px bg-border" />
-                <span
-                  className="text-sm text-muted-foreground truncate max-w-[140px] sm:max-w-[180px] md:max-w-[240px] hidden sm:block"
-                  title={breadcrumbLabel}
-                >
-                  {breadcrumbLabel}
-                </span>
-              </>
-            )}
 
             {focusedNodeId && (
               <button
