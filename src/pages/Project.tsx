@@ -325,7 +325,7 @@ const Project = () => {
             <p className="font-medium text-foreground">Quick Tips:</p>
             <ul className="space-y-2 list-disc list-inside">
               <li>
-                Start with your desired <strong className="text-foreground">Outcome</strong>
+                Name your <strong className="text-foreground">Outcome</strong> — the goal you want to move
               </li>
               <li>
                 Add <strong className="text-foreground">Opportunities</strong> that ladder into it
@@ -343,7 +343,7 @@ const Project = () => {
                   disabled={loading}
                   className="h-auto p-0 text-primary"
                 >
-                  Load a sample tree to explore
+                  Load a sample outcome to explore
                 </Button>
               </li>
             </ul>

@@ -31,7 +31,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Trash2, TreePine } from "lucide-react";
+import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Target, Trash2 } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -301,7 +301,7 @@ const Index = () => {
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <div className="bg-muted p-2 rounded-lg">
-                                <TreePine className="h-5 w-5 text-muted-foreground" />
+                                <Target className="h-5 w-5 text-muted-foreground" />
                               </div>
                               <h3 className="text-lg font-semibold text-foreground truncate flex-1">
                                 {tree.name}
