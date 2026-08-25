@@ -199,7 +199,7 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
           )}
 
           {/* Right: global actions */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-end gap-1 min-w-0 flex-1">
             {isEditorView && (
               <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl border border-border bg-muted/40">
                 <Button
