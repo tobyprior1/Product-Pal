@@ -79,33 +79,8 @@ const Index = () => {
     [trees]
   );
 
-  const handleNewTree = async () => {
-    if (!userId) {
-      navigate("/auth");
-      return;
-    }
-    setLoading(true);
-    try {
-      await createNewTree("My Opportunity Tree");
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error creating tree:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleLoadSample = async () => {
-    setLoading(true);
-    try {
-      await useDataStore.getState().loadSampleTree();
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error loading sample tree:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleSelectTree = async (treeId: string) => {
     setLoading(true);
@@ -403,44 +378,20 @@ const Index = () => {
             </div>
           )}
 
-          <Card className="p-6 space-y-4 border-dashed hover:border-primary/50 transition-colors">
-            <div className="space-y-2 text-center">
-              <h2 className="text-xl font-semibold text-foreground">{user ? "Create New Tree" : "Get Started"}</h2>
-              <p className="text-sm text-muted-foreground">
-                {user
-                  ? "Begin with a blank canvas and create your tree from scratch."
-                  : "Sign in to create and save your opportunity solution trees."}
-              </p>
-            </div>
-            <Button onClick={handleNewTree} className="w-full" disabled={loading} size="lg">
-              {loading ? "Creating..." : user ? "Create New Tree" : "Sign In to Start"}
-            </Button>
-          </Card>
+          {!user && (
+            <Card className="p-6 space-y-4 border-dashed hover:border-primary/50 transition-colors">
+              <div className="space-y-2 text-center">
+                <h2 className="text-xl font-semibold text-foreground">Get Started</h2>
+                <p className="text-sm text-muted-foreground">
+                  Sign in to create projects and plan your product strategy.
+                </p>
+              </div>
+              <Button onClick={() => navigate("/auth")} className="w-full" size="lg">
+                Sign In to Start
+              </Button>
+            </Card>
+          )}
 
-          <div className="pt-8 border-t border-border">
-            <div className="space-y-3 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">Quick Tips:</p>
-              <ul className="space-y-2 list-disc list-inside">
-                <li>
-                  Start with your desired <strong className="text-foreground">Outcome</strong>
-                </li>
-                <li>
-                  Add <strong className="text-foreground">Opportunities</strong> that ladder into it
-                </li>
-                <li>
-                  Create <strong className="text-foreground">Solutions</strong> for each opportunity
-                </li>
-                <li>
-                  Design <strong className="text-foreground">Experiments</strong> to validate solutions
-                </li>
-                <li className="pt-2">
-                  <Button variant="link" onClick={handleLoadSample} disabled={loading} className="h-auto p-0 text-primary">
-                    Load a sample tree to explore
-                  </Button>
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
 

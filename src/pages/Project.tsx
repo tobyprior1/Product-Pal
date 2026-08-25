@@ -115,6 +115,19 @@ const Project = () => {
     }
   };
 
+  const handleLoadSample = async () => {
+    setLoading(true);
+    try {
+      await useDataStore.getState().loadSampleTree();
+      navigate("/editor");
+    } catch (error) {
+      console.error("Error loading sample tree:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleDeleteClick = (treeId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setTreeToDelete(treeId);
@@ -306,7 +319,38 @@ const Project = () => {
             </div>
           )}
         </div>
+
+        <div className="pt-8 border-t border-border">
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">Quick Tips:</p>
+            <ul className="space-y-2 list-disc list-inside">
+              <li>
+                Start with your desired <strong className="text-foreground">Outcome</strong>
+              </li>
+              <li>
+                Add <strong className="text-foreground">Opportunities</strong> that ladder into it
+              </li>
+              <li>
+                Create <strong className="text-foreground">Solutions</strong> for each opportunity
+              </li>
+              <li>
+                Design <strong className="text-foreground">Experiments</strong> to validate solutions
+              </li>
+              <li className="pt-2">
+                <Button
+                  variant="link"
+                  onClick={handleLoadSample}
+                  disabled={loading}
+                  className="h-auto p-0 text-primary"
+                >
+                  Load a sample tree to explore
+                </Button>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
+
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
