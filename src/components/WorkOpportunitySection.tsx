@@ -83,7 +83,7 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
   const priorityScore = calculatePriorityScore(opportunity)
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden bg-card">
+    <div className="border border-border border-l-4 border-l-purple-500 rounded-lg overflow-hidden bg-card">
       {/* Opportunity Header */}
       <div className="flex">
         <button onClick={() => setIsExpanded(!isExpanded)} className="p-4 hover:bg-accent/50 transition-colors">
@@ -101,6 +101,7 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
           <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
             <Lightbulb className="w-5 h-5 text-purple-600" />
           </div>
+
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2 mb-2">
