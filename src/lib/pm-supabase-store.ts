@@ -6,6 +6,14 @@ import { useUIStore } from "./pm-ui-store";
 import { toast } from "@/hooks/use-toast";
 import { getSeedData, getSeedInterviews } from "./pm-seed-data";
 
+/** The demo tree is a read-only example and is never written to the database. */
+const notifySampleReadOnly = () => {
+  toast({
+    title: "Sample tree is read-only",
+    description: "Create a tree in a project to make and save your own changes.",
+  });
+};
+
 interface DataStore {
   currentTree: Tree | null;
   trees: Tree[];
