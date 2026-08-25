@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button"
 import {
   Network,
-  Download,
   FileText,
   History,
   X,
@@ -13,13 +12,22 @@ import {
   EyeOff,
   List,
   Calendar,
-  Home,
   Brush,
   Presentation,
   Plus,
+  ChevronDown,
+  Share2,
+  FileImage,
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { useUIStore } from "@/lib/pm-ui-store"
 import { useState } from "react"
@@ -33,10 +41,9 @@ interface TopbarProps {
 }
 
 export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarProps) {
-
   const location = useLocation()
   const [versionsOpen, setVersionsOpen] = useState(false)
-  
+
   const focusedNodeId = useUIStore((state) => state.focusedNodeId)
   const setFocusedNodeId = useUIStore((state) => state.setFocusedNodeId)
   const isLocked = useUIStore((state) => state.isLocked)
@@ -48,180 +55,187 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
   const canUndo = useDataStore((state) => state.canUndo())
   const canRedo = useDataStore((state) => state.canRedo())
 
-  const handleExitFocus = () => {
-    setFocusedNodeId(null)
-  }
-
   const isEditorView = location.pathname.includes("/editor")
+
+  const views = [
+    { to: "/editor", label: "Tree View", icon: Network, match: "/editor" },
+    { to: "/work", label: "Work View", icon: List, match: "/work" },
+    { to: "/roadmap", label: "Roadmap", icon: Calendar, match: "/roadmap" },
+    { to: "/interviews", label: "Interviews", icon: FileText, match: "/interviews" },
+  ]
+  const activeView = views.find((v) => location.pathname.includes(v.match)) ?? views[0]
+  const ActiveIcon = activeView.icon
 
   return (
     <>
-      <div className="h-14 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="font-semibold tracking-tight text-foreground hover:text-primary transition-colors">
-            Product Pal
-          </Link>
-          <DropdownMenu>
+      <div className="px-3 pt-3 pb-1">
+        <nav className="relative h-14 flex items-center justify-between px-3 rounded-2xl border border-border bg-background/80 backdrop-blur-md shadow-sm">
+          {/* Left: brand (home) + view switcher */}
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2 group" title="Home">
+              <span className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-sm group-hover:opacity-90 transition-opacity">
+                P
+              </span>
+              <span className="font-semibold tracking-tight text-foreground">Product Pal</span>
+            </Link>
 
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2">
-                {isEditorView ? (
-                  <>
-                    <Network className="w-4 h-4" />
-                    Tree View
-                  </>
-                ) : location.pathname.includes("/work") ? (
-                  <>
-                    <List className="w-4 h-4" />
-                    Work View
-                  </>
-                ) : location.pathname.includes("/roadmap") ? (
-                  <>
-                    <Calendar className="w-4 h-4" />
-                    Roadmap
-                  </>
-                ) : location.pathname.includes("/interviews") ? (
-                  <>
-                    <FileText className="w-4 h-4" />
-                    Interviews
-                  </>
-                ) : (
-                  <>
-                    <Network className="w-4 h-4" />
-                    Tree View
-                  </>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem asChild>
-                <Link to="/editor" className="gap-2 cursor-pointer">
-                  <Network className="w-4 h-4" />
-                  Tree View
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/work" className="gap-2 cursor-pointer">
-                  <List className="w-4 h-4" />
-                  Work View
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/roadmap" className="gap-2 cursor-pointer">
-                  <Calendar className="w-4 h-4" />
-                  Roadmap
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/interviews" className="gap-2 cursor-pointer">
-                  <FileText className="w-4 h-4" />
-                  Interviews
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <div className="h-4 w-px bg-border" />
 
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                  <ActiveIcon className="w-4 h-4" />
+                  {activeView.label}
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {views.map(({ to, label, icon: Icon }) => (
+                  <DropdownMenuItem key={to} asChild>
+                    <Link to={to} className="gap-2 cursor-pointer">
+                      <Icon className="w-4 h-4" />
+                      {label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {focusedNodeId && (
+              <button
+                onClick={() => setFocusedNodeId(null)}
+                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+                title="Exit focus mode"
+              >
+                Focus mode
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
+          {/* Center: canvas action pill */}
           {isEditorView && (
-            <div className="flex items-center gap-1">
-              <Button onClick={undo} size="sm" variant="ghost" disabled={!canUndo} title="Undo (⌘Z)">
+            <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-0.5 p-1 rounded-xl border border-border bg-muted/60">
+              <Button
+                onClick={undo}
+                disabled={!canUndo}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-background"
+                title="Undo (⌘Z)"
+              >
                 <Undo className="w-4 h-4" />
               </Button>
-              <Button onClick={redo} size="sm" variant="ghost" disabled={!canRedo} title="Redo (⌘⇧Z)">
+              <Button
+                onClick={redo}
+                disabled={!canRedo}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-background"
+                title="Redo (⌘⇧Z)"
+              >
                 <Redo className="w-4 h-4" />
               </Button>
-              <Button
-                onClick={toggleLock}
-                size="sm"
-                variant="ghost"
-                title={isLocked ? "Unlock canvas" : "Lock canvas"}
-                className={isLocked ? "text-amber-600" : ""}
-              >
-                {isLocked ? <Lock className="w-4 h-4" /> : <LockOpen className="w-4 h-4" />}
-              </Button>
-              <Button
-                onClick={toggleShowCompleted}
-                size="sm"
-                variant="ghost"
-                title={showCompletedExperiments ? "Hide completed experiments" : "Show completed experiments"}
-              >
-                {showCompletedExperiments ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-              </Button>
+
+              <div className="w-px h-4 bg-border mx-1.5" />
+
               {onNewNode && (
                 <Button
                   onClick={onNewNode}
-                  size="sm"
                   variant="ghost"
-                  title="Add new node (Ctrl+N)"
-                  className="ml-2"
+                  size="sm"
+                  className="h-8 gap-1.5 hover:bg-background"
+                  title="Add node (⌘N)"
                 >
                   <Plus className="w-4 h-4" />
+                  Node
+                </Button>
+              )}
+              {onTidy && (
+                <Button onClick={onTidy} variant="ghost" size="sm" className="h-8 gap-1.5 hover:bg-background">
+                  <Brush className="w-4 h-4" />
+                  Tidy
                 </Button>
               )}
             </div>
           )}
 
-          {focusedNodeId && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-md">
-              <span className="text-xs font-medium text-blue-600">Focus Mode Active</span>
-              <Button onClick={handleExitFocus} size="sm" variant="ghost" className="h-5 w-5 p-0 hover:bg-blue-500/20">
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-          )}
-        </div>
+          {/* Right: toggles + share */}
+          <div className="flex items-center gap-2">
+            {isEditorView && (
+              <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl border border-border bg-muted/40">
+                <Button
+                  onClick={toggleLock}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-background"
+                  title={isLocked ? "Unlock canvas" : "Lock canvas"}
+                >
+                  {isLocked ? <Lock className="w-4 h-4 text-primary" /> : <LockOpen className="w-4 h-4" />}
+                </Button>
+                <Button
+                  onClick={toggleShowCompleted}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-background"
+                  title={showCompletedExperiments ? "Hide completed experiments" : "Show completed experiments"}
+                >
+                  {showCompletedExperiments ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </Button>
+                <Button
+                  onClick={() => setVersionsOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-background"
+                  title="Version history"
+                >
+                  <History className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
 
-        <div className="flex items-center gap-2">
-          {onTidy && (
-            <Button onClick={onTidy} size="sm" variant="ghost">
-              <Brush className="w-4 h-4 mr-2" />
-              Tidy
-            </Button>
-          )}
-
-          {isEditorView && (
-            <Button asChild size="sm" variant="ghost">
-              <Link to="/present">
-                <Presentation className="w-4 h-4 mr-2" />
-                Present
-              </Link>
-            </Button>
-          )}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {onExportPNG && (
-                <DropdownMenuItem onClick={onExportPNG}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Export PNG (2×)
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="h-9 rounded-xl gap-2">
+                  <Share2 className="w-4 h-4" />
+                  Share
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link to="/present" className="gap-2 cursor-pointer">
+                    <Presentation className="w-4 h-4" />
+                    Present
+                  </Link>
                 </DropdownMenuItem>
-              )}
-              {onExportPDF && (
-                <DropdownMenuItem onClick={onExportPDF}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Export PDF (A3)
+                {(onExportPNG || onExportPDF) && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Export</DropdownMenuLabel>
+                    {onExportPNG && (
+                      <DropdownMenuItem onClick={onExportPNG} className="gap-2">
+                        <FileImage className="w-4 h-4" />
+                        PNG (2×)
+                      </DropdownMenuItem>
+                    )}
+                    {onExportPDF && (
+                      <DropdownMenuItem onClick={onExportPDF} className="gap-2">
+                        <FileText className="w-4 h-4" />
+                        PDF (A3)
+                      </DropdownMenuItem>
+                    )}
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setVersionsOpen(true)} className="gap-2">
+                  <History className="w-4 h-4" />
+                  Version history
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button onClick={() => setVersionsOpen(true)} size="sm" variant="ghost">
-            <History className="w-4 h-4 mr-2" />
-            Versions
-          </Button>
-
-          <Button asChild size="sm" variant="default" className="gap-2">
-            <Link to="/">
-              <Home className="w-4 h-4" />
-              Home
-            </Link>
-          </Button>
-        </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </nav>
       </div>
 
       <VersionsDialog open={versionsOpen} onOpenChange={setVersionsOpen} />
