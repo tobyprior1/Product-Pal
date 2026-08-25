@@ -104,8 +104,9 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
 
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-2 mb-2">
+            <div className="flex items-start gap-2 mb-1">
               <h3 className="font-semibold text-base leading-tight flex-1">{opportunity.title}</h3>
+
               <div className="flex items-center gap-2 shrink-0">
                 <div className={cn("w-2 h-2 rounded-full", health.color)} title={health.label} />
                 {priorityScore !== null && (
