@@ -710,13 +710,14 @@ export const useDataStore = create<DataStore>((set, get) => ({
       throw error;
     }
 
-    set({
+    set((state) => ({
+      trees: [newTree, ...state.trees.filter((tree) => tree.id !== newTree.id)],
       currentTree: newTree,
       nodes: [],
       snapshots: [],
       currentSnapshotIndex: -1,
       snapshotCounter: 0,
-    });
+    }));
 
     await get().createSnapshot("Empty tree");
 
