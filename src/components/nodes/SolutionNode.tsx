@@ -87,6 +87,7 @@ export const SolutionNode = memo(({ data }: NodeProps) => {
     <Handle type="source" position={Position.Bottom} className="!bg-primary" />
 
     <AddChildButton
+      childKind="experiment"
       onAddChild={handleAddChild}
       disabled={isLocked}
     />

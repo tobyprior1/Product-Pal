@@ -1,8 +1,12 @@
-import { Plus, Lightbulb, Zap } from "lucide-react"
+import { Plus, Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { HIERARCHY_STYLES, type HierarchyKind } from "@/lib/pm-hierarchy"
+import { cn } from "@/lib/utils"
 
 interface AddChildButtonProps {
+  /** The kind of child this node creates (Outcome -> opportunity, etc.). */
+  childKind: Extract<HierarchyKind, "opportunity" | "solution" | "experiment">
   onAddChild: () => void
   disabled?: boolean
   showOpportunityMenu?: boolean
@@ -11,7 +15,11 @@ interface AddChildButtonProps {
   canAddSolution?: boolean
 }
 
+const wrapperClasses =
+  "absolute -bottom-5 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200"
+
 export function AddChildButton({
+  childKind,
   onAddChild,
   disabled,
   showOpportunityMenu = false,
@@ -19,25 +27,30 @@ export function AddChildButton({
   canAddSubOpportunity = true,
   canAddSolution = true,
 }: AddChildButtonProps) {
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onAddChild()
-  }
+  const style = HIERARCHY_STYLES[childKind]
+  const ChildIcon = style.icon
+
+  const pillClasses = cn(
+    "h-8 gap-1.5 rounded-full border bg-card px-3 text-xs font-medium shadow-md hover:shadow-lg transition-all duration-200",
+    style.text,
+    style.surfaceHover,
+  )
 
   if (showOpportunityMenu && onAddSubOpportunity) {
     return (
-      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      <div className={wrapperClasses}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              size="icon"
-              variant="default"
-              className="h-8 w-8 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 bg-primary"
+              variant="outline"
+              className={pillClasses}
               disabled={disabled}
-              title="Add child node"
+              title={`Add ${style.label}`}
               onClick={(e) => e.stopPropagation()}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
+              <ChildIcon className="h-3.5 w-3.5" />
+              {style.label}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" className="w-56">
@@ -48,7 +61,7 @@ export function AddChildButton({
               }}
               disabled={!canAddSolution}
             >
-              <Zap className="mr-2 h-4 w-4" />
+              <ChildIcon className="mr-2 h-4 w-4" />
               <span>Add Solution</span>
               {!canAddSolution && <span className="ml-auto text-xs text-muted-foreground">(has sub-opps)</span>}
             </DropdownMenuItem>
@@ -70,16 +83,20 @@ export function AddChildButton({
   }
 
   return (
-    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+    <div className={wrapperClasses}>
       <Button
-        size="icon"
-        variant="default"
-        className="h-8 w-8 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 bg-primary"
-        onClick={handleClick}
+        variant="outline"
+        className={pillClasses}
+        onClick={(e) => {
+          e.stopPropagation()
+          onAddChild()
+        }}
         disabled={disabled}
-        title="Add child node"
+        title={`Add ${style.label}`}
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="h-3.5 w-3.5" />
+        <ChildIcon className="h-3.5 w-3.5" />
+        {style.label}
       </Button>
     </div>
   )

@@ -452,14 +452,6 @@ function FlowEditorInner() {
     setFocusedNodeId(null)
   }, [setSelectedNodeId, setFocusedNodeId])
 
-  const handleAddNode = useCallback(() => {
-    const event = new KeyboardEvent('keydown', {
-      key: 'n',
-      ctrlKey: true,
-      bubbles: true
-    })
-    document.dispatchEvent(event)
-  }, [])
 
   return (
     <div ref={flowRef} className="w-full h-full bg-gray-50 relative">
@@ -491,30 +483,6 @@ function FlowEditorInner() {
         <Controls className="bg-card border-border" showInteractive={false} />
       </ReactFlow>
 
-      {/* Floating Add Node Button */}
-      <button
-        onClick={handleAddNode}
-        className="absolute bottom-6 right-6 z-10 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group"
-        style={{
-          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3), 0 0 0 4px rgba(37, 99, 235, 0.1)'
-        }}
-        title="Add new node (Ctrl+N)"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
     </div>
   )
 }
