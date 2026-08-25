@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { TextAreaField } from "./DraftFields"
 import type { OpportunityNode } from "@/lib/pm-types"
 
@@ -36,42 +37,41 @@ export function OpportunityFields({ node, onUpdate }: OpportunityFieldsProps) {
           </SelectContent>
         </Select>
       </div>
-
-      <div className="space-y-2">
-        <Label>Reach: {node.reach || 0}/10</Label>
-        <Slider
-          value={[node.reach || 0]}
-          onValueChange={([value]) => onUpdate({ reach: value })}
-          min={0}
-          max={10}
-          step={1}
-        />
-        <p className="text-xs text-muted-foreground">How many customers are impacted?</p>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Confidence: {node.confidence || 0}/10</Label>
-        <Slider
-          value={[node.confidence || 0]}
-          onValueChange={([value]) => onUpdate({ confidence: value })}
-          min={0}
-          max={10}
-          step={1}
-        />
-        <p className="text-xs text-muted-foreground">How confident are we it's a problem?</p>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Impact: {node.impact || 0}/10</Label>
-        <Slider
-          value={[node.impact || 0]}
-          onValueChange={([value]) => onUpdate({ impact: value })}
-          min={0}
-          max={10}
-          step={1}
-        />
-        <p className="text-xs text-muted-foreground">How impactful is solving it?</p>
-      </div>
     </>
+  )
+}
+
+const scores = [
+  { key: "reach", label: "Reach", hint: "How many customers are impacted?" },
+  { key: "confidence", label: "Confidence", hint: "How confident are we it's a problem?" },
+  { key: "impact", label: "Impact", hint: "How impactful is solving it?" },
+] as const
+
+/** Compact Reach / Confidence / Impact scoring block. */
+export function OpportunityPrioritisation({ node, onUpdate }: OpportunityFieldsProps) {
+  return (
+    <TooltipProvider delayDuration={200}>
+      <div className="rounded-md border border-border p-3 space-y-3">
+        {scores.map(({ key, label, hint }) => (
+          <div key={key} className="flex items-center gap-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="w-20 shrink-0 cursor-help text-xs font-medium text-muted-foreground">{label}</span>
+              </TooltipTrigger>
+              <TooltipContent side="left">{hint}</TooltipContent>
+            </Tooltip>
+            <Slider
+              className="flex-1"
+              value={[node[key] || 0]}
+              onValueChange={([value]) => onUpdate({ [key]: value } as Partial<OpportunityNode>)}
+              min={0}
+              max={10}
+              step={1}
+            />
+            <span className="w-8 shrink-0 text-right text-xs tabular-nums text-foreground">{node[key] || 0}</span>
+          </div>
+        ))}
+      </div>
+    </TooltipProvider>
   )
 }
