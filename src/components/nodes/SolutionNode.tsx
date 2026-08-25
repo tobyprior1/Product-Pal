@@ -31,6 +31,8 @@ export const SolutionNode = memo(({ data }: NodeProps) => {
         return "bg-purple-100 border-purple-300 text-purple-900"
       case "Later":
         return "bg-gray-100 border-gray-300 text-gray-900"
+      case "Planned":
+        return "bg-violet-100 border-violet-300 text-violet-900"
       case "Done":
         return "bg-green-100 border-green-300 text-green-900"
       case "Backlog":

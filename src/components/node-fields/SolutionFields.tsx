@@ -31,6 +31,7 @@ export function SolutionFields({ node, onUpdate }: SolutionFieldsProps) {
             <SelectItem value="Now">Now</SelectItem>
             <SelectItem value="Next">Next</SelectItem>
             <SelectItem value="Later">Later</SelectItem>
+            <SelectItem value="Planned">Planned</SelectItem>
             <SelectItem value="Done">Done</SelectItem>
             <SelectItem value="Backlog">Backlog</SelectItem>
           </SelectContent>
