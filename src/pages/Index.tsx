@@ -32,6 +32,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Target, Trash2 } from "lucide-react";
+import { usePendingAction } from "@/hooks/usePendingAction";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -82,17 +84,15 @@ const Index = () => {
 
 
 
-  const handleSelectTree = async (treeId: string) => {
-    setPendingAction(`tree:${treeId}`);
-    try {
-      await selectTree(treeId);
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error selecting tree:", error);
-    } finally {
-      setPendingAction(null);
-    }
-  };
+  const handleSelectTree = (treeId: string) =>
+    run(`tree:${treeId}`, async () => {
+      try {
+        await selectTree(treeId);
+        navigate("/editor");
+      } catch (error) {
+        console.error("Error selecting tree:", error);
+      }
+    });
 
   const handleDeleteTreeClick = (treeId: string, e: React.MouseEvent) => {
     e.stopPropagation();
