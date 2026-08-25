@@ -80,9 +80,9 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
   return (
     <>
       <div className="px-3 pt-3 pb-1">
-        <nav className="relative h-14 flex items-center justify-between px-3 rounded-2xl border border-border bg-background/80 backdrop-blur-md shadow-sm">
+        <nav className="relative h-14 flex items-center px-3 rounded-2xl border border-border bg-background/80 backdrop-blur-md shadow-sm">
           {/* Left: brand + view switcher + breadcrumb */}
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <Link
               to={currentTree ? backTo : "/"}
               className="flex items-center gap-2 group shrink-0 min-w-0"
