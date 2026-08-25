@@ -296,6 +296,7 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                             if (solution.status === "Now") return "blue"
                             if (solution.status === "Next") return "teal"
                             if (solution.status === "Later") return "amber"
+                            if (solution.status === "Planned") return "purple"
                             if (solution.status === "Done") return "slate"
                             return "zinc"
                           }
