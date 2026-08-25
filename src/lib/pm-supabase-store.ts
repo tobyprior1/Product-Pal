@@ -318,17 +318,30 @@ export const useDataStore = create<DataStore>((set, get) => ({
         ownerId: t.user_id,
       }));
 
+      // Keep the currently open tree (and its loaded nodes) intact so that
+      // background auth refreshes never wipe the editor. Only re-point the
+      // currentTree reference at the freshly fetched row.
+      const openTree = get().currentTree;
+      const refreshedCurrentTree = openTree
+        ? trees.find((t) => t.id === openTree.id) ?? null
+        : null;
+
       set({
         projects,
         trees,
-        currentTree: null,
-        nodes: [],
-        snapshots: [],
-        currentSnapshotIndex: -1,
-        snapshotCounter: 0,
-        interviews: [],
+        currentTree: refreshedCurrentTree,
+        ...(openTree && !refreshedCurrentTree
+          ? {
+              nodes: [],
+              snapshots: [],
+              currentSnapshotIndex: -1,
+              snapshotCounter: 0,
+              interviews: [],
+            }
+          : {}),
         isLoading: false,
       });
+
     } catch (error) {
       console.error("Error loading user data:", error);
       set({ isLoading: false });
