@@ -113,6 +113,7 @@ function ostNodeToDbNode(node: OSTNode, treeId: string) {
 export const useDataStore = create<DataStore>((set, get) => ({
   currentTree: null,
   trees: [],
+  projects: [],
   nodes: [],
   snapshots: [],
   currentSnapshotIndex: -1,
