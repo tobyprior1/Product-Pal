@@ -183,17 +183,15 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
                   onClick={onNewNode}
                   variant="ghost"
                   size="sm"
-                  className="h-8 gap-1.5 hover:bg-background"
+                  className="h-8 w-8 p-0 hover:bg-background"
                   title="Add node (⌘N)"
                 >
                   <Plus className="w-4 h-4" />
-                  Node
                 </Button>
               )}
               {onTidy && (
-                <Button onClick={onTidy} variant="ghost" size="sm" className="h-8 gap-1.5 hover:bg-background">
+                <Button onClick={onTidy} variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-background" title="Tidy">
                   <Brush className="w-4 h-4" />
-                  Tidy
                 </Button>
               )}
             </div>
