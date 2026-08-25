@@ -226,10 +226,8 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" className="h-9 rounded-xl gap-2">
+                <Button size="sm" className="h-8 w-8 p-0 rounded-lg" title="Share">
                   <Share2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Share</span>
-                  <ChevronDown className="w-3 h-3 opacity-60" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
