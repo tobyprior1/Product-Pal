@@ -235,9 +235,9 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
       )}
 
       {/* Empty state */}
-      {isExpanded && solutions.length === 0 && directExperiments.length === 0 && (
+      {isExpanded && solutions.length === 0 && directExperiments.length === 0 && subOpportunities.length === 0 && (
         <div className="border-t border-border p-4 text-center text-sm text-muted-foreground">
-          No active solutions or experiments
+          No active sub-opportunities, solutions or experiments
         </div>
       )}
     </div>
