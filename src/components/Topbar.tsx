@@ -113,15 +113,16 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
             {isTreeView ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-muted-foreground hover:text-foreground h-8"
-                  >
-                    <ActiveIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{activeView.label}</span>
-                    <ChevronDown className="w-3 h-3 opacity-60" />
-                  </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-muted-foreground hover:text-foreground h-8"
+                  title={activeView.label}
+                >
+                  <ActiveIcon className="w-4 h-4" />
+                  <span className="hidden lg:inline">{activeView.label}</span>
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                   {views.map(({ to, label, icon: Icon }) => (
