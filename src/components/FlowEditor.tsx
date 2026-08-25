@@ -452,14 +452,6 @@ function FlowEditorInner() {
     setFocusedNodeId(null)
   }, [setSelectedNodeId, setFocusedNodeId])
 
-  const handleAddNode = useCallback(() => {
-    const event = new KeyboardEvent('keydown', {
-      key: 'n',
-      ctrlKey: true,
-      bubbles: true
-    })
-    document.dispatchEvent(event)
-  }, [])
 
   return (
     <div ref={flowRef} className="w-full h-full bg-gray-50 relative">
