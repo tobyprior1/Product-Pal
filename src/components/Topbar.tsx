@@ -154,46 +154,48 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
 
           {/* Center: canvas action pill */}
           {isEditorView && (
-            <div className="flex-1 min-w-0 hidden md:flex items-center justify-center gap-0.5 py-1 px-0 rounded-xl border border-border bg-muted/60">
-              <Button
-                onClick={undo}
-                disabled={!canUndo}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-background"
-                title="Undo (⌘Z)"
-              >
-                <Undo className="w-4 h-4" />
-              </Button>
-              <Button
-                onClick={redo}
-                disabled={!canRedo}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-background"
-                title="Redo (⌘⇧Z)"
-              >
-                <Redo className="w-4 h-4" />
-              </Button>
-
-              <div className="w-px h-4 bg-border mx-1.5" />
-
-              {onNewNode && (
+            <div className="flex-1 min-w-0 hidden md:flex items-center justify-center">
+              <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/60">
                 <Button
-                  onClick={onNewNode}
+                  onClick={undo}
+                  disabled={!canUndo}
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-background"
-                  title="Add node (⌘N)"
+                  className="h-7 w-7 p-0 hover:bg-background"
+                  title="Undo (⌘Z)"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Undo className="w-4 h-4" />
                 </Button>
-              )}
-              {onTidy && (
-                <Button onClick={onTidy} variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-background" title="Tidy">
-                  <Brush className="w-4 h-4" />
+                <Button
+                  onClick={redo}
+                  disabled={!canRedo}
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 hover:bg-background"
+                  title="Redo (⌘⇧Z)"
+                >
+                  <Redo className="w-4 h-4" />
                 </Button>
-              )}
+
+                <div className="w-px h-4 bg-border mx-1" />
+
+                {onNewNode && (
+                  <Button
+                    onClick={onNewNode}
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 hover:bg-background"
+                    title="Add node (⌘N)"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                )}
+                {onTidy && (
+                  <Button onClick={onTidy} variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-background" title="Tidy">
+                    <Brush className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
