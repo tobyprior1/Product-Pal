@@ -139,4 +139,6 @@ export const createInterviewsSlice: DataSlice<InterviewsSlice> = (set, get) => (
       },
     }));
   },
+
+  getInterviewOpportunities: (interviewId) => get().interviewOpportunities[interviewId] || [],
 });
