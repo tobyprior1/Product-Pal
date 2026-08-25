@@ -16,6 +16,7 @@ export function getStatusColor(type: string, status?: string): string {
     Now: "bg-purple-100 dark:bg-purple-900/20",
     Next: "bg-blue-100 dark:bg-blue-900/20",
     Later: "bg-gray-100 dark:bg-gray-900/20",
+    Planned: "bg-violet-100 dark:bg-violet-900/20",
     Backlog: "bg-orange-100 dark:bg-orange-900/20",
     Done: "bg-green-100 dark:bg-green-900/20",
     planned: "bg-yellow-100 dark:bg-yellow-900/20",
