@@ -642,7 +642,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
     state.setNodes(filteredNodes);
   },
 
-  createNewTree: async (name = "New Tree") => {
+  createNewTree: async (name = "New Tree", projectId: string | null = null) => {
     useUIStore.getState().resetTreeViewState();
     const userId = get().userId;
     if (!userId) throw new Error("User not authenticated");
@@ -650,6 +650,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
     const newTree: Tree = {
       id: generateUUID(),
       name,
+      projectId,
       createdAt: createTimestamp(),
       updatedAt: createTimestamp(),
       ownerId: userId,
@@ -659,6 +660,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
       id: newTree.id,
       user_id: userId,
       name: newTree.name,
+      project_id: newTree.projectId,
       created_at: newTree.createdAt,
       updated_at: newTree.updatedAt,
     });
