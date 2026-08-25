@@ -9,15 +9,20 @@ import { calculatePriorityScore, getPriorityBadgeColor } from "@/lib/pm-utils"
 interface WorkOpportunitySectionProps {
   opportunity: OpportunityNode
   onItemClick: (nodeId: string) => void
+  depth?: number
 }
 
-export function WorkOpportunitySection({ opportunity, onItemClick }: WorkOpportunitySectionProps) {
+export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: WorkOpportunitySectionProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const getNodeChildren = useDataStore((state) => state.getNodeChildren)
   const getOpportunityStats = useDataStore((state) => state.getOpportunityStats)
 
   const children = getNodeChildren(opportunity.id)
+  const subOpportunities = children.filter(
+    (n) => n.type === "Opportunity" && (n as any).status !== "invalidated",
+  )
   const allSolutions = children.filter((n) => n.type === "Solution" && n.status !== "Done")
+
 
   const timeframePriority: Record<string, number> = {
     Now: 1,
