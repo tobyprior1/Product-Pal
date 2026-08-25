@@ -23,7 +23,8 @@ export function WorkOpportunitySection({ opportunity, onItemClick }: WorkOpportu
     Now: 1,
     Next: 2,
     Later: 3,
-    Backlog: 4,
+    Planned: 4,
+    Backlog: 5,
   }
 
   const solutions = allSolutions.sort((a, b) => {
