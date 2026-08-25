@@ -117,7 +117,33 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Tree hierarchy: outcome > opportunity > solution > experiment */
+    --outcome: 269 97% 82%;
+    --outcome-surface: 274 60% 14%;
+    --outcome-surface-strong: 274 60% 19%;
+    --outcome-border: 271 81% 56%;
+    --outcome-soft: 274 60% 22%;
+
+    --opportunity: 48 96% 76%;
+    --opportunity-surface: 35 60% 12%;
+    --opportunity-surface-strong: 35 60% 17%;
+    --opportunity-border: 38 92% 50%;
+    --opportunity-soft: 35 60% 20%;
+
+    --solution: 213 97% 80%;
+    --solution-surface: 222 60% 14%;
+    --solution-surface-strong: 222 60% 19%;
+    --solution-border: 217 91% 60%;
+    --solution-soft: 222 60% 22%;
+
+    --experiment: 168 84% 74%;
+    --experiment-surface: 178 60% 10%;
+    --experiment-surface-strong: 178 60% 15%;
+    --experiment-border: 173 80% 40%;
+    --experiment-soft: 178 60% 18%;
   }
+
 }
 
 @layer base {
