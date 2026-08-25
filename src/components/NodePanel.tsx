@@ -149,7 +149,21 @@ export function NodePanel() {
         {selectedNode.type === "Experiment" && (
           <ExperimentFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
         )}
+
+        {childKind && (
+          <AddChildPanelButton
+            childKind={childKind}
+            onAddChild={() => dispatchAddChild()}
+            disabled={isLocked}
+            onAddSubOpportunity={
+              selectedNode.type === "Opportunity" ? () => dispatchAddChild("Opportunity") : undefined
+            }
+            canAddSubOpportunity={selectedNode.type === "Opportunity" ? canAddSubOpportunity : true}
+            canAddSolution={selectedNode.type === "Opportunity" ? canAddSolution : true}
+          />
+        )}
       </div>
+
     </div>
   )
 }
