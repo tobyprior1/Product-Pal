@@ -9,6 +9,7 @@ import { getSeedData, getSeedInterviews } from "./pm-seed-data";
 interface DataStore {
   currentTree: Tree | null;
   trees: Tree[];
+  projects: Project[];
   nodes: OSTNode[];
   snapshots: TreeSnapshot[];
   currentSnapshotIndex: number;
@@ -23,13 +24,14 @@ interface DataStore {
   selectTree: (treeId: string) => Promise<void>;
   deleteTree: (treeId: string) => Promise<void>;
   renameTree: (treeId: string, newName: string) => Promise<void>;
+  assignTreeToProject: (treeId: string, projectId: string | null) => Promise<void>;
   setCurrentTree: (tree: Tree) => Promise<void>;
   updateTreeMetadata: () => Promise<void>;
   setNodes: (nodes: OSTNode[]) => void;
   addNode: (node: OSTNode) => Promise<void>;
   updateNode: (id: string, updates: Partial<OSTNode>, userId?: string) => Promise<void>;
   deleteNode: (id: string) => Promise<void>;
-  createNewTree: (name?: string) => Promise<string>;
+  createNewTree: (name?: string, projectId?: string | null) => Promise<string>;
   loadSampleTree: () => Promise<void>;
   createSnapshot: (label?: string) => Promise<void>;
   restoreSnapshot: (snapshotId: string) => void;
@@ -63,6 +65,10 @@ interface DataStore {
   updateInterviewOpportunity: (interviewId: string, opportunityId: string, updates: any) => Promise<void>;
   deleteInterviewOpportunity: (interviewId: string, opportunityId: string) => Promise<void>;
   getInterviewOpportunities: (interviewId: string) => any[];
+  loadProjects: () => Promise<void>;
+  createProject: (name: string, description?: string) => Promise<string>;
+  updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
 }
 
 const MAX_SNAPSHOTS = 10;
