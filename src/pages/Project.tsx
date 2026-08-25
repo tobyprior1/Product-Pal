@@ -30,6 +30,7 @@ import { useDataStore } from "@/lib/pm-supabase-store";
 import { useUIStore } from "@/lib/pm-ui-store";
 import { generateUUID, createNodeMetadata } from "@/lib/pm-utils";
 import type { OSTNode } from "@/lib/pm-types";
+import { toast } from "@/hooks/use-toast";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, MoreVertical, Pencil, Trash2, Plus, FolderOpen } from "lucide-react";
@@ -113,18 +114,26 @@ const Project = () => {
 
       // Seed the tree with its root Outcome node and open it straight away
       const outcomeId = generateUUID();
-      await useDataStore.getState().addNode({
+      const outcomeSaved = await useDataStore.getState().addNode({
         id: outcomeId,
         parentId: null,
         type: "Outcome",
         title: "New Outcome",
         ...createNodeMetadata(),
       } as OSTNode);
+      if (!outcomeSaved) {
+        throw new Error("The root Outcome node could not be saved");
+      }
       useUIStore.getState().setSelectedNodeId(outcomeId);
 
       navigate("/editor");
     } catch (error) {
       console.error("Error creating tree:", error);
+      toast({
+        title: "Outcome not created",
+        description: "We couldn't save the new Outcome. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

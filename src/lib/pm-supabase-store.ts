@@ -36,7 +36,7 @@ interface DataStore {
   setCurrentTree: (tree: Tree) => Promise<void>;
   updateTreeMetadata: () => Promise<void>;
   setNodes: (nodes: OSTNode[]) => void;
-  addNode: (node: OSTNode) => Promise<void>;
+  addNode: (node: OSTNode) => Promise<boolean>;
   updateNode: (id: string, updates: Partial<OSTNode>, userId?: string) => Promise<void>;
   deleteNode: (id: string) => Promise<void>;
   createNewTree: (name?: string, projectId?: string | null) => Promise<string>;
@@ -606,10 +606,10 @@ export const useDataStore = create<DataStore>((set, get) => ({
   addNode: async (node) => {
     const state = get();
     const tree = state.currentTree;
-    if (!tree) return;
+    if (!tree) return false;
     if (tree.isSample) {
       notifySampleReadOnly();
-      return;
+      return false;
     }
 
     const dbNode = ostNodeToDbNode(node, tree.id);
@@ -618,10 +618,11 @@ export const useDataStore = create<DataStore>((set, get) => ({
 
     if (error) {
       console.error("Error adding node:", error);
-      return;
+      return false;
     }
 
     state.setNodes([...state.nodes, node]);
+    return true;
   },
 
   updateNode: async (id, updates, userId) => {
