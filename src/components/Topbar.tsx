@@ -16,8 +16,10 @@ import {
   Presentation,
   Plus,
   ChevronDown,
+  ChevronLeft,
   Share2,
   FileImage,
+  Home,
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
@@ -44,6 +46,9 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
   const location = useLocation()
   const [versionsOpen, setVersionsOpen] = useState(false)
 
+  const currentTree = useDataStore((state) => state.currentTree)
+  const projects = useDataStore((state) => state.projects)
+
   const focusedNodeId = useUIStore((state) => state.focusedNodeId)
   const setFocusedNodeId = useUIStore((state) => state.setFocusedNodeId)
   const isLocked = useUIStore((state) => state.isLocked)
@@ -65,41 +70,45 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
   ]
   const activeView = views.find((v) => location.pathname.includes(v.match)) ?? views[0]
   const ActiveIcon = activeView.icon
+  const isTreeView = views.some((v) => location.pathname.includes(v.match))
+
+  const parentProject = currentTree?.projectId
+    ? projects.find((p) => p.id === currentTree.projectId)
+    : null
+  const breadcrumbLabel = parentProject?.name ?? currentTree?.name ?? null
+  const backTo = parentProject ? `/projects/${parentProject.id}` : "/"
 
   return (
     <>
       <div className="px-3 pt-3 pb-1">
         <nav className="relative h-14 flex items-center justify-between px-3 rounded-2xl border border-border bg-background/80 backdrop-blur-md shadow-sm">
-          {/* Left: brand (home) + view switcher */}
-          <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2 group" title="Home">
+          {/* Left: breadcrumb */}
+          <div className="flex items-center gap-3 min-w-0">
+            <Link
+              to={currentTree ? backTo : "/"}
+              className="flex items-center gap-2 group shrink-0"
+              title={currentTree ? "Back to project" : "Home"}
+            >
+              {currentTree && (
+                <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              )}
               <span className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-sm group-hover:opacity-90 transition-opacity">
                 P
               </span>
               <span className="font-semibold tracking-tight text-foreground">Product Pal</span>
             </Link>
 
-            <div className="h-4 w-px bg-border" />
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                  <ActiveIcon className="w-4 h-4" />
-                  {activeView.label}
-                  <ChevronDown className="w-3 h-3 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                {views.map(({ to, label, icon: Icon }) => (
-                  <DropdownMenuItem key={to} asChild>
-                    <Link to={to} className="gap-2 cursor-pointer">
-                      <Icon className="w-4 h-4" />
-                      {label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {currentTree && breadcrumbLabel && (
+              <>
+                <div className="h-4 w-px bg-border" />
+                <span
+                  className="text-sm text-muted-foreground truncate max-w-[160px] sm:max-w-[200px] md:max-w-[260px] hidden sm:block"
+                  title={breadcrumbLabel}
+                >
+                  {breadcrumbLabel}
+                </span>
+              </>
+            )}
 
             {focusedNodeId && (
               <button
@@ -160,8 +169,30 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
             </div>
           )}
 
-          {/* Right: toggles + share */}
-          <div className="flex items-center gap-2">
+          {/* Right: global actions */}
+          <div className="flex items-center gap-1">
+            {isTreeView && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                    <ActiveIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{activeView.label}</span>
+                    <ChevronDown className="w-3 h-3 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {views.map(({ to, label, icon: Icon }) => (
+                    <DropdownMenuItem key={to} asChild>
+                      <Link to={to} className="gap-2 cursor-pointer">
+                        <Icon className="w-4 h-4" />
+                        {label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             {isEditorView && (
               <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl border border-border bg-muted/40">
                 <Button
@@ -182,15 +213,6 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
                 >
                   {showCompletedExperiments ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
-                <Button
-                  onClick={() => setVersionsOpen(true)}
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 hover:bg-background"
-                  title="Version history"
-                >
-                  <History className="w-4 h-4" />
-                </Button>
               </div>
             )}
 
@@ -198,7 +220,7 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
               <DropdownMenuTrigger asChild>
                 <Button size="sm" className="h-9 rounded-xl gap-2">
                   <Share2 className="w-4 h-4" />
-                  Share
+                  <span className="hidden sm:inline">Share</span>
                   <ChevronDown className="w-3 h-3 opacity-60" />
                 </Button>
               </DropdownMenuTrigger>
@@ -234,6 +256,18 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground"
+              title="Home"
+              asChild
+            >
+              <Link to="/">
+                <Home className="w-4 h-4" />
+              </Link>
+            </Button>
           </div>
         </nav>
       </div>
