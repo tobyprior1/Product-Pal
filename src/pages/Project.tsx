@@ -34,6 +34,8 @@ import { toast } from "@/hooks/use-toast";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, MoreVertical, Pencil, Trash2, Plus, FolderOpen } from "lucide-react";
+import { usePendingAction } from "@/hooks/usePendingAction";
+import { cn } from "@/lib/utils";
 
 const Project = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,8 +54,7 @@ const Project = () => {
     userId,
   } = useDataStore();
 
-  const [pendingAction, setPendingAction] = useState<string | null>(null);
-  const loading = pendingAction !== null;
+  const { isPending, isBusy, run, actionProps } = usePendingAction();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [treeToDelete, setTreeToDelete] = useState<string | null>(null);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
@@ -90,71 +91,64 @@ const Project = () => {
     return <NotFound />;
   }
 
-  const handleSelectTree = async (treeId: string) => {
-    if (loading) return;
-    setPendingAction(`tree:${treeId}`);
-    try {
-      await selectTree(treeId);
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error selecting tree:", error);
-    } finally {
-      setPendingAction(null);
-    }
-  };
+  const handleSelectTree = (treeId: string) =>
+    run(`tree:${treeId}`, async () => {
+      try {
+        await selectTree(treeId);
+        navigate("/editor");
+      } catch (error) {
+        console.error("Error selecting tree:", error);
+      }
+    });
 
-  const handleNewTree = async (actionId: "new-header" | "new-empty") => {
-    if (loading) return;
+  const handleNewTree = (actionId: "new-header" | "new-empty") => {
+    if (isBusy) return;
     if (!userId) {
       navigate("/auth");
       return;
     }
     if (!id) return;
 
-    setPendingAction(actionId);
-    try {
-      await createNewTree("New Outcome", id);
+    return run(actionId, async () => {
+      try {
+        await createNewTree("New Outcome", id);
 
-      // Seed the tree with its root Outcome node and open it straight away
-      const outcomeId = generateUUID();
-      const outcomeSaved = await useDataStore.getState().addNode({
-        id: outcomeId,
-        parentId: null,
-        type: "Outcome",
-        title: "New Outcome",
-        ...createNodeMetadata(),
-      } as OSTNode);
-      if (!outcomeSaved) {
-        throw new Error("The root Outcome node could not be saved");
+        // Seed the tree with its root Outcome node and open it straight away
+        const outcomeId = generateUUID();
+        const outcomeSaved = await useDataStore.getState().addNode({
+          id: outcomeId,
+          parentId: null,
+          type: "Outcome",
+          title: "New Outcome",
+          ...createNodeMetadata(),
+        } as OSTNode);
+        if (!outcomeSaved) {
+          throw new Error("The root Outcome node could not be saved");
+        }
+        useUIStore.getState().setSelectedNodeId(outcomeId);
+
+        navigate("/editor");
+      } catch (error) {
+        console.error("Error creating tree:", error);
+        toast({
+          title: "Outcome not created",
+          description: "We couldn't save the new Outcome. Please try again.",
+          variant: "destructive",
+        });
       }
-      useUIStore.getState().setSelectedNodeId(outcomeId);
-
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error creating tree:", error);
-      toast({
-        title: "Outcome not created",
-        description: "We couldn't save the new Outcome. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setPendingAction(null);
-    }
+    });
   };
 
 
-  const handleLoadSample = async () => {
-    if (loading) return;
-    setPendingAction("sample");
-    try {
-      await useDataStore.getState().loadSampleTree();
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error loading sample tree:", error);
-    } finally {
-      setPendingAction(null);
-    }
-  };
+  const handleLoadSample = () =>
+    run("sample", async () => {
+      try {
+        await useDataStore.getState().loadSampleTree();
+        navigate("/editor");
+      } catch (error) {
+        console.error("Error loading sample tree:", error);
+      }
+    });
 
 
   const handleDeleteClick = (treeId: string, e: React.MouseEvent) => {
@@ -256,12 +250,10 @@ const Project = () => {
             {userId && (
               <Button
                 onClick={() => handleNewTree("new-header")}
-                disabled={pendingAction === "new-header"}
-                aria-disabled={loading}
-                className={loading && pendingAction !== "new-header" ? "pointer-events-none" : undefined}
+                {...actionProps("new-header")}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                {pendingAction === "new-header" ? "Creating..." : "New Outcome"}
+                {isPending("new-header") ? "Creating..." : "New Outcome"}
               </Button>
             )}
           </div>
@@ -277,12 +269,10 @@ const Project = () => {
                 {userId && (
                   <Button
                     onClick={() => handleNewTree("new-empty")}
-                    disabled={pendingAction === "new-empty"}
-                    aria-disabled={loading}
-                    className={loading && pendingAction !== "new-empty" ? "pointer-events-none" : undefined}
+                    {...actionProps("new-empty")}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    {pendingAction === "new-empty" ? "Creating..." : "Create Outcome"}
+                    {isPending("new-empty") ? "Creating..." : "Create Outcome"}
                   </Button>
                 )}
               </div>
@@ -348,11 +338,12 @@ const Project = () => {
                       e.stopPropagation();
                       handleSelectTree(tree.id);
                     }}
-                    disabled={pendingAction === `tree:${tree.id}`}
-                    aria-disabled={loading}
-                    className={`w-full ${loading && pendingAction !== `tree:${tree.id}` ? "pointer-events-none" : ""}`}
+                    {...(() => {
+                      const { className, ...props } = actionProps(`tree:${tree.id}`);
+                      return { ...props, className: cn("w-full", className) };
+                    })()}
                   >
-                    {pendingAction === `tree:${tree.id}` ? "Loading..." : "Open Outcome"}
+                    {isPending(`tree:${tree.id}`) ? "Loading..." : "Open Outcome"}
                   </Button>
                 </Card>
               ))}
@@ -380,9 +371,10 @@ const Project = () => {
                 <Button
                   variant="link"
                   onClick={handleLoadSample}
-                  disabled={pendingAction === "sample"}
-                  aria-disabled={loading}
-                  className={`h-auto p-0 text-primary ${loading && pendingAction !== "sample" ? "pointer-events-none" : ""}`}
+                  {...(() => {
+                    const { className, ...props } = actionProps("sample");
+                    return { ...props, className: cn("h-auto p-0 text-primary", className) };
+                  })()}
                 >
                   Load a sample outcome to explore
                 </Button>

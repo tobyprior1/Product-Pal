@@ -1,15 +1,82 @@
 import { useState } from "react"
 import type { OSTNode, OpportunityNode } from "@/lib/pm-types"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, ChevronRight, Lightbulb, Zap, FlaskConical } from "lucide-react"
+import { ChevronDown, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { calculatePriorityScore, getPriorityBadgeColor } from "@/lib/pm-utils"
+import { HIERARCHY_STYLES, type HierarchyKind } from "@/lib/pm-hierarchy"
 
 interface WorkOpportunitySectionProps {
   opportunity: OpportunityNode
   onItemClick: (nodeId: string) => void
   depth?: number
+}
+
+const capitalizeStatus = (status: string) => status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")
+
+/** Timeframe ordering used to sort solutions inside an opportunity. */
+const TIMEFRAME_PRIORITY: Record<string, number> = {
+  Now: 1,
+  Next: 2,
+  Later: 3,
+  Planned: 4,
+  Backlog: 5,
+}
+
+interface HierarchyItemButtonProps {
+  kind: Extract<HierarchyKind, "solution" | "experiment">
+  node: OSTNode
+  onClick: () => void
+  /** Experiments nested under a solution render slightly smaller. */
+  compact?: boolean
+  meta?: string
+}
+
+/** Shared row used for solutions and experiments so both follow the same colour language. */
+function HierarchyItemButton({ kind, node, onClick, compact = false, meta }: HierarchyItemButtonProps) {
+  const style = HIERARCHY_STYLES[kind]
+  const Icon = style.icon
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-full rounded-md border border-border border-l-4 bg-card hover:bg-accent/50 transition-colors text-left group flex items-start",
+        style.accentBorder,
+        compact ? "p-2 gap-2" : "p-3 gap-3",
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-center justify-center shrink-0",
+          style.iconBg,
+          compact ? "w-6 h-6 rounded" : "w-7 h-7 rounded-md",
+        )}
+      >
+        <Icon className={cn(style.text, compact ? "w-3.5 h-3.5" : "w-4 h-4")} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className={cn("flex items-start justify-between gap-3", compact ? undefined : "mb-1")}>
+          <span
+            className={cn(
+              "text-sm leading-snug flex-1 group-hover:text-primary transition-colors",
+              !compact && "font-medium",
+            )}
+          >
+            {node.title}
+          </span>
+          <Badge variant="outline" className={cn("text-xs shrink-0", style.badge)}>
+            {capitalizeStatus((node as any).status || "")}
+          </Badge>
+        </div>
+        <div className={cn("flex items-center gap-2 text-xs text-muted-foreground", compact && "mt-0.5")}>
+          <span className={cn("text-[10px] font-semibold uppercase tracking-wide", style.text)}>{style.label}</span>
+          {meta && <span>• {meta}</span>}
+        </div>
+      </div>
+    </button>
+  )
 }
 
 export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: WorkOpportunitySectionProps) {
@@ -18,48 +85,31 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
   const getOpportunityStats = useDataStore((state) => state.getOpportunityStats)
 
   const children = getNodeChildren(opportunity.id)
-  const subOpportunities = children.filter(
-    (n) => n.type === "Opportunity" && (n as any).status !== "invalidated",
-  )
-  const allSolutions = children.filter((n) => n.type === "Solution" && n.status !== "Done")
+  const subOpportunities = children.filter((n) => n.type === "Opportunity" && (n as any).status !== "invalidated")
 
+  const solutions = children
+    .filter((n) => n.type === "Solution" && n.status !== "Done")
+    .sort(
+      (a, b) =>
+        (TIMEFRAME_PRIORITY[(a as any).status || "Backlog"] || 999) -
+        (TIMEFRAME_PRIORITY[(b as any).status || "Backlog"] || 999),
+    )
 
-  const timeframePriority: Record<string, number> = {
-    Now: 1,
-    Next: 2,
-    Later: 3,
-    Planned: 4,
-    Backlog: 5,
-  }
-
-  const solutions = allSolutions.sort((a, b) => {
-    const priorityA = timeframePriority[(a as any).status || "Backlog"] || 999
-    const priorityB = timeframePriority[(b as any).status || "Backlog"] || 999
-    return priorityA - priorityB
-  })
-
-  const directExperiments = children.filter((n) => n.type === "Experiment").filter((n) => {
-    const exp = n as any
-    return exp.status !== "completed"
-  })
+  const directExperiments = children.filter((n) => n.type === "Experiment" && (n as any).status !== "completed")
 
   const stats = getOpportunityStats(opportunity.id)
+  const opportunityStyle = HIERARCHY_STYLES.opportunity
+  const OpportunityIcon = opportunityStyle.icon
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "backlog":
-        return "bg-gray-100 text-gray-700 border-gray-200"
       case "in-discovery":
-        return "bg-purple-100 text-purple-700 border-purple-200"
+        return opportunityStyle.badge
       case "validated":
         return "bg-green-100 text-green-700 border-green-200"
       default:
         return "bg-gray-100 text-gray-700 border-gray-200"
     }
-  }
-
-  const capitalizeStatus = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")
   }
 
   const getHealthIndicator = () => {
@@ -79,12 +129,12 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
   }
 
   const health = getHealthIndicator()
-
   const priorityScore = calculatePriorityScore(opportunity)
+  const hasChildren = solutions.length > 0 || directExperiments.length > 0 || subOpportunities.length > 0
 
   return (
-    <div className="border border-border border-l-4 border-l-purple-500 rounded-lg overflow-hidden bg-card">
-      {/* Opportunity Header */}
+    <div className={cn("border border-border border-l-4 rounded-lg overflow-hidden bg-card", opportunityStyle.accentBorder)}>
+      {/* Opportunity header */}
       <div className="flex">
         <button onClick={() => setIsExpanded(!isExpanded)} className="p-4 hover:bg-accent/50 transition-colors">
           {isExpanded ? (
@@ -98,10 +148,9 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
           onClick={() => onItemClick(opportunity.id)}
           className="flex-1 p-4 pl-0 flex items-start gap-3 hover:bg-accent/50 transition-colors text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
-            <Lightbulb className="w-5 h-5 text-purple-600" />
+          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", opportunityStyle.iconBg)}>
+            <OpportunityIcon className={cn("w-5 h-5", opportunityStyle.text)} />
           </div>
-
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2 mb-1">
@@ -120,8 +169,8 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
               </div>
             </div>
 
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-purple-600 mb-1">
-              {depth > 0 ? "Sub-opportunity" : "Opportunity"}
+            <div className={cn("text-[10px] font-semibold uppercase tracking-wide mb-1", opportunityStyle.text)}>
+              {depth > 0 ? "Sub-opportunity" : opportunityStyle.label}
             </div>
 
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -132,18 +181,22 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
                 {stats.experimentsCount} experiment{stats.experimentsCount !== 1 ? "s" : ""}
               </span>
               {stats.solutionsInProgress > 0 && (
-                <span className="text-blue-600 font-medium">{stats.solutionsInProgress} in progress</span>
+                <span className={cn("font-medium", HIERARCHY_STYLES.solution.text)}>
+                  {stats.solutionsInProgress} in progress
+                </span>
               )}
               {stats.experimentsRunning > 0 && (
-                <span className="text-amber-600 font-medium">{stats.experimentsRunning} running</span>
+                <span className={cn("font-medium", HIERARCHY_STYLES.experiment.text)}>
+                  {stats.experimentsRunning} running
+                </span>
               )}
             </div>
           </div>
         </button>
       </div>
 
-      {/* Expanded Content */}
-      {isExpanded && (solutions.length > 0 || directExperiments.length > 0 || subOpportunities.length > 0) && (
+      {/* Expanded content */}
+      {isExpanded && hasChildren && (
         <div className="border-t border-border bg-muted/30">
           <div className="p-4 space-y-2">
             {/* Sub-opportunities */}
@@ -152,7 +205,7 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
                 {subOpportunities.map((sub) => (
                   <WorkOpportunitySection
                     key={sub.id}
-                    opportunity={sub as any}
+                    opportunity={sub as OpportunityNode}
                     onItemClick={onItemClick}
                     depth={depth + 1}
                   />
@@ -160,67 +213,35 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
               </div>
             )}
 
-            {/* Solutions */}
+            {/* Solutions with their experiments */}
             {solutions.map((solution) => {
               const solutionExperiments = getNodeChildren(solution.id).filter(
                 (n) => n.type === "Experiment" && n.status !== "completed",
               )
+
               return (
                 <div key={solution.id} className="space-y-2">
-                  <button
+                  <HierarchyItemButton
+                    kind="solution"
+                    node={solution}
                     onClick={() => onItemClick(solution.id)}
-                    className="w-full p-3 rounded-md border border-border border-l-4 border-l-blue-500 bg-card hover:bg-accent/50 transition-colors text-left group flex items-start gap-3"
-                  >
-                    <div className="w-7 h-7 rounded-md bg-blue-100 flex items-center justify-center shrink-0">
-                      <Zap className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-3 mb-1">
-                        <span className="font-medium text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
-                          {solution.title}
-                        </span>
-                        <Badge variant="outline" className="text-xs shrink-0 bg-blue-50 text-blue-700 border-blue-200">
-                          {capitalizeStatus((solution as any).status || "")}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-blue-600">Solution</span>
-                        {solutionExperiments.length > 0 && (
-                          <span>• {solutionExperiments.length} active experiments</span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
+                    meta={
+                      solutionExperiments.length > 0
+                        ? `${solutionExperiments.length} active experiments`
+                        : undefined
+                    }
+                  />
 
-                  {/* Experiments under this solution */}
                   {solutionExperiments.length > 0 && (
                     <div className="ml-8 space-y-1">
                       {solutionExperiments.map((exp) => (
-                        <button
+                        <HierarchyItemButton
                           key={exp.id}
+                          kind="experiment"
+                          node={exp}
+                          compact
                           onClick={() => onItemClick(exp.id)}
-                          className="w-full p-2 rounded-md border border-border border-l-4 border-l-teal-500 bg-card hover:bg-accent/50 transition-colors text-left group flex items-start gap-2"
-                        >
-                          <div className="w-6 h-6 rounded bg-teal-100 flex items-center justify-center shrink-0">
-                            <FlaskConical className="w-3.5 h-3.5 text-teal-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-3">
-                              <span className="text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
-                                {exp.title}
-                              </span>
-                              <Badge
-                                variant="outline"
-                                className="text-xs shrink-0 bg-teal-50 text-teal-700 border-teal-200"
-                              >
-                                {capitalizeStatus((exp as any).status || "")}
-                              </Badge>
-                            </div>
-                            <div className="text-[10px] font-semibold uppercase tracking-wide text-teal-600 mt-0.5">
-                              Experiment
-                            </div>
-                          </div>
-                        </button>
+                        />
                       ))}
                     </div>
                   )}
@@ -228,36 +249,21 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
               )
             })}
 
-            {/* Direct experiments (not under solutions) */}
+            {/* Experiments attached directly to the opportunity */}
             {directExperiments.map((exp) => (
-              <button
+              <HierarchyItemButton
                 key={exp.id}
+                kind="experiment"
+                node={exp}
                 onClick={() => onItemClick(exp.id)}
-                className="w-full p-3 rounded-md border border-border border-l-4 border-l-teal-500 bg-card hover:bg-accent/50 transition-colors text-left group flex items-start gap-3"
-              >
-                <div className="w-7 h-7 rounded-md bg-teal-100 flex items-center justify-center shrink-0">
-                  <FlaskConical className="w-4 h-4 text-teal-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-3 mb-1">
-                    <span className="font-medium text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
-                      {exp.title}
-                    </span>
-                    <Badge variant="outline" className="text-xs shrink-0 bg-teal-50 text-teal-700 border-teal-200">
-                      {capitalizeStatus((exp as any).status || "")}
-                    </Badge>
-                  </div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-teal-600">Experiment</div>
-                </div>
-              </button>
+              />
             ))}
           </div>
         </div>
       )}
 
-
       {/* Empty state */}
-      {isExpanded && solutions.length === 0 && directExperiments.length === 0 && subOpportunities.length === 0 && (
+      {isExpanded && !hasChildren && (
         <div className="border-t border-border p-4 text-center text-sm text-muted-foreground">
           No active sub-opportunities, solutions or experiments
         </div>

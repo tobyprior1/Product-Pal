@@ -32,6 +32,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Target, Trash2 } from "lucide-react";
+import { usePendingAction } from "@/hooks/usePendingAction";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -50,8 +52,7 @@ const Index = () => {
   } = useDataStore();
 
   const [user, setUser] = useState<User | null>(null);
-  const [pendingAction, setPendingAction] = useState<string | null>(null);
-  const loading = pendingAction !== null;
+  const { isPending, run, actionProps } = usePendingAction();
 
   const [treeDeleteOpen, setTreeDeleteOpen] = useState(false);
   const [treeToDelete, setTreeToDelete] = useState<string | null>(null);
@@ -83,17 +84,15 @@ const Index = () => {
 
 
 
-  const handleSelectTree = async (treeId: string) => {
-    setPendingAction(`tree:${treeId}`);
-    try {
-      await selectTree(treeId);
-      navigate("/editor");
-    } catch (error) {
-      console.error("Error selecting tree:", error);
-    } finally {
-      setPendingAction(null);
-    }
-  };
+  const handleSelectTree = (treeId: string) =>
+    run(`tree:${treeId}`, async () => {
+      try {
+        await selectTree(treeId);
+        navigate("/editor");
+      } catch (error) {
+        console.error("Error selecting tree:", error);
+      }
+    });
 
   const handleDeleteTreeClick = (treeId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -361,16 +360,22 @@ const Index = () => {
                             Last updated: {new Date(tree.updatedAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectTree(tree.id);
-                          }}
-                          className="w-full"
-                          disabled={loading}
-                        >
-                          {pendingAction === `tree:${tree.id}` ? "Loading..." : "Open Outcome"}
-                        </Button>
+                        {(() => {
+                          const actionId = `tree:${tree.id}`;
+                          const { className, ...props } = actionProps(actionId);
+                          return (
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectTree(tree.id);
+                              }}
+                              {...props}
+                              className={cn("w-full", className)}
+                            >
+                              {isPending(actionId) ? "Loading..." : "Open Outcome"}
+                            </Button>
+                          );
+                        })()}
                       </Card>
                     ))}
                   </div>

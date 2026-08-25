@@ -165,9 +165,9 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                 <div key={outcome.id} className="border-b-2 border-border">
                   <button
                     onClick={() => onItemClick(outcome.id)}
-                    className="w-full bg-purple-50 dark:bg-purple-950/30 border-l-4 border-l-purple-400 px-2 border-b border-border h-[41px] flex items-center gap-2 hover:bg-purple-100 dark:hover:bg-purple-950/50 text-left transition-colors cursor-pointer"
+                    className="w-full bg-outcome-surface border-l-4 border-l-outcome-border px-2 border-b border-border h-[41px] flex items-center gap-2 hover:bg-outcome-surface-strong text-left transition-colors cursor-pointer"
                   >
-                    <Target className="w-4 h-4 flex-shrink-0 text-purple-600 dark:text-purple-300" />
+                    <Target className="w-4 h-4 flex-shrink-0 text-outcome" />
                     <span className="font-semibold text-sm uppercase tracking-wide truncate">{outcome.title}</span>
                   </button>
 
@@ -178,9 +178,9 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                       <div key={opportunity.id}>
                         <button
                           onClick={() => onItemClick(opportunity.id)}
-                          className="w-full bg-amber-50/60 dark:bg-amber-950/20 border-l-4 border-l-amber-300 px-2 text-sm border-b border-border pl-4 h-[41px] flex items-center gap-2 hover:bg-amber-100/60 dark:hover:bg-amber-950/40 text-left transition-colors cursor-pointer"
+                          className="w-full bg-opportunity-surface border-l-4 border-l-opportunity-border px-2 text-sm border-b border-border pl-4 h-[41px] flex items-center gap-2 hover:bg-opportunity-surface-strong text-left transition-colors cursor-pointer"
                         >
-                          <Lightbulb className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 dark:text-amber-300" />
+                          <Lightbulb className="w-3.5 h-3.5 flex-shrink-0 text-opportunity" />
                           <span className="font-medium truncate">{opportunity.title}</span>
                         </button>
 
@@ -201,7 +201,7 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
 
                           return (
                             <div key={solution.id}>
-                              <div className="px-2 pl-8 border-b border-border border-l-4 border-l-blue-300 flex items-center gap-2 h-12 hover:bg-muted/50">
+                              <div className="px-2 pl-8 border-b border-border border-l-4 border-l-solution-border flex items-center gap-2 h-12 hover:bg-muted/50">
                                 {experimentsWithDates.length > 0 ? (
                                   <button
                                     onClick={() => toggleSolution(solution.id)}
@@ -216,7 +216,7 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                                 ) : (
                                   <span className="w-5 flex-shrink-0" />
                                 )}
-                                <Zap className="w-3.5 h-3.5 flex-shrink-0 text-blue-600 dark:text-blue-300" />
+                                <Zap className="w-3.5 h-3.5 flex-shrink-0 text-solution" />
                                 <button
                                   onClick={() => onItemClick(solution.id)}
                                   className="flex-1 text-left hover:text-primary text-sm truncate"
@@ -232,9 +232,9 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                                 experimentsWithDates.map((experiment) => (
                                   <div
                                     key={experiment.id}
-                                    className="px-2 pl-16 border-b border-border border-l-4 border-l-teal-200 flex items-center gap-2 h-12 hover:bg-muted/50"
+                                    className="px-2 pl-16 border-b border-border border-l-4 border-l-experiment-border flex items-center gap-2 h-12 hover:bg-muted/50"
                                   >
-                                    <FlaskConical className="w-3 h-3 flex-shrink-0 text-teal-600 dark:text-teal-300" />
+                                    <FlaskConical className="w-3 h-3 flex-shrink-0 text-experiment" />
                                     <button
                                       onClick={() => onItemClick(experiment.id)}
                                       className="flex-1 text-left hover:text-primary text-xs text-muted-foreground truncate"
@@ -275,7 +275,7 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                 <div key={outcome.id} className="border-b-2 border-border">
                   <GanttGridRow
                     weekGroups={weekGroups}
-                    className="bg-purple-50 dark:bg-purple-950/30 h-[41px] border-b"
+                    className="bg-outcome-surface h-[41px] border-b"
                   />
 
                   {opportunities.map((opportunity) => {
@@ -285,7 +285,7 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
                       <div key={opportunity.id}>
                         <GanttGridRow
                           weekGroups={weekGroups}
-                          className="bg-amber-50/60 dark:bg-amber-950/20 h-[41px] border-b"
+                          className="bg-opportunity-surface h-[41px] border-b"
                         />
 
                         {roadmapSolutions.length === 0 && (
