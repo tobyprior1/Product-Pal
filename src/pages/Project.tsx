@@ -348,7 +348,6 @@ const Project = () => {
                       e.stopPropagation();
                       handleSelectTree(tree.id);
                     }}
-                    className="w-full"
                     disabled={pendingAction === `tree:${tree.id}`}
                     aria-disabled={loading}
                     className={`w-full ${loading && pendingAction !== `tree:${tree.id}` ? "pointer-events-none" : ""}`}
