@@ -58,7 +58,11 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
     <>
       <div className="h-14 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4">
         <div className="flex items-center gap-4">
+          <Link to="/" className="font-semibold tracking-tight text-foreground hover:text-primary transition-colors">
+            Product Pal
+          </Link>
           <DropdownMenu>
+
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-2">
                 {isEditorView ? (
