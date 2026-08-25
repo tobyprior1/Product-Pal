@@ -62,6 +62,7 @@ const App = () => {
           <CommandPalette />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/projects/:id" element={<Project />} />
             <Route path="/editor" element={<Editor />} />
             <Route path="/roadmap" element={<Roadmap />} />
             <Route path="/work" element={<Work />} />
