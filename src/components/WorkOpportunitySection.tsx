@@ -169,44 +169,56 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
                 <div key={solution.id} className="space-y-2">
                   <button
                     onClick={() => onItemClick(solution.id)}
-                    className="w-full p-3 rounded-md border border-border bg-card hover:bg-accent/50 transition-colors text-left group"
+                    className="w-full p-3 rounded-md border border-border border-l-4 border-l-blue-500 bg-card hover:bg-accent/50 transition-colors text-left group flex items-start gap-3"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-1">
-                      <span className="font-medium text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
-                        {solution.title}
-                      </span>
-                      <Badge variant="outline" className="text-xs shrink-0 bg-blue-50 text-blue-700 border-blue-200">
-                        {capitalizeStatus((solution as any).status || "")}
-                      </Badge>
+                    <div className="w-7 h-7 rounded-md bg-blue-100 flex items-center justify-center shrink-0">
+                      <Zap className="w-4 h-4 text-blue-600" />
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="font-medium text-blue-600">Solution</span>
-                      {solutionExperiments.length > 0 && <span>• {solutionExperiments.length} active experiments</span>}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 mb-1">
+                        <span className="font-medium text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
+                          {solution.title}
+                        </span>
+                        <Badge variant="outline" className="text-xs shrink-0 bg-blue-50 text-blue-700 border-blue-200">
+                          {capitalizeStatus((solution as any).status || "")}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-blue-600">Solution</span>
+                        {solutionExperiments.length > 0 && (
+                          <span>• {solutionExperiments.length} active experiments</span>
+                        )}
+                      </div>
                     </div>
                   </button>
 
                   {/* Experiments under this solution */}
                   {solutionExperiments.length > 0 && (
-                    <div className="ml-6 space-y-1">
+                    <div className="ml-8 space-y-1">
                       {solutionExperiments.map((exp) => (
                         <button
                           key={exp.id}
                           onClick={() => onItemClick(exp.id)}
-                          className="w-full p-2 rounded-md border border-border bg-card hover:bg-accent/50 transition-colors text-left group"
+                          className="w-full p-2 rounded-md border border-border border-l-4 border-l-teal-500 bg-card hover:bg-accent/50 transition-colors text-left group flex items-start gap-2"
                         >
-                          <div className="flex items-start justify-between gap-3">
-                            <span className="text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
-                              {exp.title}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className="text-xs shrink-0 bg-amber-50 text-amber-700 border-amber-200"
-                            >
-                              {capitalizeStatus((exp as any).status || "")}
-                            </Badge>
+                          <div className="w-6 h-6 rounded bg-teal-100 flex items-center justify-center shrink-0">
+                            <FlaskConical className="w-3.5 h-3.5 text-teal-600" />
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            <span className="font-medium text-amber-600">Experiment</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-3">
+                              <span className="text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
+                                {exp.title}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className="text-xs shrink-0 bg-teal-50 text-teal-700 border-teal-200"
+                              >
+                                {capitalizeStatus((exp as any).status || "")}
+                              </Badge>
+                            </div>
+                            <div className="text-[10px] font-semibold uppercase tracking-wide text-teal-600 mt-0.5">
+                              Experiment
+                            </div>
                           </div>
                         </button>
                       ))}
@@ -221,24 +233,28 @@ export function WorkOpportunitySection({ opportunity, onItemClick, depth = 0 }: 
               <button
                 key={exp.id}
                 onClick={() => onItemClick(exp.id)}
-                className="w-full p-3 rounded-md border border-border bg-card hover:bg-accent/50 transition-colors text-left group"
+                className="w-full p-3 rounded-md border border-border border-l-4 border-l-teal-500 bg-card hover:bg-accent/50 transition-colors text-left group flex items-start gap-3"
               >
-                <div className="flex items-start justify-between gap-3 mb-1">
-                  <span className="font-medium text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
-                    {exp.title}
-                  </span>
-                  <Badge variant="outline" className="text-xs shrink-0 bg-amber-50 text-amber-700 border-amber-200">
-                    {capitalizeStatus((exp as any).status || "")}
-                  </Badge>
+                <div className="w-7 h-7 rounded-md bg-teal-100 flex items-center justify-center shrink-0">
+                  <FlaskConical className="w-4 h-4 text-teal-600" />
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  <span className="font-medium text-amber-600">Experiment</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-3 mb-1">
+                    <span className="font-medium text-sm leading-snug flex-1 group-hover:text-primary transition-colors">
+                      {exp.title}
+                    </span>
+                    <Badge variant="outline" className="text-xs shrink-0 bg-teal-50 text-teal-700 border-teal-200">
+                      {capitalizeStatus((exp as any).status || "")}
+                    </Badge>
+                  </div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-teal-600">Experiment</div>
                 </div>
               </button>
             ))}
           </div>
         </div>
       )}
+
 
       {/* Empty state */}
       {isExpanded && solutions.length === 0 && directExperiments.length === 0 && subOpportunities.length === 0 && (
