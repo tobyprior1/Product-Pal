@@ -166,8 +166,9 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome</CardTitle>
+          <CardTitle>Welcome to Product Pal</CardTitle>
           <CardDescription>Sign in to your account or create a new one</CardDescription>
+
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin">
