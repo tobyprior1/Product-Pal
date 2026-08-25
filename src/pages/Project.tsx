@@ -115,6 +115,19 @@ const Project = () => {
     }
   };
 
+  const handleLoadSample = async () => {
+    setLoading(true);
+    try {
+      await useDataStore.getState().loadSampleTree();
+      navigate("/editor");
+    } catch (error) {
+      console.error("Error loading sample tree:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleDeleteClick = (treeId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setTreeToDelete(treeId);
