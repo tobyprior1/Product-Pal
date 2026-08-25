@@ -144,11 +144,12 @@ const Index = () => {
         <div className="max-w-2xl w-full space-y-8">
           <div className="text-center space-y-4">
             <h1 className="text-5xl font-bold tracking-tight text-foreground">
-              Opportunity Solution Tree Creator
+              Product Pal
             </h1>
             <p className="text-lg text-muted-foreground">
-              Build and visualize your product strategy with opportunity solution trees
+              Your product strategy sidekick — build and visualise opportunity solution trees
             </p>
+
           </div>
 
           <div className="space-y-6">
