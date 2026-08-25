@@ -21,22 +21,44 @@ import { OutcomeFields } from "./node-fields/OutcomeFields"
 import { OpportunityFields } from "./node-fields/OpportunityFields"
 import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
+import { AddChildPanelButton } from "./AddChildPanelButton"
 
 export function NodePanel() {
   const selectedNodeId = useUIStore((state) => state.selectedNodeId)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
   const focusedNodeId = useUIStore((state) => state.focusedNodeId)
   const setFocusedNodeId = useUIStore((state) => state.setFocusedNodeId)
+  const isLocked = useUIStore((state) => state.isLocked)
 
   const nodes = useDataStore((state) => state.nodes)
   const updateNode = useDataStore((state) => state.updateNode)
   const deleteNode = useDataStore((state) => state.deleteNode)
+  const canAddSubOpportunity = useDataStore((state) => state.canAddSubOpportunity(selectedNodeId ?? ""))
+  const canAddSolution = useDataStore((state) => state.canAddSolution(selectedNodeId ?? ""))
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
 
   if (!selectedNode) {
     return null
   }
+
+  const childKind =
+    selectedNode.type === "Outcome"
+      ? ("opportunity" as const)
+      : selectedNode.type === "Opportunity"
+        ? ("solution" as const)
+        : selectedNode.type === "Solution"
+          ? ("experiment" as const)
+          : null
+
+  const dispatchAddChild = (childType?: "Opportunity") => {
+    window.dispatchEvent(
+      new CustomEvent("add-child-node", {
+        detail: { parentId: selectedNode.id, parentType: selectedNode.type, childType },
+      }),
+    )
+  }
+
 
   const handleActivateFocus = () => {
     setFocusedNodeId(selectedNode.id)
