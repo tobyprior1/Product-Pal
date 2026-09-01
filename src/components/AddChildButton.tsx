@@ -1,8 +1,14 @@
 import { Plus, Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { HIERARCHY_STYLES, type HierarchyKind } from "@/lib/pm-hierarchy"
 import { cn } from "@/lib/utils"
+
+export const SOLUTION_BLOCKED_HINT =
+  "This opportunity is broken down into sub-opportunities. Attach solutions to a sub-opportunity so you can deliver value iteratively, rather than solving the whole parent problem at once."
+export const SUB_OPPORTUNITY_BLOCKED_HINT =
+  "This opportunity already has solutions mapped to it. Remove them first if you want to break the problem down into sub-opportunities."
 
 interface AddChildButtonProps {
   /** The kind of child this node creates (Outcome -> opportunity, etc.). */
