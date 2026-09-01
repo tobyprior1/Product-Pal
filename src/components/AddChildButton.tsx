@@ -60,28 +60,52 @@ export function AddChildButton({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" className="w-56">
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                onAddChild()
-              }}
-              disabled={!canAddSolution}
-            >
-              <ChildIcon className="mr-2 h-4 w-4" />
-              <span>Add Solution</span>
-              {!canAddSolution && <span className="ml-auto text-xs text-muted-foreground">(has sub-opps)</span>}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                onAddSubOpportunity()
-              }}
-              disabled={!canAddSubOpportunity}
-            >
-              <Lightbulb className="mr-2 h-4 w-4" />
-              <span>Add Sub-Opportunity</span>
-              {!canAddSubOpportunity && <span className="ml-auto text-xs text-muted-foreground">(has solutions)</span>}
-            </DropdownMenuItem>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="block">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onAddChild()
+                    }}
+                    disabled={!canAddSolution}
+                  >
+                    <ChildIcon className="mr-2 h-4 w-4" />
+                    <span>Add Solution</span>
+                    {!canAddSolution && <span className="ml-auto text-xs text-muted-foreground">(has sub-opps)</span>}
+                  </DropdownMenuItem>
+                </span>
+              </TooltipTrigger>
+              {!canAddSolution && (
+                <TooltipContent side="right" className="max-w-xs">
+                  {SOLUTION_BLOCKED_HINT}
+                </TooltipContent>
+              )}
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="block">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onAddSubOpportunity()
+                    }}
+                    disabled={!canAddSubOpportunity}
+                  >
+                    <Lightbulb className="mr-2 h-4 w-4" />
+                    <span>Add Sub-Opportunity</span>
+                    {!canAddSubOpportunity && (
+                      <span className="ml-auto text-xs text-muted-foreground">(has solutions)</span>
+                    )}
+                  </DropdownMenuItem>
+                </span>
+              </TooltipTrigger>
+              {!canAddSubOpportunity && (
+                <TooltipContent side="right" className="max-w-xs">
+                  {SUB_OPPORTUNITY_BLOCKED_HINT}
+                </TooltipContent>
+              )}
+            </Tooltip>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
