@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +64,9 @@ const Index = () => {
   const [projectCreateOpen, setProjectCreateOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
+  const [projectProductContext, setProjectProductContext] = useState("");
+  const [projectTargetUsers, setProjectTargetUsers] = useState("");
+  const [projectConstraints, setProjectConstraints] = useState("");
 
   const [projectEditOpen, setProjectEditOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<{ id: string; name: string; description?: string } | null>(null);
@@ -127,9 +131,16 @@ const Index = () => {
   const handleCreateProject = async () => {
     if (!userId || !projectName.trim()) return;
     try {
-      await createProject(projectName.trim(), projectDescription.trim() || undefined);
+      await createProject(projectName.trim(), projectDescription.trim() || undefined, {
+        productContext: projectProductContext.trim() || undefined,
+        targetUsers: projectTargetUsers.trim() || undefined,
+        constraints: projectConstraints.trim() || undefined,
+      });
       setProjectName("");
       setProjectDescription("");
+      setProjectProductContext("");
+      setProjectTargetUsers("");
+      setProjectConstraints("");
       setProjectCreateOpen(false);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -217,7 +228,7 @@ const Index = () => {
                 {projects.length === 0 ? (
                   <Card className="p-6 border-dashed text-center">
                     <p className="text-muted-foreground">
-                      No projects yet. Create one to start organising your trees.
+                      No projects yet. Create one for a team or product area, then add the outcomes it's driving.
                     </p>
                   </Card>
                 ) : (
@@ -241,7 +252,9 @@ const Index = () => {
                                   {project.name}
                                 </h3>
                                 <p className="text-xs text-muted-foreground">
-                                  {trees.filter((t) => t.projectId === project.id).length} trees
+                                  {trees.filter((t) => t.projectId === project.id).length === 1
+                                    ? "1 outcome"
+                                    : `${trees.filter((t) => t.projectId === project.id).length} outcomes`}
                                 </p>
                               </div>
                             </div>
@@ -456,10 +469,13 @@ const Index = () => {
       </Dialog>
 
       <Dialog open={projectCreateOpen} onOpenChange={setProjectCreateOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Project</DialogTitle>
-            <DialogDescription>Give your project a name and optional description.</DialogDescription>
+            <DialogDescription>
+              A project is a team or area of the product — the outcomes inside it are what that team is driving.
+              The context below is optional, but it makes AI suggestions far sharper.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -468,7 +484,7 @@ const Index = () => {
                 id="new-project-name"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder="e.g. Q3 Growth"
+                placeholder="e.g. Editor Team"
               />
             </div>
             <div className="space-y-2">
@@ -477,7 +493,37 @@ const Index = () => {
                 id="new-project-description"
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="Optional description"
+                placeholder="What this team or area is responsible for"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-project-product-context">Product context</Label>
+              <Textarea
+                id="new-project-product-context"
+                value={projectProductContext}
+                onChange={(e) => setProjectProductContext(e.target.value)}
+                placeholder="What the product does, business model, platform, tech stack"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-project-target-users">Target users</Label>
+              <Textarea
+                id="new-project-target-users"
+                value={projectTargetUsers}
+                onChange={(e) => setProjectTargetUsers(e.target.value)}
+                placeholder="Who you are building for, key segments and their jobs to be done"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-project-constraints">Constraints</Label>
+              <Textarea
+                id="new-project-constraints"
+                value={projectConstraints}
+                onChange={(e) => setProjectConstraints(e.target.value)}
+                placeholder="Anything off-limits: no pricing changes, compliance rules, team capacity"
+                rows={2}
               />
             </div>
           </div>
