@@ -188,10 +188,20 @@ export function NodePanel() {
             }
             canAddSubOpportunity={selectedNode.type === "Opportunity" ? canAddSubOpportunity : true}
             canAddSolution={selectedNode.type === "Opportunity" ? canAddSolution : true}
+            onSuggestSolutions={selectedNode.type === "Opportunity" ? () => setSuggestOpen(true) : undefined}
           />
         )}
       </div>
 
+      {selectedNode.type === "Opportunity" && (
+        <SolutionSuggestionsDialog
+          open={suggestOpen}
+          onOpenChange={setSuggestOpen}
+          opportunityId={selectedNode.id}
+          opportunityTitle={selectedNode.title}
+        />
+      )}
     </div>
+
   )
 }
