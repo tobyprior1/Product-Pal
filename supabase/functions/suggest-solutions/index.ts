@@ -42,6 +42,8 @@ function parseSuggestions(raw: string): Suggestion[] {
       title: String(item?.title ?? "").trim(),
       description: String(item?.description ?? "").trim(),
       rationale: String(item?.rationale ?? "").trim(),
+      assumption: String(item?.assumption ?? "").trim(),
+
     }))
     .filter((s) => s.title.length > 0)
     .slice(0, 6);
