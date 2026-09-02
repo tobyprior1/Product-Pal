@@ -63,9 +63,19 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
 
     try {
       const updatedAt = new Date().toISOString();
-      const dbUpdates: { updated_at: string; name?: string; description?: string } = { updated_at: updatedAt };
+      const dbUpdates: {
+        updated_at: string;
+        name?: string;
+        description?: string;
+        product_context?: string | null;
+        target_users?: string | null;
+        constraints?: string | null;
+      } = { updated_at: updatedAt };
       if (updates.name !== undefined) dbUpdates.name = updates.name;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.productContext !== undefined) dbUpdates.product_context = updates.productContext ?? null;
+      if (updates.targetUsers !== undefined) dbUpdates.target_users = updates.targetUsers ?? null;
+      if (updates.constraints !== undefined) dbUpdates.constraints = updates.constraints ?? null;
 
       const { error } = await supabase.from("projects").update(dbUpdates).eq("id", id);
       if (error) throw error;

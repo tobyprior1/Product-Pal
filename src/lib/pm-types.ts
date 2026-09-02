@@ -10,6 +10,10 @@ export interface Project {
   id: UUID
   name: string
   description?: string
+  /** Context supplied once per project and fed to every AI request */
+  productContext?: string
+  targetUsers?: string
+  constraints?: string
   createdAt: string
   updatedAt: string
   ownerId?: string
