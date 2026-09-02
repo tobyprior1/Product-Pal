@@ -53,9 +53,21 @@ export function SolutionSuggestionsDialog({
     setSuggestions([])
     setSelected(new Set())
 
+    const { nodes } = useDataStore.getState()
+    const localOpp = nodes.find((n) => n.id === opportunityId)
+    const outcomeTitle = nodes.find((n) => n.type === "Outcome")?.title
+
     const { data, error: fnError } = await supabase.functions.invoke("suggest-solutions", {
-      body: { opportunityId },
+      body: {
+        opportunityId,
+        opportunity: {
+          title: localOpp?.title ?? opportunityTitle,
+          data: (localOpp as any)?.data ?? {},
+          outcomeTitle,
+        },
+      },
     })
+
 
     if (fnError) {
       const message =
