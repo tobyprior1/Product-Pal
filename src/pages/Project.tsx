@@ -450,7 +450,7 @@ const Project = () => {
       </Dialog>
 
       <Dialog open={projectRenameOpen} onOpenChange={setProjectRenameOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
             <DialogDescription>
