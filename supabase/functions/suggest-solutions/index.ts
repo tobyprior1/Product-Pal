@@ -66,15 +66,15 @@ Deno.serve(async (req) => {
     if (!opportunityId) return json({ error: "opportunityId is required" }, 400);
 
     const fallback = (body?.opportunity ?? {}) as Record<string, any>;
+    const steer = typeof body?.steer === "string" ? body.steer : undefined;
 
-    // Load the opportunity (RLS scopes this to the caller's own trees).
-    const { data: opportunity, error: oppError } = await supabase
-      .from("nodes")
-      .select("*")
-      .eq("id", opportunityId)
-      .maybeSingle();
+    const { context, opportunity, error: ctxError } = await buildOpportunityContext(
+      supabase,
+      opportunityId,
+      { fallback, steer },
+    );
 
-    if (oppError) return json({ error: oppError.message }, 400);
+    if (ctxError) return json({ error: ctxError }, 400);
     if (!opportunity && !fallback.title) {
       return json({ error: "Opportunity not found" }, 404);
     }
@@ -82,44 +82,6 @@ Deno.serve(async (req) => {
       return json({ error: "Node is not an opportunity" }, 400);
     }
 
-    const treeId = (opportunity as any)?.tree_id ?? null;
-
-    const { data: siblings } = treeId
-      ? await supabase
-          .from("nodes")
-          .select("title, type")
-          .eq("tree_id", treeId)
-          .eq("parent_id", opportunityId)
-      : { data: null as any };
-
-    const { data: treeNodes } = treeId
-      ? await supabase
-          .from("nodes")
-          .select("title, type, data")
-          .eq("tree_id", treeId)
-          .eq("type", "Outcome")
-      : { data: null as any };
-
-    const outcome = treeNodes?.[0] as any;
-    const oppTitle = (opportunity as any)?.title ?? fallback.title;
-    const oppData = (((opportunity as any)?.data ?? fallback.data ?? {}) ?? {}) as Record<string, unknown>;
-    const existingSolutions = (siblings ?? [])
-      .filter((s: any) => s.type === "Solution")
-      .map((s: any) => s.title);
-
-    const context = [
-      `Opportunity: ${oppTitle}`,
-      oppData.evidenceSummary ? `Evidence / customer signal: ${oppData.evidenceSummary}` : null,
-      Array.isArray(oppData.tags) && oppData.tags.length ? `Tags: ${(oppData.tags as string[]).join(", ")}` : null,
-      oppData.status ? `Discovery status: ${oppData.status}` : null,
-      outcome ? `Parent outcome: ${outcome.title}` : fallback.outcomeTitle ? `Parent outcome: ${fallback.outcomeTitle}` : null,
-      outcome?.data?.metric ? `Outcome metric: ${outcome.data.metric}` : null,
-      existingSolutions.length
-        ? `Solutions already mapped (do NOT repeat these): ${existingSolutions.join("; ")}`
-        : null,
-    ]
-      .filter(Boolean)
-      .join("\n");
 
 
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
