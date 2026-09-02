@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,6 +65,9 @@ const Project = () => {
   const [projectRenameOpen, setProjectRenameOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
+  const [productContext, setProductContext] = useState("");
+  const [targetUsers, setTargetUsers] = useState("");
+  const [constraints, setConstraints] = useState("");
 
   const project = useMemo(() => projects.find((p) => p.id === id), [projects, id]);
   const projectTrees = useMemo(
@@ -82,6 +86,9 @@ const Project = () => {
     if (project) {
       setProjectName(project.name);
       setProjectDescription(project.description || "");
+      setProductContext(project.productContext || "");
+      setTargetUsers(project.targetUsers || "");
+      setConstraints(project.constraints || "");
     }
   }, [project]);
 
@@ -191,6 +198,9 @@ const Project = () => {
     await updateProject(project.id, {
       name: projectName.trim(),
       description: projectDescription.trim() || undefined,
+      productContext: productContext.trim() || undefined,
+      targetUsers: targetUsers.trim() || undefined,
+      constraints: constraints.trim() || undefined,
     });
     setProjectRenameOpen(false);
   };
@@ -440,10 +450,13 @@ const Project = () => {
       </Dialog>
 
       <Dialog open={projectRenameOpen} onOpenChange={setProjectRenameOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
-            <DialogDescription>Update the project name and description.</DialogDescription>
+            <DialogDescription>
+              Update the project details. The context below is shared with the AI assistant on every
+              request, so its suggestions fit your product.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -462,6 +475,36 @@ const Project = () => {
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
                 placeholder="Enter project description"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-product-context">Product context</Label>
+              <Textarea
+                id="project-product-context"
+                value={productContext}
+                onChange={(e) => setProductContext(e.target.value)}
+                placeholder="What the product does, business model, platform, tech stack"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-target-users">Target users</Label>
+              <Textarea
+                id="project-target-users"
+                value={targetUsers}
+                onChange={(e) => setTargetUsers(e.target.value)}
+                placeholder="Who you are building for, key segments and their jobs to be done"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-constraints">Constraints</Label>
+              <Textarea
+                id="project-constraints"
+                value={constraints}
+                onChange={(e) => setConstraints(e.target.value)}
+                placeholder="Anything off-limits: no pricing changes, compliance rules, team capacity"
+                rows={2}
               />
             </div>
           </div>

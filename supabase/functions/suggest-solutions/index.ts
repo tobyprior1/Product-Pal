@@ -1,4 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.79.0";
+import { buildOpportunityContext } from "../_shared/tree-context.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,7 +17,9 @@ interface Suggestion {
   title: string;
   description: string;
   rationale: string;
+  assumption?: string;
 }
+
 
 function parseSuggestions(raw: string): Suggestion[] {
   const cleaned = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
@@ -38,6 +42,8 @@ function parseSuggestions(raw: string): Suggestion[] {
       title: String(item?.title ?? "").trim(),
       description: String(item?.description ?? "").trim(),
       rationale: String(item?.rationale ?? "").trim(),
+      assumption: String(item?.assumption ?? "").trim(),
+
     }))
     .filter((s) => s.title.length > 0)
     .slice(0, 6);
@@ -66,15 +72,15 @@ Deno.serve(async (req) => {
     if (!opportunityId) return json({ error: "opportunityId is required" }, 400);
 
     const fallback = (body?.opportunity ?? {}) as Record<string, any>;
+    const steer = typeof body?.steer === "string" ? body.steer : undefined;
 
-    // Load the opportunity (RLS scopes this to the caller's own trees).
-    const { data: opportunity, error: oppError } = await supabase
-      .from("nodes")
-      .select("*")
-      .eq("id", opportunityId)
-      .maybeSingle();
+    const { context, opportunity, error: ctxError } = await buildOpportunityContext(
+      supabase,
+      opportunityId,
+      { fallback, steer },
+    );
 
-    if (oppError) return json({ error: oppError.message }, 400);
+    if (ctxError) return json({ error: ctxError }, 400);
     if (!opportunity && !fallback.title) {
       return json({ error: "Opportunity not found" }, 404);
     }
@@ -82,44 +88,6 @@ Deno.serve(async (req) => {
       return json({ error: "Node is not an opportunity" }, 400);
     }
 
-    const treeId = (opportunity as any)?.tree_id ?? null;
-
-    const { data: siblings } = treeId
-      ? await supabase
-          .from("nodes")
-          .select("title, type")
-          .eq("tree_id", treeId)
-          .eq("parent_id", opportunityId)
-      : { data: null as any };
-
-    const { data: treeNodes } = treeId
-      ? await supabase
-          .from("nodes")
-          .select("title, type, data")
-          .eq("tree_id", treeId)
-          .eq("type", "Outcome")
-      : { data: null as any };
-
-    const outcome = treeNodes?.[0] as any;
-    const oppTitle = (opportunity as any)?.title ?? fallback.title;
-    const oppData = (((opportunity as any)?.data ?? fallback.data ?? {}) ?? {}) as Record<string, unknown>;
-    const existingSolutions = (siblings ?? [])
-      .filter((s: any) => s.type === "Solution")
-      .map((s: any) => s.title);
-
-    const context = [
-      `Opportunity: ${oppTitle}`,
-      oppData.evidenceSummary ? `Evidence / customer signal: ${oppData.evidenceSummary}` : null,
-      Array.isArray(oppData.tags) && oppData.tags.length ? `Tags: ${(oppData.tags as string[]).join(", ")}` : null,
-      oppData.status ? `Discovery status: ${oppData.status}` : null,
-      outcome ? `Parent outcome: ${outcome.title}` : fallback.outcomeTitle ? `Parent outcome: ${fallback.outcomeTitle}` : null,
-      outcome?.data?.metric ? `Outcome metric: ${outcome.data.metric}` : null,
-      existingSolutions.length
-        ? `Solutions already mapped (do NOT repeat these): ${existingSolutions.join("; ")}`
-        : null,
-    ]
-      .filter(Boolean)
-      .join("\n");
 
 
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
@@ -139,13 +107,19 @@ Deno.serve(async (req) => {
               role: "system",
               content:
                 "You are a product discovery coach trained in Teresa Torres' continuous discovery habits. " +
-                "Given an opportunity (a customer need, pain or desire), propose distinct candidate solutions. " +
+                "You are given a structured brief with sections such as PRODUCT, OUTCOME, BROADER OPPORTUNITY, " +
+                "OPPORTUNITY, NEIGHBOURING OPPORTUNITIES, ALREADY TRIED OR PLANNED, CUSTOMER EVIDENCE and CONSTRAINTS. " +
+                "Ground every suggestion in that brief: respect the product, the outcome metric and the constraints, " +
+                "never repeat or lightly reword anything under ALREADY TRIED OR PLANNED, and do not solve the " +
+                "neighbouring opportunities. Where customer evidence exists, respond to it directly. " +
                 "Each solution must be small, concrete and testable within a couple of weeks — never a large project " +
                 "or a re-statement of the opportunity. Cover a range of approaches, from low-effort to more ambitious. " +
                 "Respond with json only, in the shape " +
-                '{"suggestions":[{"title":"...","description":"...","rationale":"..."}]} — exactly 5 suggestions. ' +
+                '{"suggestions":[{"title":"...","description":"...","rationale":"...","assumption":"..."}]} — exactly 5 suggestions. ' +
                 "title: max 8 words. description: 1-2 sentences on what would be built. " +
-                "rationale: one short line on why it could move the opportunity.",
+                "rationale: one short line on why it could move the opportunity metric, citing the evidence or context it draws on. " +
+                "assumption: the single riskiest assumption this solution would test.",
+
             },
             { role: "user", content: context },
           ],
