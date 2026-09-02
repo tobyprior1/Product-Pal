@@ -108,48 +108,51 @@ Deno.serve(async (req) => {
       .filter(Boolean)
       .join("\n");
 
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) return json({ error: "AI is not configured for this project." }, 500);
+    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+    if (!geminiApiKey) return json({ error: "AI is not configured for this project." }, 500);
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": lovableApiKey,
-        "X-Lovable-AIG-SDK": "fetch",
+    const aiResponse = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${geminiApiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gemini-2.5-flash",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a product discovery coach trained in Teresa Torres' continuous discovery habits. " +
+                "Given an opportunity (a customer need, pain or desire), propose distinct candidate solutions. " +
+                "Each solution must be small, concrete and testable within a couple of weeks — never a large project " +
+                "or a re-statement of the opportunity. Cover a range of approaches, from low-effort to more ambitious. " +
+                "Respond with json only, in the shape " +
+                '{"suggestions":[{"title":"...","description":"...","rationale":"..."}]} — exactly 5 suggestions. ' +
+                "title: max 8 words. description: 1-2 sentences on what would be built. " +
+                "rationale: one short line on why it could move the opportunity.",
+            },
+            { role: "user", content: context },
+          ],
+          response_format: { type: "json_object" },
+        }),
       },
-      body: JSON.stringify({
-        model: "google/gemini-3.7-flash",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a product discovery coach trained in Teresa Torres' continuous discovery habits. " +
-              "Given an opportunity (a customer need, pain or desire), propose distinct candidate solutions. " +
-              "Each solution must be small, concrete and testable within a couple of weeks — never a large project " +
-              "or a re-statement of the opportunity. Cover a range of approaches, from low-effort to more ambitious. " +
-              "Respond with json only, in the shape " +
-              '{"suggestions":[{"title":"...","description":"...","rationale":"..."}]} — exactly 5 suggestions. ' +
-              "title: max 8 words. description: 1-2 sentences on what would be built. " +
-              "rationale: one short line on why it could move the opportunity.",
-          },
-          { role: "user", content: context },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
+    );
 
     if (!aiResponse.ok) {
       const detail = await aiResponse.text();
-      console.error("AI gateway error", aiResponse.status, detail);
+      console.error("Gemini API error", aiResponse.status, detail);
       if (aiResponse.status === 429) {
-        return json({ error: "AI is busy right now. Please try again in a moment." }, 429);
+        return json({ error: "Gemini rate limit reached. Please try again in a moment." }, 429);
       }
-      if (aiResponse.status === 402) {
-        return json({ error: "AI credits are exhausted. Add credits to keep using AI features." }, 402);
+      if (aiResponse.status === 401 || aiResponse.status === 403) {
+        return json({ error: "The Gemini API key is invalid or lacks access." }, 502);
       }
       return json({ error: "The AI request failed. Please try again." }, 502);
     }
+
 
     const aiJson = await aiResponse.json();
     const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
