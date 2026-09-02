@@ -150,21 +150,28 @@ Your response must be valid JSON matching this exact structure:
   }
 }`;
 
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${geminiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gemini-3.6-flash',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: `Analyze this interview transcript:\n\n${interview.transcript}` }
-          ],
-          response_format: { type: "json_object" }
-        }),
-      });
+      const callGemini = (model: string) =>
+        fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${geminiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `Analyze this interview transcript:\n\n${interview.transcript}` }
+            ],
+            response_format: { type: "json_object" }
+          }),
+        });
+
+      let response = await callGemini('gemini-3.7-flash');
+      if (response.status === 503 || response.status === 429) {
+        console.warn('gemini-3.7-flash unavailable, falling back to gemini-3.6-flash');
+        response = await callGemini('gemini-3.6-flash');
+      }
 
       if (!response.ok) {
         const errorText = await response.text();

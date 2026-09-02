@@ -111,16 +111,15 @@ Deno.serve(async (req) => {
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiApiKey) return json({ error: "AI is not configured for this project." }, 500);
 
-    const aiResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-      {
+    const callGemini = (model: string) =>
+      fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${geminiApiKey}`,
         },
         body: JSON.stringify({
-          model: "gemini-3.6-flash",
+          model,
           messages: [
             {
               role: "system",
@@ -138,8 +137,13 @@ Deno.serve(async (req) => {
           ],
           response_format: { type: "json_object" },
         }),
-      },
-    );
+      });
+
+    let aiResponse = await callGemini("gemini-3.7-flash");
+    if (aiResponse.status === 503 || aiResponse.status === 429) {
+      console.warn("gemini-3.7-flash unavailable, falling back to gemini-3.6-flash");
+      aiResponse = await callGemini("gemini-3.6-flash");
+    }
 
     if (!aiResponse.ok) {
       const detail = await aiResponse.text();
