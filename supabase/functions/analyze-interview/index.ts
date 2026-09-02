@@ -157,7 +157,7 @@ Your response must be valid JSON matching this exact structure:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gemini-3.6-flash',
+          model: 'gemini-3.7-flash',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: `Analyze this interview transcript:\n\n${interview.transcript}` }
