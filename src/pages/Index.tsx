@@ -228,7 +228,7 @@ const Index = () => {
                 {projects.length === 0 ? (
                   <Card className="p-6 border-dashed text-center">
                     <p className="text-muted-foreground">
-                      No projects yet. Create one to start organising your trees.
+                      No projects yet. Create one for a team or product area, then add the outcomes it's driving.
                     </p>
                   </Card>
                 ) : (
