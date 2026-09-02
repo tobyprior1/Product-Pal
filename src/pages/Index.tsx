@@ -64,6 +64,9 @@ const Index = () => {
   const [projectCreateOpen, setProjectCreateOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
+  const [projectProductContext, setProjectProductContext] = useState("");
+  const [projectTargetUsers, setProjectTargetUsers] = useState("");
+  const [projectConstraints, setProjectConstraints] = useState("");
 
   const [projectEditOpen, setProjectEditOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<{ id: string; name: string; description?: string } | null>(null);
