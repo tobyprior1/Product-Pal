@@ -17,6 +17,8 @@ export interface TreeContextOptions {
     title?: string;
     data?: AnyRow;
     outcomeTitle?: string;
+    /** Tree the node belongs to, so project context still loads when unsynced. */
+    treeId?: string;
   };
   /** Extra free-text steer from the user. */
   steer?: string;
@@ -105,7 +107,8 @@ export async function buildOpportunityContext(
 
   if (oppError) return { context: "", opportunity: null, error: oppError.message };
 
-  const treeId = opportunity?.tree_id ?? null;
+  const treeId =
+    opportunity?.tree_id ?? (typeof fallback.treeId === "string" ? fallback.treeId : null);
   const parts: (string | null)[] = [];
 
   // --- Product / project ------------------------------------------------

@@ -57,7 +57,7 @@ export function SolutionSuggestionsDialog({
     setSuggestions([])
     setSelected(new Set())
 
-    const { nodes } = useDataStore.getState()
+    const { nodes, currentTree } = useDataStore.getState()
     const localOpp = nodes.find((n) => n.id === opportunityId)
     const outcomeTitle = nodes.find((n) => n.type === "Outcome")?.title
 
@@ -69,6 +69,7 @@ export function SolutionSuggestionsDialog({
           title: localOpp?.title ?? opportunityTitle,
           data: (localOpp as any)?.data ?? {},
           outcomeTitle,
+          treeId: currentTree?.id,
         },
       },
     })
