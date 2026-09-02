@@ -31,7 +31,11 @@ export interface TreesSlice {
 
 export interface ProjectsSlice {
   loadProjects: () => Promise<void>;
-  createProject: (name: string, description?: string) => Promise<string>;
+  createProject: (
+    name: string,
+    description?: string,
+    context?: { productContext?: string; targetUsers?: string; constraints?: string },
+  ) => Promise<string>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
 }
