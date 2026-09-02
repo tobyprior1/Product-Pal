@@ -123,14 +123,17 @@ Deno.serve(async (req) => {
             },
             { role: "user", content: context },
           ],
-          response_format: { type: "json_object" },
         }),
       });
 
-    let aiResponse = await callGemini("gemini-3.7-flash");
-    if (aiResponse.status === 503 || aiResponse.status === 429) {
-      console.warn("gemini-3.7-flash unavailable, falling back to gemini-3.6-flash");
-      aiResponse = await callGemini("gemini-3.6-flash");
+    const modelChain = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
+    let aiResponse = await callGemini(modelChain[0]);
+    for (let i = 1; i < modelChain.length; i++) {
+      if (aiResponse.status !== 503 && aiResponse.status !== 429) break;
+      console.warn(
+        `${modelChain[i - 1]} returned ${aiResponse.status}, falling back to ${modelChain[i]}`,
+      );
+      aiResponse = await callGemini(modelChain[i]);
     }
 
     if (!aiResponse.ok) {

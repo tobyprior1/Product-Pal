@@ -39,6 +39,17 @@ interface AnalysisResult {
   };
 }
 
+function parseJsonContent(raw: string): any {
+  const cleaned = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("The AI response could not be parsed.");
+    return JSON.parse(match[0]);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -117,7 +128,7 @@ serve(async (req) => {
 
       const systemPrompt = `You are an expert product researcher analyzing customer interviews. Extract actionable insights and opportunities from interview transcripts.
 
-Your response must be valid JSON matching this exact structure:
+Respond with raw JSON only - no markdown, no code fences, no commentary. Your response must be valid JSON matching this exact structure:
 {
   "participant_name": "string",
   "quick_facts": ["fact1", "fact2", "fact3"],
@@ -163,14 +174,15 @@ Your response must be valid JSON matching this exact structure:
               { role: 'system', content: systemPrompt },
               { role: 'user', content: `Analyze this interview transcript:\n\n${interview.transcript}` }
             ],
-            response_format: { type: "json_object" }
           }),
         });
 
-      let response = await callGemini('gemini-3.7-flash');
-      if (response.status === 503 || response.status === 429) {
-        console.warn('gemini-3.7-flash unavailable, falling back to gemini-3.6-flash');
-        response = await callGemini('gemini-3.6-flash');
+      const modelChain = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash'];
+      let response = await callGemini(modelChain[0]);
+      for (let i = 1; i < modelChain.length; i++) {
+        if (response.status !== 503 && response.status !== 429) break;
+        console.warn(`${modelChain[i - 1]} returned ${response.status}, falling back to ${modelChain[i]}`);
+        response = await callGemini(modelChain[i]);
       }
 
       if (!response.ok) {
@@ -181,7 +193,7 @@ Your response must be valid JSON matching this exact structure:
 
 
       const data = await response.json();
-      const analysis: AnalysisResult = JSON.parse(data.choices[0].message.content);
+      const analysis: AnalysisResult = parseJsonContent(data.choices?.[0]?.message?.content ?? "");
 
       // Store opportunities
       if (analysis.opportunities?.length > 0) {
