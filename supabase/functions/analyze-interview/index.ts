@@ -163,13 +163,12 @@ Your response must be valid JSON matching this exact structure:
               { role: 'system', content: systemPrompt },
               { role: 'user', content: `Analyze this interview transcript:\n\n${interview.transcript}` }
             ],
-            response_format: { type: "json_object" }
           }),
         });
 
       let response = await callGemini('gemini-3.7-flash');
       if (response.status === 503 || response.status === 429) {
-        console.warn('gemini-3.7-flash unavailable, falling back to gemini-3.6-flash');
+        console.warn(`gemini-3.7-flash returned ${response.status}, falling back to gemini-3.6-flash`);
         response = await callGemini('gemini-3.6-flash');
       }
 
