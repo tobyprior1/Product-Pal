@@ -1,4 +1,4 @@
-import { Plus, Lightbulb } from "lucide-react"
+import { Plus, Lightbulb, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { HIERARCHY_STYLES, type HierarchyKind } from "@/lib/pm-hierarchy"
@@ -13,6 +13,8 @@ interface AddChildPanelButtonProps {
   onAddSubOpportunity?: () => void
   canAddSubOpportunity?: boolean
   canAddSolution?: boolean
+  /** Opportunity nodes can ask the AI for candidate solutions. */
+  onSuggestSolutions?: () => void
 }
 
 export function AddChildPanelButton({
@@ -22,7 +24,9 @@ export function AddChildPanelButton({
   onAddSubOpportunity,
   canAddSubOpportunity = true,
   canAddSolution = true,
+  onSuggestSolutions,
 }: AddChildPanelButtonProps) {
+
   const style = HIERARCHY_STYLES[childKind]
   const ChildIcon = style.icon
 
@@ -51,6 +55,31 @@ export function AddChildPanelButton({
           </TooltipContent>
         )}
       </Tooltip>
+
+      {onSuggestSolutions && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="block">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-xs font-medium text-primary hover:bg-primary/5"
+                onClick={onSuggestSolutions}
+                disabled={disabled || !canAddSolution}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Suggest solutions with AI
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="max-w-xs">
+            {canAddSolution
+              ? "Generate solution ideas for this opportunity, then pick the ones worth exploring."
+              : SOLUTION_BLOCKED_HINT}
+          </TooltipContent>
+        </Tooltip>
+      )}
+
+
 
       {onAddSubOpportunity && (
         <Tooltip>

@@ -27,8 +27,12 @@ import { PanelSection } from "./node-fields/PanelSection"
 import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
 import { AddChildPanelButton } from "./AddChildPanelButton"
+import { SolutionSuggestionsDialog } from "./SolutionSuggestionsDialog"
+import { useState } from "react"
 
 export function NodePanel() {
+  const [suggestOpen, setSuggestOpen] = useState(false)
+
   const selectedNodeId = useUIStore((state) => state.selectedNodeId)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
   const focusedNodeId = useUIStore((state) => state.focusedNodeId)
@@ -184,10 +188,20 @@ export function NodePanel() {
             }
             canAddSubOpportunity={selectedNode.type === "Opportunity" ? canAddSubOpportunity : true}
             canAddSolution={selectedNode.type === "Opportunity" ? canAddSolution : true}
+            onSuggestSolutions={selectedNode.type === "Opportunity" ? () => setSuggestOpen(true) : undefined}
           />
         )}
       </div>
 
+      {selectedNode.type === "Opportunity" && (
+        <SolutionSuggestionsDialog
+          open={suggestOpen}
+          onOpenChange={setSuggestOpen}
+          opportunityId={selectedNode.id}
+          opportunityTitle={selectedNode.title}
+        />
+      )}
     </div>
+
   )
 }
