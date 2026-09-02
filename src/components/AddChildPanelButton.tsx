@@ -1,4 +1,4 @@
-import { Plus, Lightbulb } from "lucide-react"
+import { Plus, Lightbulb, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { HIERARCHY_STYLES, type HierarchyKind } from "@/lib/pm-hierarchy"
@@ -13,6 +13,8 @@ interface AddChildPanelButtonProps {
   onAddSubOpportunity?: () => void
   canAddSubOpportunity?: boolean
   canAddSolution?: boolean
+  /** Opportunity nodes can ask the AI for candidate solutions. */
+  onSuggestSolutions?: () => void
 }
 
 export function AddChildPanelButton({
@@ -22,7 +24,9 @@ export function AddChildPanelButton({
   onAddSubOpportunity,
   canAddSubOpportunity = true,
   canAddSolution = true,
+  onSuggestSolutions,
 }: AddChildPanelButtonProps) {
+
   const style = HIERARCHY_STYLES[childKind]
   const ChildIcon = style.icon
 
