@@ -131,9 +131,16 @@ const Index = () => {
   const handleCreateProject = async () => {
     if (!userId || !projectName.trim()) return;
     try {
-      await createProject(projectName.trim(), projectDescription.trim() || undefined);
+      await createProject(projectName.trim(), projectDescription.trim() || undefined, {
+        productContext: projectProductContext.trim() || undefined,
+        targetUsers: projectTargetUsers.trim() || undefined,
+        constraints: projectConstraints.trim() || undefined,
+      });
       setProjectName("");
       setProjectDescription("");
+      setProjectProductContext("");
+      setProjectTargetUsers("");
+      setProjectConstraints("");
       setProjectCreateOpen(false);
     } catch (error) {
       console.error("Error creating project:", error);
