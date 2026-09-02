@@ -467,10 +467,13 @@ const Index = () => {
       </Dialog>
 
       <Dialog open={projectCreateOpen} onOpenChange={setProjectCreateOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Project</DialogTitle>
-            <DialogDescription>Give your project a name and optional description.</DialogDescription>
+            <DialogDescription>
+              A project is a team or area of the product — the outcomes inside it are what that team is driving.
+              The context below is optional, but it makes AI suggestions far sharper.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -479,7 +482,7 @@ const Index = () => {
                 id="new-project-name"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder="e.g. Q3 Growth"
+                placeholder="e.g. Editor Team"
               />
             </div>
             <div className="space-y-2">
@@ -488,7 +491,37 @@ const Index = () => {
                 id="new-project-description"
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="Optional description"
+                placeholder="What this team or area is responsible for"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-project-product-context">Product context</Label>
+              <Textarea
+                id="new-project-product-context"
+                value={projectProductContext}
+                onChange={(e) => setProjectProductContext(e.target.value)}
+                placeholder="What the product does, business model, platform, tech stack"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-project-target-users">Target users</Label>
+              <Textarea
+                id="new-project-target-users"
+                value={projectTargetUsers}
+                onChange={(e) => setProjectTargetUsers(e.target.value)}
+                placeholder="Who you are building for, key segments and their jobs to be done"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-project-constraints">Constraints</Label>
+              <Textarea
+                id="new-project-constraints"
+                value={projectConstraints}
+                onChange={(e) => setProjectConstraints(e.target.value)}
+                placeholder="Anything off-limits: no pricing changes, compliance rules, team capacity"
+                rows={2}
               />
             </div>
           </div>
