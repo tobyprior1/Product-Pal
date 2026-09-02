@@ -17,7 +17,9 @@ interface Suggestion {
   title: string;
   description: string;
   rationale: string;
+  assumption?: string;
 }
+
 
 function parseSuggestions(raw: string): Suggestion[] {
   const cleaned = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
