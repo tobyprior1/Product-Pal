@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { supabase } from "@/integrations/supabase/client"
 import { useDataStore } from "@/lib/pm-supabase-store"
@@ -23,6 +25,7 @@ export interface SolutionSuggestion {
   title: string
   description: string
   rationale: string
+  assumption?: string
 }
 
 interface SolutionSuggestionsDialogProps {
@@ -43,6 +46,7 @@ export function SolutionSuggestionsDialog({
   const [suggestions, setSuggestions] = useState<SolutionSuggestion[]>([])
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [adding, setAdding] = useState(false)
+  const [steer, setSteer] = useState("")
 
   const addNode = useDataStore((state) => state.addNode)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
@@ -60,6 +64,7 @@ export function SolutionSuggestionsDialog({
     const { data, error: fnError } = await supabase.functions.invoke("suggest-solutions", {
       body: {
         opportunityId,
+        steer: steer.trim() || undefined,
         opportunity: {
           title: localOpp?.title ?? opportunityTitle,
           data: (localOpp as any)?.data ?? {},
@@ -162,7 +167,26 @@ export function SolutionSuggestionsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[55vh] space-y-3 overflow-y-auto pr-1">
+        <div className="space-y-1.5">
+          <Label htmlFor="suggestion-steer" className="text-xs text-muted-foreground">
+            Optional steer for the AI
+          </Label>
+          <Input
+            id="suggestion-steer"
+            value={steer}
+            onChange={(event) => setSteer(event.target.value)}
+            placeholder="e.g. focus on low-effort ideas, we can't change pricing"
+            disabled={loading || adding}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault()
+                void fetchSuggestions()
+              }
+            }}
+          />
+        </div>
+
+        <div className="max-h-[45vh] space-y-3 overflow-y-auto pr-1">
           {loading &&
             [0, 1, 2, 3].map((i) => (
               <div key={i} className="space-y-2 rounded-lg border border-border p-3">
@@ -202,6 +226,9 @@ export function SolutionSuggestionsDialog({
                     <p className="text-xs text-muted-foreground">{suggestion.description}</p>
                     {suggestion.rationale && (
                       <p className="text-xs italic text-muted-foreground/80">Why: {suggestion.rationale}</p>
+                    )}
+                    {suggestion.assumption && (
+                      <p className="text-xs text-muted-foreground/70">Riskiest assumption: {suggestion.assumption}</p>
                     )}
                   </div>
                 </button>
