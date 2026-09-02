@@ -109,10 +109,10 @@ serve(async (req) => {
       .eq('id', interviewId);
 
     try {
-      // Call OpenAI for analysis
-      const openaiKey = Deno.env.get('OPENAI_API_KEY');
-      if (!openaiKey) {
-        throw new Error("OpenAI API key not configured");
+      // Call Gemini for analysis
+      const geminiKey = Deno.env.get('GEMINI_API_KEY');
+      if (!geminiKey) {
+        throw new Error("Gemini API key not configured");
       }
 
       const systemPrompt = `You are an expert product researcher analyzing customer interviews. Extract actionable insights and opportunities from interview transcripts.
@@ -150,28 +150,28 @@ Your response must be valid JSON matching this exact structure:
   }
 }`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${openaiKey}`,
+          'Authorization': `Bearer ${geminiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-5-mini-2025-08-07',
+          model: 'gemini-3.6-flash',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: `Analyze this interview transcript:\n\n${interview.transcript}` }
           ],
-          max_completion_tokens: 4000,
           response_format: { type: "json_object" }
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("OpenAI error:", errorText);
-        throw new Error(`OpenAI API error: ${response.status}`);
+        console.error("Gemini error:", errorText);
+        throw new Error(`Gemini API error: ${response.status}`);
       }
+
 
       const data = await response.json();
       const analysis: AnalysisResult = JSON.parse(data.choices[0].message.content);
