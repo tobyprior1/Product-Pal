@@ -286,26 +286,35 @@ export type Database = {
       }
       projects: {
         Row: {
+          constraints: string | null
           created_at: string
           description: string | null
           id: string
           name: string
+          product_context: string | null
+          target_users: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          constraints?: string | null
           created_at?: string
           description?: string | null
           id?: string
           name: string
+          product_context?: string | null
+          target_users?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          constraints?: string | null
           created_at?: string
           description?: string | null
           id?: string
           name?: string
+          product_context?: string | null
+          target_users?: string | null
           updated_at?: string
           user_id?: string
         }
