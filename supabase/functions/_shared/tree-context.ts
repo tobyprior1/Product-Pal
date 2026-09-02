@@ -107,7 +107,8 @@ export async function buildOpportunityContext(
 
   if (oppError) return { context: "", opportunity: null, error: oppError.message };
 
-  const treeId = opportunity?.tree_id ?? null;
+  const treeId =
+    opportunity?.tree_id ?? (typeof fallback.treeId === "string" ? fallback.treeId : null);
   const parts: (string | null)[] = [];
 
   // --- Product / project ------------------------------------------------
