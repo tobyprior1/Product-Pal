@@ -177,10 +177,12 @@ Respond with raw JSON only - no markdown, no code fences, no commentary. Your re
           }),
         });
 
-      let response = await callGemini('gemini-3.7-flash');
-      if (response.status === 503 || response.status === 429) {
-        console.warn(`gemini-3.7-flash returned ${response.status}, falling back to gemini-3.6-flash`);
-        response = await callGemini('gemini-3.6-flash');
+      const modelChain = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash'];
+      let response = await callGemini(modelChain[0]);
+      for (let i = 1; i < modelChain.length; i++) {
+        if (response.status !== 503 && response.status !== 429) break;
+        console.warn(`${modelChain[i - 1]} returned ${response.status}, falling back to ${modelChain[i]}`);
+        response = await callGemini(modelChain[i]);
       }
 
       if (!response.ok) {
