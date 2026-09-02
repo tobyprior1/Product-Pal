@@ -29,7 +29,7 @@ Today the solution-suggestion AI only sees: the opportunity title, its evidence 
 
 ## Recommended first slice
 
-Tier 1 in full plus item 11 — no schema change, no new UI, and it is where most of the missing signal is. Then Tier 3 item 9 (project context settings), then Tier 2 interview evidence.
+Tier 1 in full plus item 11 — no schema change, no new UI, and it is where most of the missing signal is. Then Tier 3 item 9 (project context settings). 
 
 ## Technical notes
 
