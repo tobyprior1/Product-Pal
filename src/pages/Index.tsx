@@ -252,7 +252,9 @@ const Index = () => {
                                   {project.name}
                                 </h3>
                                 <p className="text-xs text-muted-foreground">
-                                  {trees.filter((t) => t.projectId === project.id).length} trees
+                                  {trees.filter((t) => t.projectId === project.id).length === 1
+                                    ? "1 outcome"
+                                    : `${trees.filter((t) => t.projectId === project.id).length} outcomes`}
                                 </p>
                               </div>
                             </div>
