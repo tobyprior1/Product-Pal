@@ -30,7 +30,8 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model: "gemini-3.7-flash",
-        messages: [{ role: "user", content: "ping" }],
+        messages: [{ role: "user", content: "give me json {\"ok\":true}" }],
+        response_format: { type: "json_object" },
       }),
     },
   );
