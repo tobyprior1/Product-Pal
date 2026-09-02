@@ -17,6 +17,8 @@ export interface TreeContextOptions {
     title?: string;
     data?: AnyRow;
     outcomeTitle?: string;
+    /** Tree the node belongs to, so project context still loads when unsynced. */
+    treeId?: string;
   };
   /** Extra free-text steer from the user. */
   steer?: string;
