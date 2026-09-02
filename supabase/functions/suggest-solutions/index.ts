@@ -123,13 +123,14 @@ Deno.serve(async (req) => {
             },
             { role: "user", content: context },
           ],
-          response_format: { type: "json_object" },
         }),
       });
 
     let aiResponse = await callGemini("gemini-3.7-flash");
     if (aiResponse.status === 503 || aiResponse.status === 429) {
-      console.warn("gemini-3.7-flash unavailable, falling back to gemini-3.6-flash");
+      console.warn(
+        `gemini-3.7-flash returned ${aiResponse.status}, falling back to gemini-3.6-flash`,
+      );
       aiResponse = await callGemini("gemini-3.6-flash");
     }
 
