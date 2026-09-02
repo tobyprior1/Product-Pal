@@ -1,4 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.79.0";
+import { buildOpportunityContext } from "../_shared/tree-context.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
