@@ -65,6 +65,8 @@ Deno.serve(async (req) => {
     const opportunityId = typeof body?.opportunityId === "string" ? body.opportunityId : "";
     if (!opportunityId) return json({ error: "opportunityId is required" }, 400);
 
+    const fallback = (body?.opportunity ?? {}) as Record<string, any>;
+
     // Load the opportunity (RLS scopes this to the caller's own trees).
     const { data: opportunity, error: oppError } = await supabase
       .from("nodes")
@@ -73,33 +75,44 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (oppError) return json({ error: oppError.message }, 400);
-    if (!opportunity) return json({ error: "Opportunity not found" }, 404);
-    if (opportunity.type !== "Opportunity") return json({ error: "Node is not an opportunity" }, 400);
+    if (!opportunity && !fallback.title) {
+      return json({ error: "Opportunity not found" }, 404);
+    }
+    if (opportunity && opportunity.type !== "Opportunity") {
+      return json({ error: "Node is not an opportunity" }, 400);
+    }
 
-    const { data: siblings } = await supabase
-      .from("nodes")
-      .select("title, type")
-      .eq("tree_id", (opportunity as any).tree_id)
-      .eq("parent_id", opportunityId);
+    const treeId = (opportunity as any)?.tree_id ?? null;
 
-    const { data: treeNodes } = await supabase
-      .from("nodes")
-      .select("title, type, data")
-      .eq("tree_id", (opportunity as any).tree_id)
-      .eq("type", "Outcome");
+    const { data: siblings } = treeId
+      ? await supabase
+          .from("nodes")
+          .select("title, type")
+          .eq("tree_id", treeId)
+          .eq("parent_id", opportunityId)
+      : { data: null as any };
+
+    const { data: treeNodes } = treeId
+      ? await supabase
+          .from("nodes")
+          .select("title, type, data")
+          .eq("tree_id", treeId)
+          .eq("type", "Outcome")
+      : { data: null as any };
 
     const outcome = treeNodes?.[0] as any;
-    const oppData = ((opportunity as any).data ?? {}) as Record<string, unknown>;
+    const oppTitle = (opportunity as any)?.title ?? fallback.title;
+    const oppData = (((opportunity as any)?.data ?? fallback.data ?? {}) ?? {}) as Record<string, unknown>;
     const existingSolutions = (siblings ?? [])
       .filter((s: any) => s.type === "Solution")
       .map((s: any) => s.title);
 
     const context = [
-      `Opportunity: ${(opportunity as any).title}`,
+      `Opportunity: ${oppTitle}`,
       oppData.evidenceSummary ? `Evidence / customer signal: ${oppData.evidenceSummary}` : null,
       Array.isArray(oppData.tags) && oppData.tags.length ? `Tags: ${(oppData.tags as string[]).join(", ")}` : null,
       oppData.status ? `Discovery status: ${oppData.status}` : null,
-      outcome ? `Parent outcome: ${outcome.title}` : null,
+      outcome ? `Parent outcome: ${outcome.title}` : fallback.outcomeTitle ? `Parent outcome: ${fallback.outcomeTitle}` : null,
       outcome?.data?.metric ? `Outcome metric: ${outcome.data.metric}` : null,
       existingSolutions.length
         ? `Solutions already mapped (do NOT repeat these): ${existingSolutions.join("; ")}`
@@ -107,6 +120,7 @@ Deno.serve(async (req) => {
     ]
       .filter(Boolean)
       .join("\n");
+
 
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiApiKey) return json({ error: "AI is not configured for this project." }, 500);
