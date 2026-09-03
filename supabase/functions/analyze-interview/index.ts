@@ -178,12 +178,19 @@ Respond with raw JSON only - no markdown, no code fences, no commentary. Your re
         });
 
       const modelChain = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash'];
-      let response = await callGemini(modelChain[0]);
-      for (let i = 1; i < modelChain.length; i++) {
-        if (response.status !== 503 && response.status !== 429) break;
-        console.warn(`${modelChain[i - 1]} returned ${response.status}, falling back to ${modelChain[i]}`);
-        response = await callGemini(modelChain[i]);
+      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+      let response: Response | undefined;
+      outer: for (const model of modelChain) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          if (attempt > 0) await sleep(600 * attempt);
+          response = await callGemini(model);
+          if (response.status !== 503 && response.status !== 429) break outer;
+          console.warn(`${model} returned ${response.status} (attempt ${attempt + 1})`);
+
+        }
       }
+      response = response!;
+
 
       if (!response.ok) {
         const errorText = await response.text();

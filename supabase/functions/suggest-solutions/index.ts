@@ -127,14 +127,18 @@ Deno.serve(async (req) => {
       });
 
     const modelChain = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
-    let aiResponse = await callGemini(modelChain[0]);
-    for (let i = 1; i < modelChain.length; i++) {
-      if (aiResponse.status !== 503 && aiResponse.status !== 429) break;
-      console.warn(
-        `${modelChain[i - 1]} returned ${aiResponse.status}, falling back to ${modelChain[i]}`,
-      );
-      aiResponse = await callGemini(modelChain[i]);
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    let aiResponse: Response | undefined;
+    outer: for (const model of modelChain) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await sleep(600 * attempt);
+        aiResponse = await callGemini(model);
+        if (aiResponse.status !== 503 && aiResponse.status !== 429) break outer;
+        console.warn(`${model} returned ${aiResponse.status} (attempt ${attempt + 1})`);
+      }
     }
+    aiResponse = aiResponse!;
+
 
     if (!aiResponse.ok) {
       const detail = await aiResponse.text();
