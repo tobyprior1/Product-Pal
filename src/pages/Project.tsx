@@ -469,12 +469,12 @@ const Project = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="project-description">Description</Label>
+              <Label htmlFor="project-description">Purpose of the team/project</Label>
               <Input
                 id="project-description"
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="Enter project description"
+                placeholder="e.g. Make editing fast and reliable for creators"
               />
             </div>
             <div className="space-y-2">

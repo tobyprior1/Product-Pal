@@ -488,12 +488,12 @@ const Index = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-project-description">Description</Label>
+              <Label htmlFor="new-project-description">Purpose of the team/project</Label>
               <Input
                 id="new-project-description"
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="What this team or area is responsible for"
+                placeholder="e.g. Make editing fast and reliable for creators"
               />
             </div>
             <div className="space-y-2">
@@ -555,12 +555,12 @@ const Index = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-project-description">Description</Label>
+              <Label htmlFor="edit-project-description">Purpose of the team/project</Label>
               <Input
                 id="edit-project-description"
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="Enter project description"
+                placeholder="e.g. Make editing fast and reliable for creators"
               />
             </div>
           </div>
