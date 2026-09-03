@@ -479,7 +479,7 @@ const Index = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="new-project-name">Project Name</Label>
+              <Label htmlFor="new-project-name">Team/Project name</Label>
               <Input
                 id="new-project-name"
                 value={projectName}
@@ -546,12 +546,12 @@ const Index = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-project-name">Project Name</Label>
+              <Label htmlFor="edit-project-name">Team/Project name</Label>
               <Input
                 id="edit-project-name"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Enter project name"
+                placeholder="e.g. Editor Team"
               />
             </div>
             <div className="space-y-2">
