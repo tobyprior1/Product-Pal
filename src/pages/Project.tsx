@@ -460,12 +460,12 @@ const Project = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="project-name">Project Name</Label>
+              <Label htmlFor="project-name">Team/Project name</Label>
               <Input
                 id="project-name"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Enter project name"
+                placeholder="e.g. Editor Team"
               />
             </div>
             <div className="space-y-2">
