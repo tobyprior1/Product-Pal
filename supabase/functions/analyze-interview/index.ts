@@ -186,7 +186,7 @@ Respond with raw JSON only - no markdown, no code fences, no commentary. Your re
           response = await callGemini(model);
           if (response.status !== 503 && response.status !== 429) break outer;
           console.warn(`${model} returned ${response.status} (attempt ${attempt + 1})`);
-          console.warn(`${model} returned ${response.status} (attempt ${attempt + 1})`);
+
         }
       }
       response = response!;
