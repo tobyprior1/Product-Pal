@@ -53,6 +53,12 @@ export const createNodesSlice: DataSlice<NodesSlice> = (set, get) => ({
     }
 
     state.setNodes([...state.nodes, node]);
+
+    // Keep the outcome (tree) name in sync with its root Outcome node
+    if (node.type === "Outcome" && !node.parentId && node.title && node.title !== tree.name) {
+      await state.renameTree(tree.id, node.title);
+    }
+    return true;
     return true;
   },
 
