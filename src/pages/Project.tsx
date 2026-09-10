@@ -69,6 +69,7 @@ const Project = () => {
   const [productContext, setProductContext] = useState("");
   const [targetUsers, setTargetUsers] = useState("");
   const [constraints, setConstraints] = useState("");
+  const [promptsOpen, setPromptsOpen] = useState(false);
 
   const project = useMemo(() => projects.find((p) => p.id === id), [projects, id]);
   const projectTrees = useMemo(
@@ -237,6 +238,10 @@ const Project = () => {
             </div>
             {project && (
               <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setPromptsOpen(true)}>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI prompts
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => setProjectRenameOpen(true)}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit
@@ -395,6 +400,8 @@ const Project = () => {
         </div>
       </div>
 
+
+      <PromptVariantsDialog open={promptsOpen} onOpenChange={setPromptsOpen} />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
