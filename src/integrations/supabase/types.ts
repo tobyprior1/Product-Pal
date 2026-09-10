@@ -14,6 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_prompt_comparisons: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          opportunity_node_id: string | null
+          opportunity_title: string | null
+          prompt_a_id: string | null
+          prompt_a_version: number | null
+          prompt_b_id: string | null
+          prompt_b_version: number | null
+          suggestions_a: Json | null
+          suggestions_b: Json | null
+          tree_id: string | null
+          updated_at: string
+          user_id: string
+          verdict: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key?: string
+          opportunity_node_id?: string | null
+          opportunity_title?: string | null
+          prompt_a_id?: string | null
+          prompt_a_version?: number | null
+          prompt_b_id?: string | null
+          prompt_b_version?: number | null
+          suggestions_a?: Json | null
+          suggestions_b?: Json | null
+          tree_id?: string | null
+          updated_at?: string
+          user_id: string
+          verdict: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          opportunity_node_id?: string | null
+          opportunity_title?: string | null
+          prompt_a_id?: string | null
+          prompt_a_version?: number | null
+          prompt_b_id?: string | null
+          prompt_b_version?: number | null
+          suggestions_a?: Json | null
+          suggestions_b?: Json | null
+          tree_id?: string | null
+          updated_at?: string
+          user_id?: string
+          verdict?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_prompt_comparisons_prompt_a_id_fkey"
+            columns: ["prompt_a_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_prompt_comparisons_prompt_b_id_fkey"
+            columns: ["prompt_b_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_prompts: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          key: string
+          label: string
+          system_prompt: string
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key?: string
+          label: string
+          system_prompt: string
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key?: string
+          label?: string
+          system_prompt?: string
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       interview_insights: {
         Row: {
           created_at: string
