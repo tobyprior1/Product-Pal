@@ -34,7 +34,8 @@ import type { OSTNode } from "@/lib/pm-types";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, MoreVertical, Pencil, Trash2, Plus, FolderOpen } from "lucide-react";
+import { ArrowLeft, MoreVertical, Pencil, Trash2, Plus, FolderOpen, Sparkles } from "lucide-react";
+import { PromptVariantsDialog } from "@/components/PromptVariantsDialog";
 import { usePendingAction } from "@/hooks/usePendingAction";
 import { cn } from "@/lib/utils";
 
