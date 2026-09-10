@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.79.0";
 import { buildOpportunityContext } from "../_shared/tree-context.ts";
+import { DEFAULT_SUGGEST_SOLUTIONS_PROMPT, VARIANT_B_STARTER_PROMPT } from "./prompts.ts";
 
 
 const corsHeaders = {
@@ -66,6 +67,7 @@ Deno.serve(async (req) => {
 
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) return json({ error: "Invalid session" }, 401);
+    const userId = userData.user.id;
 
     const body = await req.json().catch(() => ({}));
     const opportunityId = typeof body?.opportunityId === "string" ? body.opportunityId : "";
@@ -73,6 +75,7 @@ Deno.serve(async (req) => {
 
     const fallback = (body?.opportunity ?? {}) as Record<string, any>;
     const steer = typeof body?.steer === "string" ? body.steer : undefined;
+    const compare = body?.compare === true;
 
     const { context, opportunity, error: ctxError } = await buildOpportunityContext(
       supabase,
@@ -88,12 +91,47 @@ Deno.serve(async (req) => {
       return json({ error: "Node is not an opportunity" }, 400);
     }
 
+    // ---- Prompt variants (editable in-app, seeded on first use) ----
+    const { data: promptRows } = await supabase
+      .from("ai_prompts")
+      .select("id,label,system_prompt,version,is_active")
+      .eq("key", "suggest-solutions");
 
+    let prompts = (promptRows ?? []) as Array<{
+      id: string;
+      label: string;
+      system_prompt: string;
+      version: number;
+      is_active: boolean;
+    }>;
+
+    const missing = ["A", "B"].filter((label) => !prompts.some((p) => p.label === label));
+    if (missing.length > 0) {
+      const { data: inserted } = await supabase
+        .from("ai_prompts")
+        .insert(
+          missing.map((label) => ({
+            user_id: userId,
+            key: "suggest-solutions",
+            label,
+            system_prompt:
+              label === "A" ? DEFAULT_SUGGEST_SOLUTIONS_PROMPT : VARIANT_B_STARTER_PROMPT,
+            version: 1,
+            is_active: label === "A",
+          })),
+        )
+        .select("id,label,system_prompt,version,is_active");
+      prompts = [...prompts, ...((inserted ?? []) as typeof prompts)];
+    }
+
+    const promptA = prompts.find((p) => p.label === "A");
+    const promptB = prompts.find((p) => p.label === "B");
+    const activePrompt = prompts.find((p) => p.is_active) ?? promptA ?? promptB;
 
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiApiKey) return json({ error: "AI is not configured for this project." }, 500);
 
-    const callGemini = (model: string) =>
+    const callGemini = (model: string, systemPrompt: string) =>
       fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
@@ -103,24 +141,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           model,
           messages: [
-            {
-              role: "system",
-              content:
-                "You are a product discovery coach trained in Teresa Torres' continuous discovery habits. " +
-                "You are given a structured brief with sections such as PRODUCT, OUTCOME, BROADER OPPORTUNITY, " +
-                "OPPORTUNITY, NEIGHBOURING OPPORTUNITIES, ALREADY TRIED OR PLANNED, CUSTOMER EVIDENCE and CONSTRAINTS. " +
-                "Ground every suggestion in that brief: respect the product, the outcome metric and the constraints, " +
-                "never repeat or lightly reword anything under ALREADY TRIED OR PLANNED, and do not solve the " +
-                "neighbouring opportunities. Where customer evidence exists, respond to it directly. " +
-                "Each solution must be small, concrete and testable within a couple of weeks — never a large project " +
-                "or a re-statement of the opportunity. Cover a range of approaches, from low-effort to more ambitious. " +
-                "Respond with json only, in the shape " +
-                '{"suggestions":[{"title":"...","description":"...","rationale":"...","assumption":"..."}]} — exactly 5 suggestions. ' +
-                "title: max 8 words. description: 1-2 sentences on what would be built. " +
-                "rationale: one short line on why it could move the opportunity metric, citing the evidence or context it draws on. " +
-                "assumption: the single riskiest assumption this solution would test.",
-
-            },
+            { role: "system", content: systemPrompt },
             { role: "user", content: context },
           ],
         }),
@@ -128,40 +149,80 @@ Deno.serve(async (req) => {
 
     const modelChain = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-    let aiResponse: Response | undefined;
-    outer: for (const model of modelChain) {
-      for (let attempt = 0; attempt < 3; attempt++) {
-        if (attempt > 0) await sleep(600 * attempt);
-        aiResponse = await callGemini(model);
-        if (aiResponse.status !== 503 && aiResponse.status !== 429) break outer;
-        console.warn(`${model} returned ${aiResponse.status} (attempt ${attempt + 1})`);
+
+    const runVariant = async (
+      systemPrompt: string,
+    ): Promise<{ suggestions?: Suggestion[]; error?: string; status?: number }> => {
+      let aiResponse: Response | undefined;
+      outer: for (const model of modelChain) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          if (attempt > 0) await sleep(600 * attempt);
+          aiResponse = await callGemini(model, systemPrompt);
+          if (aiResponse.status !== 503 && aiResponse.status !== 429) break outer;
+          console.warn(`${model} returned ${aiResponse.status} (attempt ${attempt + 1})`);
+        }
       }
-    }
-    aiResponse = aiResponse!;
+      const res = aiResponse!;
 
-
-    if (!aiResponse.ok) {
-      const detail = await aiResponse.text();
-      console.error("Gemini API error", aiResponse.status, detail);
-      if (aiResponse.status === 429) {
-        return json({ error: "Gemini rate limit reached. Please try again in a moment." }, 429);
+      if (!res.ok) {
+        const detail = await res.text();
+        console.error("Gemini API error", res.status, detail);
+        if (res.status === 429) {
+          return { error: "Gemini rate limit reached. Please try again in a moment.", status: 429 };
+        }
+        if (res.status === 401 || res.status === 403) {
+          return { error: "The Gemini API key is invalid or lacks access.", status: 502 };
+        }
+        return { error: "The AI request failed. Please try again.", status: 502 };
       }
-      if (aiResponse.status === 401 || aiResponse.status === 403) {
-        return json({ error: "The Gemini API key is invalid or lacks access." }, 502);
+
+      const aiJson = await res.json();
+      const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
+      const suggestions = parseSuggestions(content);
+      if (suggestions.length === 0) {
+        return { error: "The AI returned no usable suggestions. Try again.", status: 502 };
       }
-      return json({ error: "The AI request failed. Please try again." }, 502);
+      return { suggestions };
+    };
+
+    if (compare) {
+      if (!promptA || !promptB) {
+        return json({ error: "Both prompt variants must exist to compare." }, 400);
+      }
+      const [resA, resB] = await Promise.all([
+        runVariant(promptA.system_prompt),
+        runVariant(promptB.system_prompt),
+      ]);
+      if (resA.error || resB.error) {
+        return json({ error: resA.error ?? resB.error }, resA.status ?? resB.status ?? 502);
+      }
+      return json({
+        compare: true,
+        a: {
+          promptId: promptA.id,
+          label: "A",
+          version: promptA.version,
+          suggestions: resA.suggestions,
+        },
+        b: {
+          promptId: promptB.id,
+          label: "B",
+          version: promptB.version,
+          suggestions: resB.suggestions,
+        },
+      });
     }
 
+    const systemPrompt = activePrompt?.system_prompt ?? DEFAULT_SUGGEST_SOLUTIONS_PROMPT;
+    const result = await runVariant(systemPrompt);
+    if (result.error) return json({ error: result.error }, result.status ?? 502);
 
-    const aiJson = await aiResponse.json();
-    const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
-    const suggestions = parseSuggestions(content);
-
-    if (suggestions.length === 0) {
-      return json({ error: "The AI returned no usable suggestions. Try again." }, 502);
-    }
-
-    return json({ suggestions });
+    return json({
+      suggestions: result.suggestions,
+      prompt: activePrompt
+        ? { promptId: activePrompt.id, label: activePrompt.label, version: activePrompt.version }
+        : null,
+    });
   } catch (error) {
     console.error("suggest-solutions error", error);
     return json({ error: error instanceof Error ? error.message : "Unexpected error" }, 500);
