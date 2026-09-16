@@ -69,6 +69,11 @@ const Project = () => {
   const [productContext, setProductContext] = useState("");
   const [targetUsers, setTargetUsers] = useState("");
   const [constraints, setConstraints] = useState("");
+  const [businessModel, setBusinessModel] = useState("");
+  const [productStage, setProductStage] = useState("");
+  const [competitors, setCompetitors] = useState("");
+  const [teamScope, setTeamScope] = useState("");
+  const [teamWays, setTeamWays] = useState("");
   const [promptsOpen, setPromptsOpen] = useState(false);
 
   const project = useMemo(() => projects.find((p) => p.id === id), [projects, id]);
