@@ -83,9 +83,19 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
 
     try {
       const updatedAt = new Date().toISOString();
-      const dbUpdates: Record<string, string | null> & { updated_at: string } = {
-        updated_at: updatedAt,
-      };
+      const dbUpdates: {
+        updated_at: string;
+        name?: string;
+        description?: string | null;
+        product_context?: string | null;
+        target_users?: string | null;
+        constraints?: string | null;
+        business_model?: string | null;
+        product_stage?: string | null;
+        competitors?: string | null;
+        team_scope?: string | null;
+        team_ways_of_working?: string | null;
+      } = { updated_at: updatedAt };
       if (updates.name !== undefined) dbUpdates.name = updates.name;
       if (updates.description !== undefined) dbUpdates.description = updates.description ?? null;
       if (updates.productContext !== undefined) dbUpdates.product_context = updates.productContext ?? null;
