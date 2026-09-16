@@ -140,12 +140,22 @@ const Index = () => {
         productContext: projectProductContext.trim() || undefined,
         targetUsers: projectTargetUsers.trim() || undefined,
         constraints: projectConstraints.trim() || undefined,
+        businessModel: projectBusinessModel.trim() || undefined,
+        productStage: projectProductStage || undefined,
+        competitors: projectCompetitors.trim() || undefined,
+        teamScope: projectTeamScope.trim() || undefined,
+        teamWaysOfWorking: projectTeamWays.trim() || undefined,
       });
       setProjectName("");
       setProjectDescription("");
       setProjectProductContext("");
       setProjectTargetUsers("");
       setProjectConstraints("");
+      setProjectBusinessModel("");
+      setProjectProductStage("");
+      setProjectCompetitors("");
+      setProjectTeamScope("");
+      setProjectTeamWays("");
       setProjectCreateOpen(false);
     } catch (error) {
       console.error("Error creating project:", error);
