@@ -177,6 +177,8 @@ Deno.serve(async (req) => {
       let aiResponse: Response | undefined;
       let usedModel = "";
       const chain = chainFor(preferredModel);
+      // Hard cap the batch size regardless of what the saved prompt says.
+      systemPrompt = `${systemPrompt}\n\nIMPORTANT: return exactly 3 suggestions — no more, no fewer.`;
       for (const [index, model] of chain.entries()) {
         usedModel = model;
         aiResponse = await callGemini(model, systemPrompt);
