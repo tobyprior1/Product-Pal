@@ -147,20 +147,19 @@ Deno.serve(async (req) => {
         }),
       });
 
-    const modelChain = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
+    // Free-tier limits are per model: a model that returns 429 is out of quota
+    // for now, so never retry it — move straight to the next model in the chain.
+    const modelChain = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     const runVariant = async (
       systemPrompt: string,
     ): Promise<{ suggestions?: Suggestion[]; error?: string; status?: number }> => {
       let aiResponse: Response | undefined;
-      outer: for (const model of modelChain) {
-        for (let attempt = 0; attempt < 3; attempt++) {
-          if (attempt > 0) await sleep(600 * attempt);
-          aiResponse = await callGemini(model, systemPrompt);
-          if (aiResponse.status !== 503 && aiResponse.status !== 429) break outer;
-          console.warn(`${model} returned ${aiResponse.status} (attempt ${attempt + 1})`);
-        }
+      for (const model of modelChain) {
+        aiResponse = await callGemini(model, systemPrompt);
+        if (aiResponse.status !== 503 && aiResponse.status !== 429) break;
+        console.warn(`${model} returned ${aiResponse.status}, trying next model`);
       }
       const res = aiResponse!;
 
