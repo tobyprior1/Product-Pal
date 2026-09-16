@@ -48,9 +48,27 @@ export function NodePanel() {
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
 
+  // Offer AI ideas straight after an opportunity is created.
+  useEffect(() => {
+    const handleNodeCreated = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { id?: string; type?: string }
+      if (detail?.type === "Opportunity") {
+        setTimeout(() => setSuggestOpen(true), 350)
+      }
+    }
+    window.addEventListener("node-created", handleNodeCreated as EventListener)
+    return () => window.removeEventListener("node-created", handleNodeCreated as EventListener)
+  }, [])
+
   if (!selectedNode) {
     return null
   }
+
+  const hasSolutionChildren = nodes.some(
+    (n) => n.parentId === selectedNode.id && (n.type === "Solution" || n.type === "Opportunity"),
+  )
+  const showAiEmptyState =
+    selectedNode.type === "Opportunity" && !hasSolutionChildren && !isLocked && canAddSolution
 
   const childKind =
     selectedNode.type === "Outcome"
