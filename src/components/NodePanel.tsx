@@ -192,7 +192,19 @@ export function NodePanel() {
             }
             canAddSubOpportunity={selectedNode.type === "Opportunity" ? canAddSubOpportunity : true}
             canAddSolution={selectedNode.type === "Opportunity" ? canAddSolution : true}
-            onSuggestSolutions={() => dispatchSuggestSolutions(selectedNode.id)}
+            onSuggestSolutions={
+              selectedNode.type === "Opportunity"
+                ? () => dispatchSuggestSolutions(selectedNode.id)
+                : undefined
+            }
+            onSuggestExperiments={
+              selectedNode.type === "Solution"
+                ? () =>
+                    window.dispatchEvent(
+                      new CustomEvent("suggest-experiments", { detail: { parentId: selectedNode.id } }),
+                    )
+                : undefined
+            }
           />
         )}
       </div>
