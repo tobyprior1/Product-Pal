@@ -34,6 +34,28 @@ export function AddChildPanelButton({
 
   return (
     <div className="space-y-2 border-t border-border pt-4">
+      {onSuggestSolutions && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="block">
+              <Button
+                className="w-full justify-start gap-2 text-xs font-medium"
+                onClick={onSuggestSolutions}
+                disabled={disabled || !canAddSolution}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Suggest solutions with AI
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="max-w-xs">
+            {canAddSolution
+              ? "Generate solution ideas for this opportunity, then pick the ones worth exploring."
+              : SOLUTION_BLOCKED_HINT}
+          </TooltipContent>
+        </Tooltip>
+      )}
+
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="block">
@@ -56,28 +78,7 @@ export function AddChildPanelButton({
         )}
       </Tooltip>
 
-      {onSuggestSolutions && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="block">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 text-xs font-medium text-primary hover:bg-primary/5"
-                onClick={onSuggestSolutions}
-                disabled={disabled || !canAddSolution}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                Suggest solutions with AI
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="left" className="max-w-xs">
-            {canAddSolution
-              ? "Generate solution ideas for this opportunity, then pick the ones worth exploring."
-              : SOLUTION_BLOCKED_HINT}
-          </TooltipContent>
-        </Tooltip>
-      )}
+
 
 
 
