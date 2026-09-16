@@ -15,6 +15,8 @@ interface AddChildPanelButtonProps {
   canAddSolution?: boolean
   /** Opportunity nodes can ask the AI for candidate solutions. */
   onSuggestSolutions?: () => void
+  /** Solution nodes can ask the AI for assumption tests. */
+  onSuggestExperiments?: () => void
 }
 
 export function AddChildPanelButton({
@@ -25,6 +27,7 @@ export function AddChildPanelButton({
   canAddSubOpportunity = true,
   canAddSolution = true,
   onSuggestSolutions,
+  onSuggestExperiments,
 }: AddChildPanelButtonProps) {
 
   const style = HIERARCHY_STYLES[childKind]
