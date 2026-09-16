@@ -29,7 +29,7 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
   createProject: async (
     name: string,
     description?: string,
-    context?: { productContext?: string; targetUsers?: string; constraints?: string },
+    context?: Partial<Project>,
   ) => {
     const userId = get().userId;
     if (!userId) throw new Error("User not authenticated");
@@ -41,6 +41,11 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
       productContext: context?.productContext,
       targetUsers: context?.targetUsers,
       constraints: context?.constraints,
+      businessModel: context?.businessModel,
+      productStage: context?.productStage,
+      competitors: context?.competitors,
+      teamScope: context?.teamScope,
+      teamWaysOfWorking: context?.teamWaysOfWorking,
       createdAt: createTimestamp(),
       updatedAt: createTimestamp(),
       ownerId: userId,
@@ -54,6 +59,11 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
       product_context: newProject.productContext ?? null,
       target_users: newProject.targetUsers ?? null,
       constraints: newProject.constraints ?? null,
+      business_model: newProject.businessModel ?? null,
+      product_stage: newProject.productStage ?? null,
+      competitors: newProject.competitors ?? null,
+      team_scope: newProject.teamScope ?? null,
+      team_ways_of_working: newProject.teamWaysOfWorking ?? null,
       created_at: newProject.createdAt,
       updated_at: newProject.updatedAt,
     });
