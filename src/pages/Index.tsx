@@ -635,14 +635,31 @@ const Index = () => {
                 />
               </div>
             </div>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setProjectCreateOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateProject} disabled={!projectName.trim()}>
-              Create
-            </Button>
+            {projectCreateStep === 1 ? (
+              <>
+                <Button variant="outline" onClick={() => setProjectCreateOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => setProjectCreateStep(2)} disabled={!projectName.trim()}>
+                  Next
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setProjectCreateStep(1)}>
+                  Back
+                </Button>
+                <Button variant="ghost" onClick={handleCreateProject}>
+                  Skip &amp; create
+                </Button>
+                <Button onClick={handleCreateProject}>
+                  Create project
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
