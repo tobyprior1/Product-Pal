@@ -90,6 +90,7 @@ export type Database = {
           is_active: boolean
           key: string
           label: string
+          model: string | null
           system_prompt: string
           updated_at: string
           user_id: string
@@ -101,6 +102,7 @@ export type Database = {
           is_active?: boolean
           key?: string
           label: string
+          model?: string | null
           system_prompt: string
           updated_at?: string
           user_id: string
@@ -112,6 +114,7 @@ export type Database = {
           is_active?: boolean
           key?: string
           label?: string
+          model?: string | null
           system_prompt?: string
           updated_at?: string
           user_id?: string

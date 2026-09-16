@@ -1,0 +1,1 @@
+ALTER TABLE public.ai_prompts ADD COLUMN IF NOT EXISTS model text;
