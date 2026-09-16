@@ -21,6 +21,8 @@ interface AddChildButtonProps {
   canAddSolution?: boolean
   /** Opportunity nodes can ask the AI for candidate solutions. */
   onSuggestSolutions?: () => void
+  /** Solution nodes can ask the AI for assumption tests. */
+  onSuggestExperiments?: () => void
 }
 
 const wrapperClasses =

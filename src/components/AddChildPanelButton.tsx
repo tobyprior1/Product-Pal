@@ -37,6 +37,17 @@ export function AddChildPanelButton({
 
   return (
     <div className="space-y-2 border-t border-border pt-4">
+      {onSuggestExperiments && (
+        <Button
+          className="w-full justify-start gap-2 text-xs font-medium"
+          onClick={onSuggestExperiments}
+          disabled={disabled}
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          Suggest experiments with AI
+        </Button>
+      )}
+
       {onSuggestSolutions && (
         <Tooltip>
           <TooltipTrigger asChild>
