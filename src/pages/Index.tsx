@@ -573,8 +573,10 @@ const Index = () => {
                 />
               </div>
             </div>
+            )}
 
-            <div className="space-y-4 border-t pt-6">
+            {projectCreateStep === 2 && (
+            <div className="space-y-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 The business &amp; product
               </p>
