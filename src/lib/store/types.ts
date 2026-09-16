@@ -34,7 +34,19 @@ export interface ProjectsSlice {
   createProject: (
     name: string,
     description?: string,
-    context?: { productContext?: string; targetUsers?: string; constraints?: string },
+    context?: Partial<
+      Pick<
+        Project,
+        | "productContext"
+        | "targetUsers"
+        | "constraints"
+        | "businessModel"
+        | "productStage"
+        | "competitors"
+        | "teamScope"
+        | "teamWaysOfWorking"
+      >
+    >,
   ) => Promise<string>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;

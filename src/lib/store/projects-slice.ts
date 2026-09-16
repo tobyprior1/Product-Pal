@@ -29,7 +29,7 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
   createProject: async (
     name: string,
     description?: string,
-    context?: { productContext?: string; targetUsers?: string; constraints?: string },
+    context?: Partial<Project>,
   ) => {
     const userId = get().userId;
     if (!userId) throw new Error("User not authenticated");
@@ -41,6 +41,11 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
       productContext: context?.productContext,
       targetUsers: context?.targetUsers,
       constraints: context?.constraints,
+      businessModel: context?.businessModel,
+      productStage: context?.productStage,
+      competitors: context?.competitors,
+      teamScope: context?.teamScope,
+      teamWaysOfWorking: context?.teamWaysOfWorking,
       createdAt: createTimestamp(),
       updatedAt: createTimestamp(),
       ownerId: userId,
@@ -54,6 +59,11 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
       product_context: newProject.productContext ?? null,
       target_users: newProject.targetUsers ?? null,
       constraints: newProject.constraints ?? null,
+      business_model: newProject.businessModel ?? null,
+      product_stage: newProject.productStage ?? null,
+      competitors: newProject.competitors ?? null,
+      team_scope: newProject.teamScope ?? null,
+      team_ways_of_working: newProject.teamWaysOfWorking ?? null,
       created_at: newProject.createdAt,
       updated_at: newProject.updatedAt,
     });
@@ -76,16 +86,27 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
       const dbUpdates: {
         updated_at: string;
         name?: string;
-        description?: string;
+        description?: string | null;
         product_context?: string | null;
         target_users?: string | null;
         constraints?: string | null;
+        business_model?: string | null;
+        product_stage?: string | null;
+        competitors?: string | null;
+        team_scope?: string | null;
+        team_ways_of_working?: string | null;
       } = { updated_at: updatedAt };
       if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.description !== undefined) dbUpdates.description = updates.description ?? null;
       if (updates.productContext !== undefined) dbUpdates.product_context = updates.productContext ?? null;
       if (updates.targetUsers !== undefined) dbUpdates.target_users = updates.targetUsers ?? null;
       if (updates.constraints !== undefined) dbUpdates.constraints = updates.constraints ?? null;
+      if (updates.businessModel !== undefined) dbUpdates.business_model = updates.businessModel ?? null;
+      if (updates.productStage !== undefined) dbUpdates.product_stage = updates.productStage ?? null;
+      if (updates.competitors !== undefined) dbUpdates.competitors = updates.competitors ?? null;
+      if (updates.teamScope !== undefined) dbUpdates.team_scope = updates.teamScope ?? null;
+      if (updates.teamWaysOfWorking !== undefined)
+        dbUpdates.team_ways_of_working = updates.teamWaysOfWorking ?? null;
 
       const { error } = await supabase.from("projects").update(dbUpdates).eq("id", id);
       if (error) throw error;
