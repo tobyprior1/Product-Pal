@@ -111,11 +111,6 @@ export function NewNodeDialog({ open, onOpenChange, preselectedParentId, presele
 
     addNode(newNode as OSTNode)
     setSelectedNodeId(newNode.id!)
-    if (nodeType === "Opportunity") {
-      window.dispatchEvent(
-        new CustomEvent("node-created", { detail: { id: newNode.id, type: nodeType } }),
-      )
-    }
     setTitle("")
     setParentId("")
     onOpenChange(false)
