@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Skeleton } from "@/components/ui/skeleton"
+import { SuggestionProgress } from "@/components/SuggestionProgress"
 import { supabase } from "@/integrations/supabase/client"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { useUIStore } from "@/lib/pm-ui-store"
@@ -190,14 +190,6 @@ export function SolutionSuggestionsDialog({
     )
   }
 
-  const skeletons = (count = 4) =>
-    Array.from({ length: count }).map((_, i) => (
-      <div key={i} className="space-y-2 rounded-lg border border-border p-3">
-        <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-2/3" />
-      </div>
-    ))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -240,10 +232,10 @@ export function SolutionSuggestionsDialog({
         )}
 
         <div className="max-h-[45vh] space-y-3 overflow-y-auto pr-1">
-          {loading && skeletons(3)}
+          {loading && <SuggestionProgress />}
           {!loading &&
             suggestions.map((suggestion, index) => renderCard(suggestion, `single-${index}`))}
-          {loadingMore && skeletons(3)}
+          {loadingMore && <SuggestionProgress label="Generating 3 more ideas" />}
           {!loading && suggestions.length > 0 && (
             <Button
               variant="outline"
