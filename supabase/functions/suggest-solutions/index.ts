@@ -148,14 +148,16 @@ Deno.serve(async (req) => {
         }),
       });
 
-    // Free-tier limits are per model: a model that returns 429 is out of quota
-    // for now, so never retry it — move straight to the next model in the chain.
+    // Free-tier limits are per model: a 429 means that model is out of quota for
+    // now, so never retry it. A 503 is transient Google-side congestion, so the
+    // first (preferred) model gets one fast retry before we fall back.
     const DEFAULT_CHAIN = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
     const ALLOWED_MODELS = new Set(DEFAULT_CHAIN);
     const chainFor = (preferred?: string | null) =>
       preferred && ALLOWED_MODELS.has(preferred)
         ? [preferred, ...DEFAULT_CHAIN.filter((m) => m !== preferred)]
         : DEFAULT_CHAIN;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     const runVariant = async (
       systemPrompt: string,
@@ -163,10 +165,19 @@ Deno.serve(async (req) => {
     ): Promise<{ suggestions?: Suggestion[]; error?: string; status?: number; model?: string }> => {
       let aiResponse: Response | undefined;
       let usedModel = "";
-      for (const model of chainFor(preferredModel)) {
+      const chain = chainFor(preferredModel);
+      for (const [index, model] of chain.entries()) {
         usedModel = model;
         aiResponse = await callGemini(model, systemPrompt);
         if (aiResponse.status !== 503 && aiResponse.status !== 429) break;
+
+        // One quick second chance for the preferred model on transient congestion.
+        if (index === 0 && aiResponse.status === 503) {
+          console.warn(`${model} returned 503, retrying once`);
+          await sleep(500);
+          aiResponse = await callGemini(model, systemPrompt);
+          if (aiResponse.status !== 503 && aiResponse.status !== 429) break;
+        }
         console.warn(`${model} returned ${aiResponse.status}, trying next model`);
       }
       const res = aiResponse!;
