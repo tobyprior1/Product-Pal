@@ -240,21 +240,32 @@ export function SolutionSuggestionsDialog({
         )}
 
         <div className="max-h-[45vh] space-y-3 overflow-y-auto pr-1">
-          {loading && skeletons()}
+          {loading && skeletons(3)}
           {!loading &&
-            !error &&
             suggestions.map((suggestion, index) => renderCard(suggestion, `single-${index}`))}
+          {loadingMore && skeletons(3)}
+          {!loading && suggestions.length > 0 && (
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => fetchSuggestions("append")}
+              disabled={loadingMore || adding}
+            >
+              <Sparkles className={cn("h-3.5 w-3.5", loadingMore && "animate-pulse")} />
+              {loadingMore ? "Generating more..." : "Generate 3 more ideas"}
+            </Button>
+          )}
         </div>
 
         <DialogFooter className="gap-2 sm:justify-between">
           <Button
             variant="ghost"
             onClick={() => fetchSuggestions()}
-            disabled={loading || adding}
+            disabled={loading || loadingMore || adding}
             className="gap-2"
           >
             <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-            Regenerate
+            Start again
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={adding}>
