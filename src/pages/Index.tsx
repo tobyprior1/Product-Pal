@@ -506,7 +506,7 @@ const Index = () => {
             <DialogDescription>
               {projectCreateStep === 1
                 ? "A project is a team or area of the product — the outcomes inside it are what that team is driving."
-                : "Optional, but this context makes AI suggestions far sharper. You can fill it in later from the project page."}
+                : "Optional — but this is where AI suggestions go from generic to genuinely useful. You can also fill it in later from the project page."}
             </DialogDescription>
           </DialogHeader>
 
@@ -524,6 +524,10 @@ const Index = () => {
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 This team
               </p>
+              <p className="text-xs text-muted-foreground">
+                This tells the AI what your team can realistically build, so its suggestions fit
+                your team — not just your product.
+              </p>
               <div className="space-y-2">
                 <Label htmlFor="new-project-name">Team/Project name</Label>
                 <Input
@@ -535,6 +539,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-description">Purpose of the team/project</Label>
+                <p className="text-xs text-muted-foreground">
+                  Anchors every AI suggestion to why the team exists.
+                </p>
                 <Input
                   id="new-project-description"
                   value={projectDescription}
@@ -544,6 +551,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-team-scope">Area the team owns</Label>
+                <p className="text-xs text-muted-foreground">
+                  Keeps ideas inside your patch — the AI won't suggest work another team owns.
+                </p>
                 <Textarea
                   id="new-project-team-scope"
                   value={projectTeamScope}
@@ -554,6 +564,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-team-ways">How the team works</Label>
+                <p className="text-xs text-muted-foreground">
+                  So ideas are sized to what your team can actually ship.
+                </p>
                 <Textarea
                   id="new-project-team-ways"
                   value={projectTeamWays}
@@ -564,6 +577,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-constraints">Constraints</Label>
+                <p className="text-xs text-muted-foreground">
+                  The AI will never suggest anything that breaks these.
+                </p>
                 <Textarea
                   id="new-project-constraints"
                   value={projectConstraints}
@@ -580,8 +596,15 @@ const Index = () => {
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 The business &amp; product
               </p>
+              <p className="text-xs text-muted-foreground">
+                The more the AI knows here, the sharper its ideas — this is the difference between
+                generic suggestions and ones that truly fit your product.
+              </p>
               <div className="space-y-2">
                 <Label htmlFor="new-project-product-context">Product context</Label>
+                <p className="text-xs text-muted-foreground">
+                  So the AI only suggests things that are actually possible with your setup.
+                </p>
                 <Textarea
                   id="new-project-product-context"
                   value={projectProductContext}
@@ -592,6 +615,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-business-model">Business model</Label>
+                <p className="text-xs text-muted-foreground">
+                  So ideas fit how you make money — ones that don't get filtered out.
+                </p>
                 <Input
                   id="new-project-business-model"
                   value={projectBusinessModel}
@@ -601,6 +627,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-product-stage">Product stage</Label>
+                <p className="text-xs text-muted-foreground">
+                  An early-stage product gets very different ideas from a mature one.
+                </p>
                 <Select value={projectProductStage} onValueChange={setProjectProductStage}>
                   <SelectTrigger id="new-project-product-stage">
                     <SelectValue placeholder="Select a stage" />
@@ -616,6 +645,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-target-users">Target users</Label>
+                <p className="text-xs text-muted-foreground">
+                  The most valuable field here — the AI generates ideas for these people specifically.
+                </p>
                 <Textarea
                   id="new-project-target-users"
                   value={projectTargetUsers}
@@ -626,6 +658,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-competitors">Competitors / alternatives</Label>
+                <p className="text-xs text-muted-foreground">
+                  Helps the AI spot gaps instead of "me-too" ideas.
+                </p>
                 <Textarea
                   id="new-project-competitors"
                   value={projectCompetitors}
