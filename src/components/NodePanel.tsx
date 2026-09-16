@@ -28,13 +28,7 @@ import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
 import { AddChildPanelButton } from "./AddChildPanelButton"
 import { SolutionSuggestionsDialog } from "./SolutionSuggestionsDialog"
-import { useEffect, useState } from "react"
-
-/** The opportunity the AI suggestions dialog was opened for. */
-interface SuggestTarget {
-  id: string
-  title: string
-}
+import { useState } from "react"
 
 
 
