@@ -28,7 +28,8 @@ import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
 import { AddChildPanelButton } from "./AddChildPanelButton"
 import { SolutionSuggestionsDialog } from "./SolutionSuggestionsDialog"
-import { useState } from "react"
+import { Sparkles } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export function NodePanel() {
   const [suggestOpen, setSuggestOpen] = useState(false)
