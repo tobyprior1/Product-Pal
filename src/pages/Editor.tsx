@@ -96,6 +96,8 @@ const Editor = () => {
         <NodePanel />
       </div>
 
+      <SuggestSolutionsHost />
+
       <NewNodeDialog 
         open={newNodeDialogOpen}
         onOpenChange={(open) => {
