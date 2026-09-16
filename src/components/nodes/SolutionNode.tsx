@@ -90,6 +90,7 @@ export const SolutionNode = memo(({ data }: NodeProps) => {
       childKind="experiment"
       onAddChild={handleAddChild}
       disabled={isLocked}
+      onSuggestExperiments={handleSuggestExperiments}
     />
   </div>
   )
