@@ -42,6 +42,7 @@ export function SolutionSuggestionsDialog({
   opportunityTitle,
 }: SolutionSuggestionsDialogProps) {
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suggestions, setSuggestions] = useState<SolutionSuggestion[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
