@@ -83,19 +83,20 @@ export const createProjectsSlice: DataSlice<ProjectsSlice> = (set, get) => ({
 
     try {
       const updatedAt = new Date().toISOString();
-      const dbUpdates: {
-        updated_at: string;
-        name?: string;
-        description?: string;
-        product_context?: string | null;
-        target_users?: string | null;
-        constraints?: string | null;
-      } = { updated_at: updatedAt };
+      const dbUpdates: Record<string, string | null> & { updated_at: string } = {
+        updated_at: updatedAt,
+      };
       if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.description !== undefined) dbUpdates.description = updates.description ?? null;
       if (updates.productContext !== undefined) dbUpdates.product_context = updates.productContext ?? null;
       if (updates.targetUsers !== undefined) dbUpdates.target_users = updates.targetUsers ?? null;
       if (updates.constraints !== undefined) dbUpdates.constraints = updates.constraints ?? null;
+      if (updates.businessModel !== undefined) dbUpdates.business_model = updates.businessModel ?? null;
+      if (updates.productStage !== undefined) dbUpdates.product_stage = updates.productStage ?? null;
+      if (updates.competitors !== undefined) dbUpdates.competitors = updates.competitors ?? null;
+      if (updates.teamScope !== undefined) dbUpdates.team_scope = updates.teamScope ?? null;
+      if (updates.teamWaysOfWorking !== undefined)
+        dbUpdates.team_ways_of_working = updates.teamWaysOfWorking ?? null;
 
       const { error } = await supabase.from("projects").update(dbUpdates).eq("id", id);
       if (error) throw error;
