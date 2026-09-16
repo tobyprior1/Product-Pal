@@ -493,16 +493,33 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={projectCreateOpen} onOpenChange={setProjectCreateOpen}>
+      <Dialog
+        open={projectCreateOpen}
+        onOpenChange={(open) => {
+          setProjectCreateOpen(open);
+          if (!open) setProjectCreateStep(1);
+        }}
+      >
         <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Project</DialogTitle>
             <DialogDescription>
-              A project is a team or area of the product — the outcomes inside it are what that team is driving.
-              The context below is optional, but it makes AI suggestions far sharper.
+              {projectCreateStep === 1
+                ? "A project is a team or area of the product — the outcomes inside it are what that team is driving."
+                : "Optional, but this context makes AI suggestions far sharper. You can fill it in later from the project page."}
             </DialogDescription>
           </DialogHeader>
+
+          <div className="flex items-center gap-2 pt-1">
+            <div className={`h-1.5 flex-1 rounded-full ${projectCreateStep >= 1 ? "bg-primary" : "bg-muted"}`} />
+            <div className={`h-1.5 flex-1 rounded-full ${projectCreateStep >= 2 ? "bg-primary" : "bg-muted"}`} />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Step {projectCreateStep} of 2 — {projectCreateStep === 1 ? "This team" : "The business & product"}
+          </p>
+
           <div className="space-y-6 py-4">
+            {projectCreateStep === 1 && (
             <div className="space-y-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 This team
