@@ -232,10 +232,10 @@ export function SolutionSuggestionsDialog({
         )}
 
         <div className="max-h-[45vh] space-y-3 overflow-y-auto pr-1">
-          {loading && skeletons(3)}
+          {loading && <SuggestionProgress />}
           {!loading &&
             suggestions.map((suggestion, index) => renderCard(suggestion, `single-${index}`))}
-          {loadingMore && skeletons(3)}
+          {loadingMore && <SuggestionProgress label="Generating 3 more ideas" />}
           {!loading && suggestions.length > 0 && (
             <Button
               variant="outline"
