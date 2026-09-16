@@ -27,28 +27,15 @@ import { PanelSection } from "./node-fields/PanelSection"
 import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
 import { AddChildPanelButton } from "./AddChildPanelButton"
-import { SolutionSuggestionsDialog } from "./SolutionSuggestionsDialog"
-import { useState } from "react"
 
 
 
 export function NodePanel() {
-  const [suggestTarget, setSuggestTarget] = useState<SuggestTarget | null>(null)
-  const suggestOpen = suggestTarget !== null
-
-  useEffect(() => {
-    // Opened from the canvas pill on an opportunity node - may not be the selected node.
-    const handleSuggestSolutions = (event: CustomEvent) => {
-      const { parentId } = event.detail
-      const node = useDataStore.getState().nodes.find((n) => n.id === parentId)
-      if (node && node.type === "Opportunity") {
-        setSuggestTarget({ id: node.id, title: node.title })
-      }
-    }
-
-    window.addEventListener("suggest-solutions", handleSuggestSolutions as EventListener)
-    return () => window.removeEventListener("suggest-solutions", handleSuggestSolutions as EventListener)
-  }, [])
+  // The AI suggestions dialog itself lives in SuggestSolutionsHost (mounted by
+  // the Editor) so it can open from the canvas pill without a selected node.
+  const dispatchSuggestSolutions = (parentId: string) => {
+    window.dispatchEvent(new CustomEvent("suggest-solutions", { detail: { parentId } }))
+  }
 
   const selectedNodeId = useUIStore((state) => state.selectedNodeId)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
