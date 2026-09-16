@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
       if (suggestions.length === 0) {
         return { error: "The AI returned no usable suggestions. Try again.", status: 502 };
       }
-      return { suggestions, model: usedModel };
+      return { suggestions: suggestions.slice(0, 3), model: usedModel };
     };
 
     if (compare) {
