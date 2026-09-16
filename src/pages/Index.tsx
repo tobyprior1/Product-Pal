@@ -70,6 +70,7 @@ const Index = () => {
   const [treeRenameValue, setTreeRenameValue] = useState("");
 
   const [projectCreateOpen, setProjectCreateOpen] = useState(false);
+  const [projectCreateStep, setProjectCreateStep] = useState<1 | 2>(1);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [projectProductContext, setProjectProductContext] = useState("");
@@ -165,6 +166,7 @@ const Index = () => {
       setProjectTeamScope("");
       setProjectTeamWays("");
       setProjectCreateOpen(false);
+      setProjectCreateStep(1);
     } catch (error) {
       console.error("Error creating project:", error);
     }
@@ -491,16 +493,33 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={projectCreateOpen} onOpenChange={setProjectCreateOpen}>
+      <Dialog
+        open={projectCreateOpen}
+        onOpenChange={(open) => {
+          setProjectCreateOpen(open);
+          if (!open) setProjectCreateStep(1);
+        }}
+      >
         <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Project</DialogTitle>
             <DialogDescription>
-              A project is a team or area of the product — the outcomes inside it are what that team is driving.
-              The context below is optional, but it makes AI suggestions far sharper.
+              {projectCreateStep === 1
+                ? "A project is a team or area of the product — the outcomes inside it are what that team is driving."
+                : "Optional, but this context makes AI suggestions far sharper. You can fill it in later from the project page."}
             </DialogDescription>
           </DialogHeader>
+
+          <div className="flex items-center gap-2 pt-1">
+            <div className={`h-1.5 flex-1 rounded-full ${projectCreateStep >= 1 ? "bg-primary" : "bg-muted"}`} />
+            <div className={`h-1.5 flex-1 rounded-full ${projectCreateStep >= 2 ? "bg-primary" : "bg-muted"}`} />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Step {projectCreateStep} of 2 — {projectCreateStep === 1 ? "This team" : "The business & product"}
+          </p>
+
           <div className="space-y-6 py-4">
+            {projectCreateStep === 1 && (
             <div className="space-y-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 This team
@@ -554,8 +573,10 @@ const Index = () => {
                 />
               </div>
             </div>
+            )}
 
-            <div className="space-y-4 border-t pt-6">
+            {projectCreateStep === 2 && (
+            <div className="space-y-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 The business &amp; product
               </p>
@@ -614,14 +635,31 @@ const Index = () => {
                 />
               </div>
             </div>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setProjectCreateOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateProject} disabled={!projectName.trim()}>
-              Create
-            </Button>
+            {projectCreateStep === 1 ? (
+              <>
+                <Button variant="outline" onClick={() => setProjectCreateOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => setProjectCreateStep(2)} disabled={!projectName.trim()}>
+                  Next
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setProjectCreateStep(1)}>
+                  Back
+                </Button>
+                <Button variant="ghost" onClick={handleCreateProject}>
+                  Skip &amp; create
+                </Button>
+                <Button onClick={handleCreateProject}>
+                  Create project
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
