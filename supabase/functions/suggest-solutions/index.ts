@@ -77,11 +77,22 @@ Deno.serve(async (req) => {
     const steer = typeof body?.steer === "string" ? body.steer : undefined;
     const compare = body?.compare === true;
 
-    const { context, opportunity, error: ctxError } = await buildOpportunityContext(
+    const exclude: string[] = Array.isArray(body?.exclude)
+      ? body.exclude.map((t: unknown) => String(t ?? "").trim()).filter(Boolean).slice(0, 30)
+      : [];
+
+    const { context: baseContext, opportunity, error: ctxError } = await buildOpportunityContext(
       supabase,
       opportunityId,
       { fallback, steer },
     );
+
+    const context =
+      exclude.length > 0
+        ? `${baseContext}\n\n## ALREADY SUGGESTED (do not repeat or reword these)\n${exclude
+            .map((t) => `- ${t}`)
+            .join("\n")}`
+        : baseContext;
 
     if (ctxError) return json({ error: ctxError }, 400);
     if (!opportunity && !fallback.title) {

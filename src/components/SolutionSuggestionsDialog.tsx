@@ -42,6 +42,7 @@ export function SolutionSuggestionsDialog({
   opportunityTitle,
 }: SolutionSuggestionsDialogProps) {
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suggestions, setSuggestions] = useState<SolutionSuggestion[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -51,20 +52,25 @@ export function SolutionSuggestionsDialog({
   const addNode = useDataStore((state) => state.addNode)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
 
-  const fetchSuggestions = async () => {
-    setLoading(true)
+  const fetchSuggestions = async (mode: "replace" | "append" = "replace") => {
+    if (mode === "append") setLoadingMore(true)
+    else setLoading(true)
     setError(null)
-    setSuggestions([])
-    setSelected(new Set())
+    if (mode === "replace") {
+      setSuggestions([])
+      setSelected(new Set())
+    }
 
     const { nodes, currentTree } = useDataStore.getState()
     const localOpp = nodes.find((n) => n.id === opportunityId)
     const outcomeTitle = nodes.find((n) => n.type === "Outcome")?.title
+    const exclude = mode === "append" ? suggestions.map((s) => s.title) : []
 
     const { data, error: fnError } = await supabase.functions.invoke("suggest-solutions", {
       body: {
         opportunityId,
         steer: steer.trim() || undefined,
+        exclude,
         opportunity: {
           title: localOpp?.title ?? opportunityTitle,
           data: (localOpp as any)?.data ?? {},
@@ -77,11 +83,21 @@ export function SolutionSuggestionsDialog({
     if (fnError || (data as any)?.error) {
       setError((data as any)?.error ?? "Couldn't reach the AI right now. Please try again.")
       setLoading(false)
+      setLoadingMore(false)
       return
     }
 
-    setSuggestions(((data as any)?.suggestions ?? []) as SolutionSuggestion[])
+    const incoming = ((data as any)?.suggestions ?? []) as SolutionSuggestion[]
+    if (mode === "append") {
+      setSuggestions((prev) => {
+        const seen = new Set(prev.map((s) => s.title.trim().toLowerCase()))
+        return [...prev, ...incoming.filter((s) => !seen.has(s.title.trim().toLowerCase()))]
+      })
+    } else {
+      setSuggestions(incoming)
+    }
     setLoading(false)
+    setLoadingMore(false)
   }
 
   useEffect(() => {
@@ -224,21 +240,32 @@ export function SolutionSuggestionsDialog({
         )}
 
         <div className="max-h-[45vh] space-y-3 overflow-y-auto pr-1">
-          {loading && skeletons()}
+          {loading && skeletons(3)}
           {!loading &&
-            !error &&
             suggestions.map((suggestion, index) => renderCard(suggestion, `single-${index}`))}
+          {loadingMore && skeletons(3)}
+          {!loading && suggestions.length > 0 && (
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => fetchSuggestions("append")}
+              disabled={loadingMore || adding}
+            >
+              <Sparkles className={cn("h-3.5 w-3.5", loadingMore && "animate-pulse")} />
+              {loadingMore ? "Generating more..." : "Generate 3 more ideas"}
+            </Button>
+          )}
         </div>
 
         <DialogFooter className="gap-2 sm:justify-between">
           <Button
             variant="ghost"
             onClick={() => fetchSuggestions()}
-            disabled={loading || adding}
+            disabled={loading || loadingMore || adding}
             className="gap-2"
           >
             <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-            Regenerate
+            Start again
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={adding}>
