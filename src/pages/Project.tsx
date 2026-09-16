@@ -96,6 +96,11 @@ const Project = () => {
       setProductContext(project.productContext || "");
       setTargetUsers(project.targetUsers || "");
       setConstraints(project.constraints || "");
+      setBusinessModel(project.businessModel || "");
+      setProductStage(project.productStage || "");
+      setCompetitors(project.competitors || "");
+      setTeamScope(project.teamScope || "");
+      setTeamWays(project.teamWaysOfWorking || "");
     }
   }, [project]);
 
@@ -208,6 +213,11 @@ const Project = () => {
       productContext: productContext.trim() || undefined,
       targetUsers: targetUsers.trim() || undefined,
       constraints: constraints.trim() || undefined,
+      businessModel: businessModel.trim() || undefined,
+      productStage: productStage || undefined,
+      competitors: competitors.trim() || undefined,
+      teamScope: teamScope.trim() || undefined,
+      teamWaysOfWorking: teamWays.trim() || undefined,
     });
     setProjectRenameOpen(false);
   };
