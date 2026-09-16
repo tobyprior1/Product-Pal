@@ -124,7 +124,9 @@ export async function buildOpportunityContext(
     if (treeRow?.project_id) {
       const { data: project } = await supabase
         .from("projects")
-        .select("name, description, product_context, target_users, constraints")
+        .select(
+          "name, description, product_context, target_users, constraints, business_model, product_stage, competitors, team_scope, team_ways_of_working",
+        )
         .eq("id", treeRow.project_id)
         .maybeSingle();
       projectRow = project ?? null;
@@ -132,11 +134,23 @@ export async function buildOpportunityContext(
   }
 
   parts.push(
-    section("## PRODUCT", [
-      projectRow?.name ? `Project: ${clip(projectRow.name, 120)}` : null,
-      projectRow?.description ? `About: ${clip(projectRow.description, 600)}` : null,
-      projectRow?.product_context ? `Product context: ${clip(projectRow.product_context, 1200)}` : null,
+    section("## BUSINESS & PRODUCT", [
+      projectRow?.product_context ? `What the product is: ${clip(projectRow.product_context, 1200)}` : null,
+      projectRow?.business_model ? `Business model: ${clip(projectRow.business_model, 400)}` : null,
+      projectRow?.product_stage ? `Product stage: ${clip(projectRow.product_stage, 60)}` : null,
       projectRow?.target_users ? `Target users: ${clip(projectRow.target_users, 600)}` : null,
+      projectRow?.competitors ? `Competitors / alternatives: ${clip(projectRow.competitors, 600)}` : null,
+    ]),
+  );
+
+  parts.push(
+    section("## THIS TEAM", [
+      projectRow?.name ? `Team: ${clip(projectRow.name, 120)}` : null,
+      projectRow?.description ? `Purpose: ${clip(projectRow.description, 600)}` : null,
+      projectRow?.team_scope ? `Area the team owns: ${clip(projectRow.team_scope, 600)}` : null,
+      projectRow?.team_ways_of_working
+        ? `How the team works: ${clip(projectRow.team_ways_of_working, 600)}`
+        : null,
       treeRow?.description ? `Outcome notes: ${clip(treeRow.description, 400)}` : null,
     ]),
   );
