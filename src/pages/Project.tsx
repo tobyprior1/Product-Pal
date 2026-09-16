@@ -583,6 +583,9 @@ const Project = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-business-model">Business model</Label>
+                <p className="text-xs text-muted-foreground">
+                  So ideas fit how you make money — ones that don't get filtered out.
+                </p>
                 <Input
                   id="project-business-model"
                   value={businessModel}
@@ -592,6 +595,9 @@ const Project = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-product-stage">Product stage</Label>
+                <p className="text-xs text-muted-foreground">
+                  An early-stage product gets very different ideas from a mature one.
+                </p>
                 <Select value={productStage} onValueChange={setProductStage}>
                   <SelectTrigger id="project-product-stage">
                     <SelectValue placeholder="Select a stage" />
@@ -607,6 +613,9 @@ const Project = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-target-users">Target users</Label>
+                <p className="text-xs text-muted-foreground">
+                  The most valuable field here — the AI generates ideas for these people specifically.
+                </p>
                 <Textarea
                   id="project-target-users"
                   value={targetUsers}
@@ -617,6 +626,9 @@ const Project = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-competitors">Competitors / alternatives</Label>
+                <p className="text-xs text-muted-foreground">
+                  Helps the AI spot gaps instead of "me-too" ideas.
+                </p>
                 <Textarea
                   id="project-competitors"
                   value={competitors}
