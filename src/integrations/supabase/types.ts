@@ -391,35 +391,50 @@ export type Database = {
       }
       projects: {
         Row: {
+          business_model: string | null
+          competitors: string | null
           constraints: string | null
           created_at: string
           description: string | null
           id: string
           name: string
           product_context: string | null
+          product_stage: string | null
           target_users: string | null
+          team_scope: string | null
+          team_ways_of_working: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          business_model?: string | null
+          competitors?: string | null
           constraints?: string | null
           created_at?: string
           description?: string | null
           id?: string
           name: string
           product_context?: string | null
+          product_stage?: string | null
           target_users?: string | null
+          team_scope?: string | null
+          team_ways_of_working?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          business_model?: string | null
+          competitors?: string | null
           constraints?: string | null
           created_at?: string
           description?: string | null
           id?: string
           name?: string
           product_context?: string | null
+          product_stage?: string | null
           target_users?: string | null
+          team_scope?: string | null
+          team_ways_of_working?: string | null
           updated_at?: string
           user_id?: string
         }
