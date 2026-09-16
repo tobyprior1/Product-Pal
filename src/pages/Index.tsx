@@ -70,6 +70,7 @@ const Index = () => {
   const [treeRenameValue, setTreeRenameValue] = useState("");
 
   const [projectCreateOpen, setProjectCreateOpen] = useState(false);
+  const [projectCreateStep, setProjectCreateStep] = useState<1 | 2>(1);
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [projectProductContext, setProjectProductContext] = useState("");
@@ -165,6 +166,7 @@ const Index = () => {
       setProjectTeamScope("");
       setProjectTeamWays("");
       setProjectCreateOpen(false);
+      setProjectCreateStep(1);
     } catch (error) {
       console.error("Error creating project:", error);
     }
