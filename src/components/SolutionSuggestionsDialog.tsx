@@ -190,14 +190,6 @@ export function SolutionSuggestionsDialog({
     )
   }
 
-  const skeletons = (count = 4) =>
-    Array.from({ length: count }).map((_, i) => (
-      <div key={i} className="space-y-2 rounded-lg border border-border p-3">
-        <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-2/3" />
-      </div>
-    ))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
