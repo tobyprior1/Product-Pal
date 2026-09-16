@@ -28,12 +28,33 @@ import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
 import { AddChildPanelButton } from "./AddChildPanelButton"
 import { SolutionSuggestionsDialog } from "./SolutionSuggestionsDialog"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
+/** The opportunity the AI suggestions dialog was opened for. */
+interface SuggestTarget {
+  id: string
+  title: string
+}
 
 
 
 export function NodePanel() {
-  const [suggestOpen, setSuggestOpen] = useState(false)
+  const [suggestTarget, setSuggestTarget] = useState<SuggestTarget | null>(null)
+  const suggestOpen = suggestTarget !== null
+
+  useEffect(() => {
+    // Opened from the canvas pill on an opportunity node - may not be the selected node.
+    const handleSuggestSolutions = (event: CustomEvent) => {
+      const { parentId } = event.detail
+      const node = useDataStore.getState().nodes.find((n) => n.id === parentId)
+      if (node && node.type === "Opportunity") {
+        setSuggestTarget({ id: node.id, title: node.title })
+      }
+    }
+
+    window.addEventListener("suggest-solutions", handleSuggestSolutions as EventListener)
+    return () => window.removeEventListener("suggest-solutions", handleSuggestSolutions as EventListener)
+  }, [])
 
   const selectedNodeId = useUIStore((state) => state.selectedNodeId)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
@@ -190,7 +211,11 @@ export function NodePanel() {
             }
             canAddSubOpportunity={selectedNode.type === "Opportunity" ? canAddSubOpportunity : true}
             canAddSolution={selectedNode.type === "Opportunity" ? canAddSolution : true}
-            onSuggestSolutions={selectedNode.type === "Opportunity" ? () => setSuggestOpen(true) : undefined}
+            onSuggestSolutions={
+              selectedNode.type === "Opportunity"
+                ? () => setSuggestTarget({ id: selectedNode.id, title: selectedNode.title })
+                : undefined
+            }
           />
         )}
       </div>
@@ -198,9 +223,11 @@ export function NodePanel() {
       {selectedNode.type === "Opportunity" && (
         <SolutionSuggestionsDialog
           open={suggestOpen}
-          onOpenChange={setSuggestOpen}
-          opportunityId={selectedNode.id}
-          opportunityTitle={selectedNode.title}
+          onOpenChange={(open) => {
+            if (!open) setSuggestTarget(null)
+          }}
+          opportunityId={suggestTarget?.id ?? selectedNode.id}
+          opportunityTitle={suggestTarget?.title ?? selectedNode.title}
         />
       )}
     </div>

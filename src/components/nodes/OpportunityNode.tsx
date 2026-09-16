@@ -38,6 +38,14 @@ export const OpportunityNode = memo(({ data }: NodeProps) => {
     )
   }
 
+  const handleSuggestSolutions = () => {
+    window.dispatchEvent(
+      new CustomEvent("suggest-solutions", {
+        detail: { parentId: nodeData.id },
+      })
+    )
+  }
+
   const getStatusColor = () => {
     switch (nodeData.status) {
       case "in-discovery":
@@ -125,6 +133,7 @@ export const OpportunityNode = memo(({ data }: NodeProps) => {
       childKind="solution"
       onAddChild={handleAddChild}
       onAddSubOpportunity={handleAddSubOpportunity}
+      onSuggestSolutions={handleSuggestSolutions}
       disabled={isLocked}
       showOpportunityMenu={true}
       canAddSubOpportunity={canAddSubOpportunity}
