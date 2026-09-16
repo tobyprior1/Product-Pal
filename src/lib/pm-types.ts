@@ -14,6 +14,13 @@ export interface Project {
   productContext?: string
   targetUsers?: string
   constraints?: string
+  /** Business & product facts */
+  businessModel?: string
+  productStage?: string
+  competitors?: string
+  /** Team facts */
+  teamScope?: string
+  teamWaysOfWorking?: string
   createdAt: string
   updatedAt: string
   ownerId?: string
