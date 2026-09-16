@@ -492,54 +492,119 @@ const Index = () => {
               The context below is optional, but it makes AI suggestions far sharper.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-project-name">Team/Project name</Label>
-              <Input
-                id="new-project-name"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="e.g. Editor Team"
-              />
+          <div className="space-y-6 py-4">
+            <div className="space-y-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                This team
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-name">Team/Project name</Label>
+                <Input
+                  id="new-project-name"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  placeholder="e.g. Editor Team"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-description">Purpose of the team/project</Label>
+                <Input
+                  id="new-project-description"
+                  value={projectDescription}
+                  onChange={(e) => setProjectDescription(e.target.value)}
+                  placeholder="e.g. Make editing fast and reliable for creators"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-team-scope">Area the team owns</Label>
+                <Textarea
+                  id="new-project-team-scope"
+                  value={projectTeamScope}
+                  onChange={(e) => setProjectTeamScope(e.target.value)}
+                  placeholder="Which part of the product or journey is in scope — and what is not"
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-team-ways">How the team works</Label>
+                <Textarea
+                  id="new-project-team-ways"
+                  value={projectTeamWays}
+                  onChange={(e) => setProjectTeamWays(e.target.value)}
+                  placeholder="Team size, skills available, release cadence — what is realistic to build"
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-constraints">Constraints</Label>
+                <Textarea
+                  id="new-project-constraints"
+                  value={projectConstraints}
+                  onChange={(e) => setProjectConstraints(e.target.value)}
+                  placeholder="Anything off-limits: no pricing changes, compliance rules"
+                  rows={2}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-project-description">Purpose of the team/project</Label>
-              <Input
-                id="new-project-description"
-                value={projectDescription}
-                onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="e.g. Make editing fast and reliable for creators"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-project-product-context">Product context</Label>
-              <Textarea
-                id="new-project-product-context"
-                value={projectProductContext}
-                onChange={(e) => setProjectProductContext(e.target.value)}
-                placeholder="What the product does, business model, platform, tech stack"
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-project-target-users">Target users</Label>
-              <Textarea
-                id="new-project-target-users"
-                value={projectTargetUsers}
-                onChange={(e) => setProjectTargetUsers(e.target.value)}
-                placeholder="Who you are building for, key segments and their jobs to be done"
-                rows={2}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-project-constraints">Constraints</Label>
-              <Textarea
-                id="new-project-constraints"
-                value={projectConstraints}
-                onChange={(e) => setProjectConstraints(e.target.value)}
-                placeholder="Anything off-limits: no pricing changes, compliance rules, team capacity"
-                rows={2}
-              />
+
+            <div className="space-y-4 border-t pt-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                The business &amp; product
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-product-context">Product context</Label>
+                <Textarea
+                  id="new-project-product-context"
+                  value={projectProductContext}
+                  onChange={(e) => setProjectProductContext(e.target.value)}
+                  placeholder="What the product does, platform, tech stack"
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-business-model">Business model</Label>
+                <Input
+                  id="new-project-business-model"
+                  value={projectBusinessModel}
+                  onChange={(e) => setProjectBusinessModel(e.target.value)}
+                  placeholder="e.g. Monthly subscription, usage-based, marketplace"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-product-stage">Product stage</Label>
+                <Select value={projectProductStage} onValueChange={setProjectProductStage}>
+                  <SelectTrigger id="new-project-product-stage">
+                    <SelectValue placeholder="Select a stage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_STAGES.map((stage) => (
+                      <SelectItem key={stage} value={stage}>
+                        {stage}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-target-users">Target users</Label>
+                <Textarea
+                  id="new-project-target-users"
+                  value={projectTargetUsers}
+                  onChange={(e) => setProjectTargetUsers(e.target.value)}
+                  placeholder="Who you are building for, key segments and their jobs to be done"
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-project-competitors">Competitors / alternatives</Label>
+                <Textarea
+                  id="new-project-competitors"
+                  value={projectCompetitors}
+                  onChange={(e) => setProjectCompetitors(e.target.value)}
+                  placeholder="What customers would use instead of you today"
+                  rows={2}
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
