@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     // ---- Prompt variants (editable in-app, seeded on first use) ----
     const { data: promptRows } = await supabase
       .from("ai_prompts")
-      .select("id,label,system_prompt,version,is_active")
+      .select("id,label,system_prompt,version,is_active,model")
       .eq("key", "suggest-solutions");
 
     let prompts = (promptRows ?? []) as Array<{
@@ -103,6 +103,7 @@ Deno.serve(async (req) => {
       system_prompt: string;
       version: number;
       is_active: boolean;
+      model: string | null;
     }>;
 
     const missing = ["A", "B"].filter((label) => !prompts.some((p) => p.label === label));
@@ -120,7 +121,7 @@ Deno.serve(async (req) => {
             is_active: label === "A",
           })),
         )
-        .select("id,label,system_prompt,version,is_active");
+        .select("id,label,system_prompt,version,is_active,model");
       prompts = [...prompts, ...((inserted ?? []) as typeof prompts)];
     }
 
@@ -147,18 +148,36 @@ Deno.serve(async (req) => {
         }),
       });
 
-    // Free-tier limits are per model: a model that returns 429 is out of quota
-    // for now, so never retry it — move straight to the next model in the chain.
-    const modelChain = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
+    // Free-tier limits are per model: a 429 means that model is out of quota for
+    // now, so never retry it. A 503 is transient Google-side congestion, so the
+    // first (preferred) model gets one fast retry before we fall back.
+    const DEFAULT_CHAIN = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
+    const ALLOWED_MODELS = new Set(DEFAULT_CHAIN);
+    const chainFor = (preferred?: string | null) =>
+      preferred && ALLOWED_MODELS.has(preferred)
+        ? [preferred, ...DEFAULT_CHAIN.filter((m) => m !== preferred)]
+        : DEFAULT_CHAIN;
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     const runVariant = async (
       systemPrompt: string,
-    ): Promise<{ suggestions?: Suggestion[]; error?: string; status?: number }> => {
+      preferredModel?: string | null,
+    ): Promise<{ suggestions?: Suggestion[]; error?: string; status?: number; model?: string }> => {
       let aiResponse: Response | undefined;
-      for (const model of modelChain) {
+      let usedModel = "";
+      const chain = chainFor(preferredModel);
+      for (const [index, model] of chain.entries()) {
+        usedModel = model;
         aiResponse = await callGemini(model, systemPrompt);
         if (aiResponse.status !== 503 && aiResponse.status !== 429) break;
+
+        // One quick second chance for the preferred model on transient congestion.
+        if (index === 0 && aiResponse.status === 503) {
+          console.warn(`${model} returned 503, retrying once`);
+          await sleep(500);
+          aiResponse = await callGemini(model, systemPrompt);
+          if (aiResponse.status !== 503 && aiResponse.status !== 429) break;
+        }
         console.warn(`${model} returned ${aiResponse.status}, trying next model`);
       }
       const res = aiResponse!;
@@ -181,7 +200,7 @@ Deno.serve(async (req) => {
       if (suggestions.length === 0) {
         return { error: "The AI returned no usable suggestions. Try again.", status: 502 };
       }
-      return { suggestions };
+      return { suggestions, model: usedModel };
     };
 
     if (compare) {
@@ -189,8 +208,8 @@ Deno.serve(async (req) => {
         return json({ error: "Both prompt variants must exist to compare." }, 400);
       }
       const [resA, resB] = await Promise.all([
-        runVariant(promptA.system_prompt),
-        runVariant(promptB.system_prompt),
+        runVariant(promptA.system_prompt, promptA.model),
+        runVariant(promptB.system_prompt, promptB.model),
       ]);
       if (resA.error || resB.error) {
         return json({ error: resA.error ?? resB.error }, resA.status ?? resB.status ?? 502);
@@ -213,11 +232,12 @@ Deno.serve(async (req) => {
     }
 
     const systemPrompt = activePrompt?.system_prompt ?? DEFAULT_SUGGEST_SOLUTIONS_PROMPT;
-    const result = await runVariant(systemPrompt);
+    const result = await runVariant(systemPrompt, activePrompt?.model);
     if (result.error) return json({ error: result.error }, result.status ?? 502);
 
     return json({
       suggestions: result.suggestions,
+      model: result.model,
       prompt: activePrompt
         ? { promptId: activePrompt.id, label: activePrompt.label, version: activePrompt.version }
         : null,
