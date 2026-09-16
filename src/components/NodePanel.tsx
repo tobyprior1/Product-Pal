@@ -192,25 +192,10 @@ export function NodePanel() {
             }
             canAddSubOpportunity={selectedNode.type === "Opportunity" ? canAddSubOpportunity : true}
             canAddSolution={selectedNode.type === "Opportunity" ? canAddSolution : true}
-            onSuggestSolutions={
-              selectedNode.type === "Opportunity"
-                ? () => setSuggestTarget({ id: selectedNode.id, title: selectedNode.title })
-                : undefined
-            }
+            onSuggestSolutions={() => dispatchSuggestSolutions(selectedNode.id)}
           />
         )}
       </div>
-
-      {selectedNode.type === "Opportunity" && (
-        <SolutionSuggestionsDialog
-          open={suggestOpen}
-          onOpenChange={(open) => {
-            if (!open) setSuggestTarget(null)
-          }}
-          opportunityId={suggestTarget?.id ?? selectedNode.id}
-          opportunityTitle={suggestTarget?.title ?? selectedNode.title}
-        />
-      )}
     </div>
 
   )
