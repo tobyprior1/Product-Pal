@@ -30,3 +30,6 @@ export const SNAPSHOT_STATUS = {
   COMPLETED: "completed",
   FAILED: "failed",
 } as const
+
+/** Product maturity options offered in the project setup dialogs. */
+export const PRODUCT_STAGES = ["Idea", "MVP", "Growth", "Mature"] as const
