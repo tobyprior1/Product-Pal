@@ -28,7 +28,8 @@ import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
 import { AddChildPanelButton } from "./AddChildPanelButton"
 import { SolutionSuggestionsDialog } from "./SolutionSuggestionsDialog"
-import { useState } from "react"
+import { Sparkles } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export function NodePanel() {
   const [suggestOpen, setSuggestOpen] = useState(false)
@@ -47,9 +48,27 @@ export function NodePanel() {
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
 
+  // Offer AI ideas straight after an opportunity is created.
+  useEffect(() => {
+    const handleNodeCreated = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { id?: string; type?: string }
+      if (detail?.type === "Opportunity") {
+        setTimeout(() => setSuggestOpen(true), 350)
+      }
+    }
+    window.addEventListener("node-created", handleNodeCreated as EventListener)
+    return () => window.removeEventListener("node-created", handleNodeCreated as EventListener)
+  }, [])
+
   if (!selectedNode) {
     return null
   }
+
+  const hasSolutionChildren = nodes.some(
+    (n) => n.parentId === selectedNode.id && (n.type === "Solution" || n.type === "Opportunity"),
+  )
+  const showAiEmptyState =
+    selectedNode.type === "Opportunity" && !hasSolutionChildren && !isLocked && canAddSolution
 
   const childKind =
     selectedNode.type === "Outcome"
@@ -176,6 +195,20 @@ export function NodePanel() {
               onUpdate={(updates) => updateNode(selectedNode.id, updates)}
             />
           </PanelSection>
+        )}
+
+        {showAiEmptyState && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-center space-y-2">
+            <Sparkles className="h-5 w-5 mx-auto text-primary" />
+            <p className="text-sm font-medium">No solutions yet</p>
+            <p className="text-xs text-muted-foreground">
+              Let the AI suggest solution ideas for this opportunity, tailored to your team and product.
+            </p>
+            <Button className="w-full gap-2" onClick={() => setSuggestOpen(true)}>
+              <Sparkles className="h-4 w-4" />
+              Suggest solutions with AI
+            </Button>
+          </div>
         )}
 
         {childKind && (
