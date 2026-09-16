@@ -5,6 +5,7 @@ import { FlowEditor } from "@/components/FlowEditor";
 import { Topbar } from "@/components/Topbar";
 import { NodePanel } from "@/components/NodePanel";
 import { NewNodeDialog } from "@/components/NewNodeDialog";
+import { SuggestSolutionsHost } from "@/components/SuggestSolutionsHost";
 
 const Editor = () => {
   const currentTree = useDataStore((state) => state.currentTree);
