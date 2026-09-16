@@ -197,6 +197,20 @@ export function NodePanel() {
           </PanelSection>
         )}
 
+        {showAiEmptyState && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-center space-y-2">
+            <Sparkles className="h-5 w-5 mx-auto text-primary" />
+            <p className="text-sm font-medium">No solutions yet</p>
+            <p className="text-xs text-muted-foreground">
+              Let the AI suggest solution ideas for this opportunity, tailored to your team and product.
+            </p>
+            <Button className="w-full gap-2" onClick={() => setSuggestOpen(true)}>
+              <Sparkles className="h-4 w-4" />
+              Suggest solutions with AI
+            </Button>
+          </div>
+        )}
+
         {childKind && (
           <AddChildPanelButton
             childKind={childKind}
