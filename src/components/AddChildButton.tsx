@@ -21,6 +21,8 @@ interface AddChildButtonProps {
   canAddSolution?: boolean
   /** Opportunity nodes can ask the AI for candidate solutions. */
   onSuggestSolutions?: () => void
+  /** Solution nodes can ask the AI for assumption tests. */
+  onSuggestExperiments?: () => void
 }
 
 const wrapperClasses =
@@ -35,6 +37,7 @@ export function AddChildButton({
   canAddSubOpportunity = true,
   canAddSolution = true,
   onSuggestSolutions,
+  onSuggestExperiments,
 }: AddChildButtonProps) {
   const style = HIERARCHY_STYLES[childKind]
   const ChildIcon = style.icon
@@ -44,6 +47,48 @@ export function AddChildButton({
     style.text,
     style.surfaceHover,
   )
+
+  if (onSuggestExperiments) {
+    return (
+      <div className={wrapperClasses}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className={pillClasses}
+              disabled={disabled}
+              title={`Add ${style.label}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <ChildIcon className="h-3.5 w-3.5" />
+              {style.label}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-64">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onSuggestExperiments()
+              }}
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              <span>Suggest experiments with AI</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onAddChild()
+              }}
+            >
+              <ChildIcon className="mr-2 h-4 w-4" />
+              <span>Add {style.label}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    )
+  }
 
   if (showOpportunityMenu && onAddSubOpportunity) {
     return (

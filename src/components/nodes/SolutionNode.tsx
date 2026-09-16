@@ -23,6 +23,12 @@ export const SolutionNode = memo(({ data }: NodeProps) => {
     )
   }
 
+  const handleSuggestExperiments = () => {
+    window.dispatchEvent(
+      new CustomEvent("suggest-experiments", { detail: { parentId: nodeData.id } })
+    )
+  }
+
   const getStatusColor = () => {
     switch (nodeData.status) {
       case "Now":
@@ -90,6 +96,7 @@ export const SolutionNode = memo(({ data }: NodeProps) => {
       childKind="experiment"
       onAddChild={handleAddChild}
       disabled={isLocked}
+      onSuggestExperiments={handleSuggestExperiments}
     />
   </div>
   )
