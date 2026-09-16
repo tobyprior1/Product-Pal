@@ -1,4 +1,4 @@
-import { Plus, Lightbulb } from "lucide-react"
+import { Plus, Lightbulb, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -19,6 +19,8 @@ interface AddChildButtonProps {
   onAddSubOpportunity?: () => void
   canAddSubOpportunity?: boolean
   canAddSolution?: boolean
+  /** Opportunity nodes can ask the AI for candidate solutions. */
+  onSuggestSolutions?: () => void
 }
 
 const wrapperClasses =
@@ -32,6 +34,7 @@ export function AddChildButton({
   onAddSubOpportunity,
   canAddSubOpportunity = true,
   canAddSolution = true,
+  onSuggestSolutions,
 }: AddChildButtonProps) {
   const style = HIERARCHY_STYLES[childKind]
   const ChildIcon = style.icon
@@ -59,7 +62,30 @@ export function AddChildButton({
               {style.label}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" className="w-56">
+          <DropdownMenuContent align="center" className="w-64">
+            {onSuggestSolutions && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="block">
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSuggestSolutions()
+                      }}
+                      disabled={!canAddSolution}
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      <span>Suggest solutions with AI</span>
+                    </DropdownMenuItem>
+                  </span>
+                </TooltipTrigger>
+                {!canAddSolution && (
+                  <TooltipContent side="right" className="max-w-xs">
+                    {SOLUTION_BLOCKED_HINT}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="block">

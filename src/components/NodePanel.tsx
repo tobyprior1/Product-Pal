@@ -27,13 +27,15 @@ import { PanelSection } from "./node-fields/PanelSection"
 import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
 import { AddChildPanelButton } from "./AddChildPanelButton"
-import { SolutionSuggestionsDialog } from "./SolutionSuggestionsDialog"
-import { useState } from "react"
 
 
 
 export function NodePanel() {
-  const [suggestOpen, setSuggestOpen] = useState(false)
+  // The AI suggestions dialog itself lives in SuggestSolutionsHost (mounted by
+  // the Editor) so it can open from the canvas pill without a selected node.
+  const dispatchSuggestSolutions = (parentId: string) => {
+    window.dispatchEvent(new CustomEvent("suggest-solutions", { detail: { parentId } }))
+  }
 
   const selectedNodeId = useUIStore((state) => state.selectedNodeId)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
@@ -190,19 +192,10 @@ export function NodePanel() {
             }
             canAddSubOpportunity={selectedNode.type === "Opportunity" ? canAddSubOpportunity : true}
             canAddSolution={selectedNode.type === "Opportunity" ? canAddSolution : true}
-            onSuggestSolutions={selectedNode.type === "Opportunity" ? () => setSuggestOpen(true) : undefined}
+            onSuggestSolutions={() => dispatchSuggestSolutions(selectedNode.id)}
           />
         )}
       </div>
-
-      {selectedNode.type === "Opportunity" && (
-        <SolutionSuggestionsDialog
-          open={suggestOpen}
-          onOpenChange={setSuggestOpen}
-          opportunityId={selectedNode.id}
-          opportunityTitle={selectedNode.title}
-        />
-      )}
     </div>
 
   )
