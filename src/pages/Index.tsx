@@ -67,6 +67,11 @@ const Index = () => {
   const [projectProductContext, setProjectProductContext] = useState("");
   const [projectTargetUsers, setProjectTargetUsers] = useState("");
   const [projectConstraints, setProjectConstraints] = useState("");
+  const [projectBusinessModel, setProjectBusinessModel] = useState("");
+  const [projectProductStage, setProjectProductStage] = useState("");
+  const [projectCompetitors, setProjectCompetitors] = useState("");
+  const [projectTeamScope, setProjectTeamScope] = useState("");
+  const [projectTeamWays, setProjectTeamWays] = useState("");
 
   const [projectEditOpen, setProjectEditOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<{ id: string; name: string; description?: string } | null>(null);
