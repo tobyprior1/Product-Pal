@@ -177,17 +177,14 @@ Respond with raw JSON only - no markdown, no code fences, no commentary. Your re
           }),
         });
 
-      const modelChain = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash'];
-      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+      // Free-tier limits are per model: a model that returns 429 is out of quota
+      // for now, so never retry it — move straight to the next model in the chain.
+      const modelChain = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash'];
       let response: Response | undefined;
-      outer: for (const model of modelChain) {
-        for (let attempt = 0; attempt < 3; attempt++) {
-          if (attempt > 0) await sleep(600 * attempt);
-          response = await callGemini(model);
-          if (response.status !== 503 && response.status !== 429) break outer;
-          console.warn(`${model} returned ${response.status} (attempt ${attempt + 1})`);
-
-        }
+      for (const model of modelChain) {
+        response = await callGemini(model);
+        if (response.status !== 503 && response.status !== 429) break;
+        console.warn(`${model} returned ${response.status}, trying next model`);
       }
       response = response!;
 
