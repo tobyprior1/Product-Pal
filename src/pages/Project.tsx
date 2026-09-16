@@ -494,6 +494,10 @@ const Project = () => {
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 This team
               </p>
+              <p className="text-xs text-muted-foreground">
+                This tells the AI what your team can realistically build, so its suggestions fit
+                your team — not just your product.
+              </p>
               <div className="space-y-2">
                 <Label htmlFor="project-name">Team/Project name</Label>
                 <Input
@@ -505,6 +509,9 @@ const Project = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-description">Purpose of the team/project</Label>
+                <p className="text-xs text-muted-foreground">
+                  Anchors every AI suggestion to why the team exists.
+                </p>
                 <Input
                   id="project-description"
                   value={projectDescription}
@@ -514,6 +521,9 @@ const Project = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-team-scope">Area the team owns</Label>
+                <p className="text-xs text-muted-foreground">
+                  Keeps ideas inside your patch — the AI won't suggest work another team owns.
+                </p>
                 <Textarea
                   id="project-team-scope"
                   value={teamScope}
@@ -524,6 +534,9 @@ const Project = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-team-ways">How the team works</Label>
+                <p className="text-xs text-muted-foreground">
+                  So ideas are sized to what your team can actually ship.
+                </p>
                 <Textarea
                   id="project-team-ways"
                   value={teamWays}
@@ -534,6 +547,9 @@ const Project = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-constraints">Constraints</Label>
+                <p className="text-xs text-muted-foreground">
+                  The AI will never suggest anything that breaks these.
+                </p>
                 <Textarea
                   id="project-constraints"
                   value={constraints}
@@ -548,8 +564,15 @@ const Project = () => {
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 The business &amp; product
               </p>
+              <p className="text-xs text-muted-foreground">
+                The more the AI knows here, the sharper its ideas — this is the difference between
+                generic suggestions and ones that truly fit your product.
+              </p>
               <div className="space-y-2">
                 <Label htmlFor="project-product-context">Product context</Label>
+                <p className="text-xs text-muted-foreground">
+                  So the AI only suggests things that are actually possible with your setup.
+                </p>
                 <Textarea
                   id="project-product-context"
                   value={productContext}

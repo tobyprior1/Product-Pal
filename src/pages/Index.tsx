@@ -627,6 +627,9 @@ const Index = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-project-product-stage">Product stage</Label>
+                <p className="text-xs text-muted-foreground">
+                  An early-stage product gets very different ideas from a mature one.
+                </p>
                 <Select value={projectProductStage} onValueChange={setProjectProductStage}>
                   <SelectTrigger id="new-project-product-stage">
                     <SelectValue placeholder="Select a stage" />
