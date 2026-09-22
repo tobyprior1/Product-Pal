@@ -260,7 +260,7 @@ const Index = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold text-foreground">Projects</h2>
-                  <Button onClick={() => setProjectCreateOpen(true)}>
+                  <Button data-tour="new-project" onClick={() => setProjectCreateOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     New Project
                   </Button>

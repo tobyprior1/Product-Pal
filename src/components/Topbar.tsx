@@ -121,6 +121,7 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
                   variant="ghost"
                   size="sm"
                   className="gap-1.5 text-muted-foreground hover:text-foreground h-8"
+                  data-tour="view-switcher"
                   title={activeView.label}
                 >
                   <ActiveIcon className="w-4 h-4" />

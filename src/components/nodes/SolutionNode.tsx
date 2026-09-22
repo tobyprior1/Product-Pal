@@ -49,7 +49,7 @@ export const SolutionNode = memo(({ data }: NodeProps) => {
   }
 
   return (
-    <div className="relative group">
+    <div className="relative group" data-tour="node-solution">
       <Handle type="target" position={Position.Top} className="!bg-primary" />
       
       <Card className={`w-80 p-4 border-2 shadow-md ${getStatusColor()}`}>
