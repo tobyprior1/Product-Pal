@@ -272,7 +272,9 @@ export function InterviewOpportunitiesDialog({
                   className="min-h-[220px]"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Quotes are kept word-for-word, so each opportunity carries its evidence.
+                  Quotes are kept word-for-word, and the whole conversation is saved to your
+                  interview library so you can always trace an opportunity back to it.
+
                 </p>
               </div>
             </>
