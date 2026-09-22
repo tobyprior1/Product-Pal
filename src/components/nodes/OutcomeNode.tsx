@@ -36,6 +36,12 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
     )
   }
 
+  const handleExtractFromInterview = () => {
+    window.dispatchEvent(
+      new CustomEvent("extract-opportunities", { detail: { parentId: nodeData.id } })
+    )
+  }
+
   return (
     <div className="relative group" data-tour="node-outcome">
       <Handle type="target" position={Position.Top} className="!bg-primary" style={{ opacity: 0 }} />
@@ -96,6 +102,7 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
     <AddChildButton
       childKind="opportunity"
       onAddChild={handleAddChild}
+      onExtractFromInterview={handleExtractFromInterview}
       disabled={isLocked}
     />
   </div>
