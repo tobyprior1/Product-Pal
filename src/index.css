@@ -38,6 +38,12 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
+    /* Landing page (signed-out) palette */
+    --landing-bg: 226 49% 8%;
+    --landing-surface: 226 42% 14%;
+    --landing-accent: 222 100% 68%;
+    --landing-fg: 226 100% 95%;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
