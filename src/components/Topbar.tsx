@@ -91,10 +91,13 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
               {currentTree && (
                 <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
               )}
-              <span className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-sm group-hover:opacity-90 transition-opacity">
-                P
-              </span>
-              <span className="font-semibold tracking-tight text-foreground">Product Pal</span>
+              <img
+                src={productPalLogo}
+                alt="Product Pal"
+                width={1152}
+                height={576}
+                className="h-6 w-auto shrink-0 group-hover:opacity-90 transition-opacity"
+              />
               {currentTree && breadcrumbLabel && (
                 <>
                   <span className="h-4 w-px bg-border mx-1 shrink-0" />
