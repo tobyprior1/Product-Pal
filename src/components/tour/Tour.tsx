@@ -182,7 +182,6 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
     if (ranRef.current === stepIndex) return;
     ranRef.current = stepIndex;
 
-    let cancelled = false;
     setBusy(true);
     (async () => {
       try {
@@ -190,12 +189,8 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
       } catch (error) {
         console.error("Tour step failed:", error);
       }
-      if (!cancelled) setBusy(false);
+      setBusy(false);
     })();
-
-    return () => {
-      cancelled = true;
-    };
   }, [stepIndex, step, navigate]);
 
   const finish = useCallback(() => {
