@@ -205,6 +205,14 @@ export function NodePanel() {
                     )
                 : undefined
             }
+            onExtractFromInterview={
+              selectedNode.type === "Outcome"
+                ? () =>
+                    window.dispatchEvent(
+                      new CustomEvent("extract-opportunities", { detail: { parentId: selectedNode.id } }),
+                    )
+                : undefined
+            }
           />
         )}
       </div>

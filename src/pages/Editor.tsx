@@ -7,6 +7,7 @@ import { NodePanel } from "@/components/NodePanel";
 import { NewNodeDialog } from "@/components/NewNodeDialog";
 import { SuggestSolutionsHost } from "@/components/SuggestSolutionsHost";
 import { SuggestExperimentsHost } from "@/components/SuggestExperimentsHost";
+import { InterviewOpportunitiesHost } from "@/components/InterviewOpportunitiesHost";
 
 const Editor = () => {
   const currentTree = useDataStore((state) => state.currentTree);
@@ -99,6 +100,7 @@ const Editor = () => {
 
       <SuggestSolutionsHost />
       <SuggestExperimentsHost />
+      <InterviewOpportunitiesHost />
 
       <NewNodeDialog 
         open={newNodeDialogOpen}
