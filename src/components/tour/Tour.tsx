@@ -290,6 +290,11 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
         </p>
         <h3 className="mt-1 text-lg font-semibold text-foreground">{step.title}</h3>
         <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
+        {spotlight && (
+          <p className="mt-2 text-xs text-muted-foreground/80">
+            Go ahead — you can click the highlighted part while the tour is open.
+          </p>
+        )}
 
         <div className="mt-5 flex items-center justify-between gap-2">
           <Button variant="ghost" size="sm" onClick={finish}>
