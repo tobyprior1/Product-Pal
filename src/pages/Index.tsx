@@ -40,6 +40,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Landing } from "@/components/Landing";
+import productPalLogo from "@/assets/product-pal-logo.png";
 import type { User } from "@supabase/supabase-js";
 import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Target, Trash2 } from "lucide-react";
 import { usePendingAction } from "@/hooks/usePendingAction";
