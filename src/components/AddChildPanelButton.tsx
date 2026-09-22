@@ -17,6 +17,8 @@ interface AddChildPanelButtonProps {
   onSuggestSolutions?: () => void
   /** Solution nodes can ask the AI for assumption tests. */
   onSuggestExperiments?: () => void
+  /** Outcome nodes can turn an interview transcript into opportunities. */
+  onExtractFromInterview?: () => void
 }
 
 export function AddChildPanelButton({
@@ -28,6 +30,7 @@ export function AddChildPanelButton({
   canAddSolution = true,
   onSuggestSolutions,
   onSuggestExperiments,
+  onExtractFromInterview,
 }: AddChildPanelButtonProps) {
 
   const style = HIERARCHY_STYLES[childKind]
@@ -37,6 +40,27 @@ export function AddChildPanelButton({
 
   return (
     <div className="space-y-2 border-t border-border pt-4">
+      {onExtractFromInterview && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="block">
+              <Button
+                className="w-full justify-start gap-2 text-xs font-medium"
+                onClick={onExtractFromInterview}
+                disabled={disabled}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Paste an interview → get opportunities
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="max-w-xs">
+            Paste a customer conversation and the AI turns the unmet needs in it into opportunities, each with
+            the customer's own words as evidence.
+          </TooltipContent>
+        </Tooltip>
+      )}
+
       {onSuggestExperiments && (
         <Button
           className="w-full justify-start gap-2 text-xs font-medium"
