@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.79.0";
 import { buildOpportunityContext } from "../_shared/tree-context.ts";
-import { DEFAULT_SUGGEST_SOLUTIONS_PROMPT, VARIANT_B_STARTER_PROMPT } from "./prompts.ts";
+import { DEFAULT_SUGGEST_SOLUTIONS_PROMPT } from "./prompts.ts";
 
 
 const corsHeaders = {
@@ -75,7 +75,6 @@ Deno.serve(async (req) => {
 
     const fallback = (body?.opportunity ?? {}) as Record<string, any>;
     const steer = typeof body?.steer === "string" ? body.steer : undefined;
-    const compare = body?.compare === true;
 
     const exclude: string[] = Array.isArray(body?.exclude)
       ? body.exclude.map((t: unknown) => String(t ?? "").trim()).filter(Boolean).slice(0, 30)
