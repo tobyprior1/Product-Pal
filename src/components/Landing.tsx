@@ -35,8 +35,8 @@ export function Landing() {
         <img
           src={logoLight}
           alt="Product Pal"
-          width={1152}
-          height={576}
+          width={1050}
+          height={206}
           className="h-9 w-auto"
         />
         <Button
@@ -108,8 +108,8 @@ export function Landing() {
             src={logoLight}
             alt="Product Pal"
             loading="lazy"
-            width={1152}
-            height={576}
+            width={1050}
+            height={206}
             className="h-7 w-auto opacity-80"
           />
           <p className="text-sm text-landing-fg/50">

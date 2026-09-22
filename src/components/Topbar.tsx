@@ -95,8 +95,8 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
               <img
                 src={productPalLogo}
                 alt="Product Pal"
-                width={1152}
-                height={576}
+                width={882}
+                height={177}
                 className="h-6 w-auto shrink-0 group-hover:opacity-90 transition-opacity"
               />
               {currentTree && breadcrumbLabel && (

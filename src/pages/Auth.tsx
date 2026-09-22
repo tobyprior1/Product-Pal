@@ -170,8 +170,8 @@ const Auth = () => {
           <img
             src={productPalLogo}
             alt="Product Pal"
-            width={1152}
-            height={576}
+            width={882}
+            height={177}
             className="h-8 w-auto mb-3"
           />
           <CardTitle>Welcome to Product Pal</CardTitle>
