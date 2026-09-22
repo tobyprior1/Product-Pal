@@ -37,7 +37,7 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
   }
 
   return (
-    <div className="relative group">
+    <div className="relative group" data-tour="node-outcome">
       <Handle type="target" position={Position.Top} className="!bg-primary" style={{ opacity: 0 }} />
       
       <Card className="w-80 p-4 border-2 border-purple-300 bg-purple-50 shadow-lg">

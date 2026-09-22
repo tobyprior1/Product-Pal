@@ -38,7 +38,8 @@ import {
 import { useDataStore } from "@/lib/pm-supabase-store";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTour, hasSeenTour } from "@/components/tour/Tour";
 import { Landing } from "@/components/Landing";
 import productPalLogo from "@/assets/product-pal-logo.png";
 import type { User } from "@supabase/supabase-js";
@@ -63,6 +64,8 @@ const Index = () => {
   } = useDataStore();
 
   const [user, setUser] = useState<User | null>(null);
+  const { start: startTour } = useTour();
+  const tourAutoStarted = useRef(false);
   const { isPending, run, actionProps } = usePendingAction();
 
   const [treeDeleteOpen, setTreeDeleteOpen] = useState(false);
@@ -98,6 +101,13 @@ const Index = () => {
       setAuthChecked(true);
     });
   }, []);
+
+  // First-time visitors get the walkthrough automatically, once.
+  useEffect(() => {
+    if (!userId || tourAutoStarted.current || hasSeenTour()) return;
+    tourAutoStarted.current = true;
+    startTour();
+  }, [userId, startTour]);
 
   const unassignedTrees = useMemo(
     () => trees.filter((t) => !t.projectId).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
@@ -228,6 +238,9 @@ const Index = () => {
         {user ? (
           <>
             <span className="text-sm text-muted-foreground self-center">{user.email}</span>
+            <Button variant="ghost" onClick={startTour}>
+              Take a tour
+            </Button>
             <Button variant="outline" onClick={handleSignOut}>
               Sign Out
             </Button>
@@ -260,7 +273,7 @@ const Index = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold text-foreground">Projects</h2>
-                  <Button onClick={() => setProjectCreateOpen(true)}>
+                  <Button data-tour="new-project" onClick={() => setProjectCreateOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     New Project
                   </Button>

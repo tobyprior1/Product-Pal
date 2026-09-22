@@ -16,6 +16,7 @@ import Present from "./pages/Present";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { CommandPalette } from "@/components/CommandPalette";
+import { TourProvider } from "@/components/tour/Tour";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <TourProvider>
           <CommandPalette />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -84,6 +86,7 @@ const App = () => {
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </TourProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

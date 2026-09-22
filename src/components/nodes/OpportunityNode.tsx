@@ -77,7 +77,7 @@ export const OpportunityNode = memo(({ data }: NodeProps) => {
   }
 
   return (
-    <div className="relative group">
+    <div className="relative group" data-tour="node-opportunity">
       <Handle type="target" position={Position.Top} className="!bg-primary" />
       
       <Card className={`w-80 p-4 border-2 shadow-md ${getStatusColor()} ${isSubOpportunity ? 'border-l-4 border-l-purple-500 bg-purple-50/50' : ''}`}>
