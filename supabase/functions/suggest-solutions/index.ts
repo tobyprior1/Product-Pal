@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
       return json({ error: "Node is not an opportunity" }, 400);
     }
 
-    // ---- Prompt variants (editable in-app, seeded on first use) ----
+    // ---- User-editable prompt (seeded on first use) ----
     const { data: promptRows } = await supabase
       .from("ai_prompts")
       .select("id,label,system_prompt,version,is_active,model")
@@ -116,28 +116,23 @@ Deno.serve(async (req) => {
       model: string | null;
     }>;
 
-    const missing = ["A", "B"].filter((label) => !prompts.some((p) => p.label === label));
-    if (missing.length > 0) {
+    if (!prompts.some((p) => p.label === "A")) {
       const { data: inserted } = await supabase
         .from("ai_prompts")
-        .insert(
-          missing.map((label) => ({
-            user_id: userId,
-            key: "suggest-solutions",
-            label,
-            system_prompt:
-              label === "A" ? DEFAULT_SUGGEST_SOLUTIONS_PROMPT : VARIANT_B_STARTER_PROMPT,
-            version: 1,
-            is_active: label === "A",
-          })),
-        )
+        .insert({
+          user_id: userId,
+          key: "suggest-solutions",
+          label: "A",
+          system_prompt: DEFAULT_SUGGEST_SOLUTIONS_PROMPT,
+          version: 1,
+          is_active: true,
+        })
         .select("id,label,system_prompt,version,is_active,model");
       prompts = [...prompts, ...((inserted ?? []) as typeof prompts)];
     }
 
     const promptA = prompts.find((p) => p.label === "A");
-    const promptB = prompts.find((p) => p.label === "B");
-    const activePrompt = prompts.find((p) => p.is_active) ?? promptA ?? promptB;
+    const activePrompt = prompts.find((p) => p.is_active) ?? promptA;
 
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiApiKey) return json({ error: "AI is not configured for this project." }, 500);
@@ -214,34 +209,6 @@ Deno.serve(async (req) => {
       }
       return { suggestions: suggestions.slice(0, 3), model: usedModel };
     };
-
-    if (compare) {
-      if (!promptA || !promptB) {
-        return json({ error: "Both prompt variants must exist to compare." }, 400);
-      }
-      const [resA, resB] = await Promise.all([
-        runVariant(promptA.system_prompt, promptA.model),
-        runVariant(promptB.system_prompt, promptB.model),
-      ]);
-      if (resA.error || resB.error) {
-        return json({ error: resA.error ?? resB.error }, resA.status ?? resB.status ?? 502);
-      }
-      return json({
-        compare: true,
-        a: {
-          promptId: promptA.id,
-          label: "A",
-          version: promptA.version,
-          suggestions: resA.suggestions,
-        },
-        b: {
-          promptId: promptB.id,
-          label: "B",
-          version: promptB.version,
-          suggestions: resB.suggestions,
-        },
-      });
-    }
 
     const systemPrompt = activePrompt?.system_prompt ?? DEFAULT_SUGGEST_SOLUTIONS_PROMPT;
     const result = await runVariant(systemPrompt, activePrompt?.model);
