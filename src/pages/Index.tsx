@@ -241,7 +241,14 @@ const Index = () => {
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-4xl w-full space-y-8">
           <div className="text-center space-y-4">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground">Product Pal</h1>
+            <h1 className="sr-only">Product Pal</h1>
+            <img
+              src={productPalLogo}
+              alt="Product Pal"
+              width={882}
+              height={177}
+              className="h-12 w-auto mx-auto"
+            />
             <p className="text-lg text-muted-foreground">
               Plan your product strategy, prioritise the right opportunities, and ship outcomes with confidence.
             </p>
