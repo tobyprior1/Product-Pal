@@ -23,6 +23,8 @@ interface AddChildButtonProps {
   onSuggestSolutions?: () => void
   /** Solution nodes can ask the AI for assumption tests. */
   onSuggestExperiments?: () => void
+  /** Outcome nodes can turn an interview transcript into opportunities. */
+  onExtractFromInterview?: () => void
 }
 
 const wrapperClasses =
@@ -38,6 +40,7 @@ export function AddChildButton({
   canAddSolution = true,
   onSuggestSolutions,
   onSuggestExperiments,
+  onExtractFromInterview,
 }: AddChildButtonProps) {
   const style = HIERARCHY_STYLES[childKind]
   const ChildIcon = style.icon
@@ -177,6 +180,48 @@ export function AddChildButton({
                 </TooltipContent>
               )}
             </Tooltip>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    )
+  }
+
+  if (onExtractFromInterview) {
+    return (
+      <div className={wrapperClasses}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className={pillClasses}
+              disabled={disabled}
+              title={`Add ${style.label}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <ChildIcon className="h-3.5 w-3.5" />
+              {style.label}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-72">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onExtractFromInterview()
+              }}
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              <span>Paste an interview → get opportunities</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onAddChild()
+              }}
+            >
+              <ChildIcon className="mr-2 h-4 w-4" />
+              <span>Add {style.label}</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
