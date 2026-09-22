@@ -49,6 +49,8 @@ export function InterviewOpportunitiesDialog({
   const [opportunities, setOpportunities] = useState<ExtractedOpportunity[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [adding, setAdding] = useState(false)
+  const [interviewId, setInterviewId] = useState<string | null>(null)
+  const [rowIds, setRowIds] = useState<string[]>([])
 
   const addNode = useDataStore((state) => state.addNode)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
@@ -61,8 +63,67 @@ export function InterviewOpportunitiesDialog({
       setSelected(new Set())
       setError(null)
       setLoading(false)
+      setInterviewId(null)
+      setRowIds([])
     }
   }, [open])
+
+  // Save the transcript and the extracted opportunities into the interview library
+  // so every extraction stays traceable back to the conversation it came from.
+  const saveToLibrary = async (
+    incoming: ExtractedOpportunity[],
+    participantName: string,
+    treeId?: string,
+  ): Promise<{ interviewId: string | null; rowIds: string[] }> => {
+    if (!treeId) return { interviewId: null, rowIds: [] }
+
+    try {
+      const { addInterview, addInterviewOpportunity } = useDataStore.getState()
+
+      let id = interviewId
+      if (!id) {
+        id = generateUUID()
+        await addInterview({
+          id,
+          treeId,
+          transcript: transcript.trim(),
+          participantName: participantName || undefined,
+          uploadedAt: new Date().toISOString(),
+          status: "completed",
+        } as any)
+
+        await supabase.from("interview_snapshots").insert({
+          interview_id: id,
+          status: "completed",
+          participant_name: participantName || null,
+          quick_facts: [],
+        })
+      }
+
+      const ids: string[] = []
+      for (const opportunity of incoming) {
+        const rowId = generateUUID()
+        ids.push(rowId)
+        await addInterviewOpportunity(id, {
+          id: rowId,
+          interviewId: id,
+          title: opportunity.title,
+          description: opportunity.need ?? "",
+          whyItMatters: opportunity.whyItMatters ?? "",
+          evidenceQuote: opportunity.quote ?? "",
+          evidenceRef: participantName || "Interview",
+          suggestedNextStep: "",
+          createdAt: new Date().toISOString(),
+          applied: false,
+        } as any)
+      }
+
+      return { interviewId: id, rowIds: ids }
+    } catch (saveError) {
+      console.error("Couldn't save the interview to the library:", saveError)
+      return { interviewId, rowIds: [] }
+    }
+  }
 
   const analyse = async () => {
     setLoading(true)
@@ -87,11 +148,17 @@ export function InterviewOpportunitiesDialog({
     }
 
     const incoming = ((data as any)?.opportunities ?? []) as ExtractedOpportunity[]
+    const resolvedParticipant = participant.trim() || ((data as any)?.participantName ?? "")
     setOpportunities(incoming)
     setSelected(new Set(incoming.map((_, index) => `opp-${index}`)))
     if ((data as any)?.participantName && !participant.trim()) {
       setParticipant((data as any).participantName)
     }
+
+    const saved = await saveToLibrary(incoming, resolvedParticipant, currentTree?.id)
+    setInterviewId(saved.interviewId)
+    setRowIds(saved.rowIds)
+
     setLoading(false)
   }
 
@@ -104,15 +171,19 @@ export function InterviewOpportunitiesDialog({
     })
   }
 
+
   const handleAddSelected = async () => {
-    const chosen = opportunities.filter((_, index) => selected.has(`opp-${index}`))
-    if (chosen.length === 0) return
+    const chosenIndexes = opportunities
+      .map((_, index) => index)
+      .filter((index) => selected.has(`opp-${index}`))
+    if (chosenIndexes.length === 0) return
 
     setAdding(true)
     let lastId: string | null = null
     let added = 0
 
-    for (const opportunity of chosen) {
+    for (const index of chosenIndexes) {
+      const opportunity = opportunities[index]
       const attribution = participant.trim() ? ` — ${participant.trim()}` : ""
       const node = {
         id: generateUUID(),
@@ -134,6 +205,15 @@ export function InterviewOpportunitiesDialog({
       if (ok) {
         added += 1
         lastId = node.id
+
+        // Link the library record to the node it became, so the evidence trail holds.
+        const rowId = rowIds[index]
+        if (interviewId && rowId) {
+          await useDataStore.getState().updateInterviewOpportunity(interviewId, rowId, {
+            applied: true,
+            opportunityNodeId: node.id,
+          })
+        }
       }
     }
 
@@ -142,9 +222,12 @@ export function InterviewOpportunitiesDialog({
     if (added > 0) {
       toast({
         title: `${added} opportunit${added > 1 ? "ies" : "y"} added`,
-        description: "The customer quote is saved as evidence on each one.",
+        description: interviewId
+          ? "The transcript is saved in your interview library, with each quote as evidence."
+          : "The customer quote is saved as evidence on each one.",
       })
       if (lastId) setSelectedNodeId(lastId)
+
       onOpenChange(false)
     } else {
       setError("The opportunities couldn't be saved. Please try again.")
@@ -189,7 +272,9 @@ export function InterviewOpportunitiesDialog({
                   className="min-h-[220px]"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Quotes are kept word-for-word, so each opportunity carries its evidence.
+                  Quotes are kept word-for-word, and the whole conversation is saved to your
+                  interview library so you can always trace an opportunity back to it.
+
                 </p>
               </div>
             </>
@@ -256,7 +341,10 @@ export function InterviewOpportunitiesDialog({
                 onClick={() => {
                   setOpportunities([])
                   setSelected(new Set())
+                  setInterviewId(null)
+                  setRowIds([])
                 }}
+
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Edit transcript
