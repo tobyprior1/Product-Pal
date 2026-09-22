@@ -175,6 +175,7 @@ Deno.serve(async (req) => {
     const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
     const result = parseResult(content);
     if (result.opportunities.length === 0) {
+      console.error("No opportunities parsed", usedModel, JSON.stringify(content).slice(0, 800));
       return json({ error: "No clear customer needs came out of that transcript. Try a fuller one." }, 502);
     }
 
