@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
 
 interface PromptVariantsDialogProps {
   open: boolean
@@ -58,13 +57,9 @@ const MODEL_OPTIONS = [
 export function PromptVariantsDialog({ open, onOpenChange }: PromptVariantsDialogProps) {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [rows, setRows] = useState<PromptRow[]>([])
-  const [textA, setTextA] = useState("")
-  const [textB, setTextB] = useState("")
-  const [active, setActive] = useState<"A" | "B">("A")
-  const [modelA, setModelA] = useState<string>("gemini-3.8-flash")
-  const [modelB, setModelB] = useState<string>("gemini-3.8-flash")
-  const [tally, setTally] = useState<{ a: number; b: number; tie: number }>({ a: 0, b: 0, tie: 0 })
+  const [row, setRow] = useState<PromptRow | null>(null)
+  const [text, setText] = useState("")
+  const [model, setModel] = useState<string>("gemini-3.8-flash")
 
   useEffect(() => {
     if (!open) return
@@ -72,31 +67,17 @@ export function PromptVariantsDialog({ open, onOpenChange }: PromptVariantsDialo
 
     const load = async () => {
       setLoading(true)
-      const [{ data: prompts }, { data: comparisons }] = await Promise.all([
-        supabase
-          .from("ai_prompts")
-          .select("id,label,system_prompt,version,is_active,model")
-          .eq("key", "suggest-solutions"),
-        supabase.from("ai_prompt_comparisons").select("verdict").eq("key", "suggest-solutions"),
-      ])
+      const { data: prompts } = await supabase
+        .from("ai_prompts")
+        .select("id,label,system_prompt,version,is_active,model")
+        .eq("key", "suggest-solutions")
       if (cancelled) return
 
       const list = (prompts ?? []) as PromptRow[]
-      setRows(list)
-      setTextA(list.find((p) => p.label === "A")?.system_prompt ?? "")
-      setTextB(list.find((p) => p.label === "B")?.system_prompt ?? "")
-      setActive((list.find((p) => p.is_active)?.label as "A" | "B") ?? "A")
-      setModelA(list.find((p) => p.label === "A")?.model ?? "gemini-3.8-flash")
-      setModelB(list.find((p) => p.label === "B")?.model ?? "gemini-3.8-flash")
-
-      const counts = { a: 0, b: 0, tie: 0 }
-      for (const row of comparisons ?? []) {
-        const verdict = (row as { verdict: string }).verdict
-        if (verdict === "a") counts.a += 1
-        else if (verdict === "b") counts.b += 1
-        else counts.tie += 1
-      }
-      setTally(counts)
+      const active = list.find((p) => p.is_active) ?? list[0] ?? null
+      setRow(active)
+      setText(active?.system_prompt ?? "")
+      setModel(active?.model ?? "gemini-3.8-flash")
       setLoading(false)
     }
 
@@ -107,124 +88,78 @@ export function PromptVariantsDialog({ open, onOpenChange }: PromptVariantsDialo
   }, [open])
 
   const handleSave = async () => {
+    if (!row) return
     setSaving(true)
-    const updates = [
-      { label: "A" as const, text: textA, model: modelA },
-      { label: "B" as const, text: textB, model: modelB },
-    ]
-
-    for (const { label, text, model } of updates) {
-      const row = rows.find((p) => p.label === label)
-      if (!row) continue
-      const changed = row.system_prompt !== text
-      await supabase
-        .from("ai_prompts")
-        .update({
-          system_prompt: text,
-          model,
-          version: changed ? row.version + 1 : row.version,
-          is_active: active === label,
-        })
-        .eq("id", row.id)
-    }
-
+    const changed = row.system_prompt !== text
+    await supabase
+      .from("ai_prompts")
+      .update({
+        system_prompt: text,
+        model,
+        version: changed ? row.version + 1 : row.version,
+        is_active: true,
+      })
+      .eq("id", row.id)
     setSaving(false)
-    toast({ title: "Prompts saved", description: `Variant ${active} is now the default.` })
+    toast({ title: "Prompt saved", description: "New ideas will follow these instructions." })
     onOpenChange(false)
   }
 
-  const empty = !loading && rows.length === 0
+  const empty = !loading && !row
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            AI prompt variants
+            AI prompt
           </DialogTitle>
           <DialogDescription>
-            Two versions of the instructions the AI follows when suggesting solutions, each with
-            its own model. Compare them side by side from any opportunity, then set the winner as
-            the default. If the chosen model is busy, the app falls back to the others
-            automatically.
+            The instructions the AI follows when suggesting solutions. If the chosen model is busy,
+            the app falls back to the others automatically.
           </DialogDescription>
         </DialogHeader>
 
-        {loading && (
-          <div className="space-y-3">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-32 w-full" />
-          </div>
-        )}
+        {loading && <Skeleton className="h-48 w-full" />}
 
         {empty && (
           <p className="text-sm text-muted-foreground">
-            Your prompts are created the first time you ask the AI for solution ideas. Generate
-            suggestions once, then come back here to edit them.
+            Your prompt is created the first time you ask the AI for solution ideas. Generate
+            suggestions once, then come back here to edit it.
           </p>
         )}
 
-        {!loading && rows.length > 0 && (
-          <div className="space-y-5">
-            <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
-              <span className="font-medium">Results so far:</span> A won {tally.a}, B won {tally.b},{" "}
-              {tally.tie} tie{tally.tie === 1 ? "" : "s"}
+        {!loading && row && (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="prompt-text">System prompt</Label>
+              <Textarea
+                id="prompt-text"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                rows={12}
+                className="font-mono text-xs leading-relaxed"
+              />
             </div>
-
-            {(["A", "B"] as const).map((label) => (
-              <div key={label} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor={`prompt-${label}`}>Variant {label}</Label>
-                  <Button
-                    type="button"
-                    variant={active === label ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setActive(label)}
-                  >
-                    {active === label ? "Default" : "Make default"}
-                  </Button>
-                </div>
-                <Textarea
-                  id={`prompt-${label}`}
-                  value={label === "A" ? textA : textB}
-                  onChange={(event) =>
-                    label === "A" ? setTextA(event.target.value) : setTextB(event.target.value)
-                  }
-                  rows={10}
-                  className={cn("font-mono text-xs leading-relaxed")}
-                />
-                <div className="flex flex-wrap items-center gap-3">
-                  <Select
-                    value={label === "A" ? modelA : modelB}
-                    onValueChange={(value) =>
-                      label === "A" ? setModelA(value) : setModelB(value)
-                    }
-                  >
-                    <SelectTrigger className="w-[190px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MODEL_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground flex-1 min-w-[200px]">
-                    {
-                      MODEL_OPTIONS.find(
-                        (option) => option.value === (label === "A" ? modelA : modelB),
-                      )?.blurb
-                    }
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Version {rows.find((p) => p.label === label)?.version ?? 1}
-                  </p>
-                </div>
-              </div>
-            ))}
+            <div className="flex flex-wrap items-center gap-3">
+              <Select value={model} onValueChange={setModel}>
+                <SelectTrigger className="w-[190px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MODEL_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground flex-1 min-w-[200px]">
+                {MODEL_OPTIONS.find((option) => option.value === model)?.blurb}
+              </p>
+              <p className="text-xs text-muted-foreground">Version {row.version}</p>
+            </div>
           </div>
         )}
 
@@ -232,7 +167,7 @@ export function PromptVariantsDialog({ open, onOpenChange }: PromptVariantsDialo
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving || loading || rows.length === 0}>
+          <Button onClick={handleSave} disabled={saving || loading || !row}>
             {saving ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
