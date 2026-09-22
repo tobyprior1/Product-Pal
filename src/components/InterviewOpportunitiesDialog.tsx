@@ -339,7 +339,10 @@ export function InterviewOpportunitiesDialog({
                 onClick={() => {
                   setOpportunities([])
                   setSelected(new Set())
+                  setInterviewId(null)
+                  setRowIds([])
                 }}
+
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Edit transcript
