@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { BarChart3, MessageCircle, Zap, FlaskConical } from "lucide-react";
+import logoLight from "@/assets/product-pal-logo-light.png";
 
 const FEATURES = [
   {
@@ -30,7 +31,24 @@ export function Landing() {
 
   return (
     <div className="min-h-screen w-full bg-landing-bg text-landing-fg font-body selection:bg-landing-accent/30">
-      <section className="flex flex-col items-center justify-center pt-32 pb-24 px-6 text-center max-w-5xl mx-auto">
+      <header className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <img
+          src={logoLight}
+          alt="Product Pal"
+          width={1050}
+          height={206}
+          className="h-9 w-auto"
+        />
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/auth")}
+          className="text-landing-fg/80 hover:text-landing-fg hover:bg-landing-surface font-medium"
+        >
+          Sign in
+        </Button>
+      </header>
+
+      <section className="flex flex-col items-center justify-center pt-20 pb-24 px-6 text-center max-w-5xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-landing-surface border border-landing-accent/20 text-landing-accent text-sm font-medium mb-8">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-landing-accent opacity-75" />
@@ -83,6 +101,22 @@ export function Landing() {
           ))}
         </div>
       </section>
+
+      <footer className="border-t border-landing-accent/10">
+        <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <img
+            src={logoLight}
+            alt="Product Pal"
+            loading="lazy"
+            width={1050}
+            height={206}
+            className="h-7 w-auto opacity-80"
+          />
+          <p className="text-sm text-landing-fg/50">
+            © {new Date().getFullYear()} Product Pal. Built for product discovery.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
