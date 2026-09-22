@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button"
+import productPalLogo from "@/assets/product-pal-logo.png"
 import {
   Network,
   FileText,
