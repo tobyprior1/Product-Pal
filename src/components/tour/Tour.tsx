@@ -246,15 +246,39 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
   return createPortal(
     <div className="fixed inset-0 z-[120]" aria-live="polite">
       {spotlight ? (
-        <div
-          className="pointer-events-none absolute rounded-xl ring-2 ring-primary/70 transition-all duration-200"
-          style={{
-            ...spotlight,
-            boxShadow: "0 0 0 9999px hsl(var(--foreground) / 0.55)",
-          }}
-        />
+        <>
+          {/* Four panels dim everything around the highlighted element. */}
+          <div
+            className="pointer-events-none fixed left-0 right-0 top-0 bg-slate-900/55"
+            style={{ height: Math.max(spotlight.top, 0) }}
+          />
+          <div
+            className="pointer-events-none fixed left-0 right-0 bottom-0 bg-slate-900/55"
+            style={{ top: spotlight.top + spotlight.height }}
+          />
+          <div
+            className="pointer-events-none fixed left-0 bg-slate-900/55"
+            style={{
+              top: spotlight.top,
+              height: spotlight.height,
+              width: Math.max(spotlight.left, 0),
+            }}
+          />
+          <div
+            className="pointer-events-none fixed right-0 bg-slate-900/55"
+            style={{
+              top: spotlight.top,
+              height: spotlight.height,
+              left: spotlight.left + spotlight.width,
+            }}
+          />
+          <div
+            className="pointer-events-none fixed rounded-xl ring-2 ring-primary transition-all duration-200"
+            style={spotlight}
+          />
+        </>
       ) : (
-        <div className="absolute inset-0 bg-foreground/55" />
+        <div className="absolute inset-0 bg-slate-900/55" />
       )}
 
       <div
