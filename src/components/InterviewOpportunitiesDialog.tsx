@@ -49,6 +49,8 @@ export function InterviewOpportunitiesDialog({
   const [opportunities, setOpportunities] = useState<ExtractedOpportunity[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [adding, setAdding] = useState(false)
+  const [interviewId, setInterviewId] = useState<string | null>(null)
+  const [rowIds, setRowIds] = useState<string[]>([])
 
   const addNode = useDataStore((state) => state.addNode)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
@@ -61,8 +63,67 @@ export function InterviewOpportunitiesDialog({
       setSelected(new Set())
       setError(null)
       setLoading(false)
+      setInterviewId(null)
+      setRowIds([])
     }
   }, [open])
+
+  // Save the transcript and the extracted opportunities into the interview library
+  // so every extraction stays traceable back to the conversation it came from.
+  const saveToLibrary = async (
+    incoming: ExtractedOpportunity[],
+    participantName: string,
+    treeId?: string,
+  ): Promise<{ interviewId: string | null; rowIds: string[] }> => {
+    if (!treeId) return { interviewId: null, rowIds: [] }
+
+    try {
+      const { addInterview, addInterviewOpportunity } = useDataStore.getState()
+
+      let id = interviewId
+      if (!id) {
+        id = generateUUID()
+        await addInterview({
+          id,
+          treeId,
+          transcript: transcript.trim(),
+          participantName: participantName || undefined,
+          uploadedAt: new Date().toISOString(),
+          status: "completed",
+        } as any)
+
+        await supabase.from("interview_snapshots").insert({
+          interview_id: id,
+          status: "completed",
+          participant_name: participantName || null,
+          quick_facts: [],
+        })
+      }
+
+      const ids: string[] = []
+      for (const opportunity of incoming) {
+        const rowId = generateUUID()
+        ids.push(rowId)
+        await addInterviewOpportunity(id, {
+          id: rowId,
+          interviewId: id,
+          title: opportunity.title,
+          description: opportunity.need ?? "",
+          whyItMatters: opportunity.whyItMatters ?? "",
+          evidenceQuote: opportunity.quote ?? "",
+          evidenceRef: participantName || "Interview",
+          suggestedNextStep: "",
+          createdAt: new Date().toISOString(),
+          applied: false,
+        } as any)
+      }
+
+      return { interviewId: id, rowIds: ids }
+    } catch (saveError) {
+      console.error("Couldn't save the interview to the library:", saveError)
+      return { interviewId, rowIds: [] }
+    }
+  }
 
   const analyse = async () => {
     setLoading(true)
@@ -87,11 +148,17 @@ export function InterviewOpportunitiesDialog({
     }
 
     const incoming = ((data as any)?.opportunities ?? []) as ExtractedOpportunity[]
+    const resolvedParticipant = participant.trim() || ((data as any)?.participantName ?? "")
     setOpportunities(incoming)
     setSelected(new Set(incoming.map((_, index) => `opp-${index}`)))
     if ((data as any)?.participantName && !participant.trim()) {
       setParticipant((data as any).participantName)
     }
+
+    const saved = await saveToLibrary(incoming, resolvedParticipant, currentTree?.id)
+    setInterviewId(saved.interviewId)
+    setRowIds(saved.rowIds)
+
     setLoading(false)
   }
 
@@ -103,6 +170,7 @@ export function InterviewOpportunitiesDialog({
       return next
     })
   }
+
 
   const handleAddSelected = async () => {
     const chosen = opportunities.filter((_, index) => selected.has(`opp-${index}`))
