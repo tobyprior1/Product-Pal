@@ -173,14 +173,17 @@ export function InterviewOpportunitiesDialog({
 
 
   const handleAddSelected = async () => {
-    const chosen = opportunities.filter((_, index) => selected.has(`opp-${index}`))
-    if (chosen.length === 0) return
+    const chosenIndexes = opportunities
+      .map((_, index) => index)
+      .filter((index) => selected.has(`opp-${index}`))
+    if (chosenIndexes.length === 0) return
 
     setAdding(true)
     let lastId: string | null = null
     let added = 0
 
-    for (const opportunity of chosen) {
+    for (const index of chosenIndexes) {
+      const opportunity = opportunities[index]
       const attribution = participant.trim() ? ` — ${participant.trim()}` : ""
       const node = {
         id: generateUUID(),
@@ -202,6 +205,15 @@ export function InterviewOpportunitiesDialog({
       if (ok) {
         added += 1
         lastId = node.id
+
+        // Link the library record to the node it became, so the evidence trail holds.
+        const rowId = rowIds[index]
+        if (interviewId && rowId) {
+          await useDataStore.getState().updateInterviewOpportunity(interviewId, rowId, {
+            applied: true,
+            opportunityNodeId: node.id,
+          })
+        }
       }
     }
 
@@ -210,9 +222,12 @@ export function InterviewOpportunitiesDialog({
     if (added > 0) {
       toast({
         title: `${added} opportunit${added > 1 ? "ies" : "y"} added`,
-        description: "The customer quote is saved as evidence on each one.",
+        description: interviewId
+          ? "The transcript is saved in your interview library, with each quote as evidence."
+          : "The customer quote is saved as evidence on each one.",
       })
       if (lastId) setSelectedNodeId(lastId)
+
       onOpenChange(false)
     } else {
       setError("The opportunities couldn't be saved. Please try again.")
