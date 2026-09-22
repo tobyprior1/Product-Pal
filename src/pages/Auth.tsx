@@ -172,9 +172,9 @@ const Auth = () => {
             alt="Product Pal"
             width={882}
             height={177}
-            className="h-8 w-auto mb-3"
+            className="h-7 w-auto self-start mb-3"
           />
-          <CardTitle>Welcome to Product Pal</CardTitle>
+          <CardTitle>Welcome back</CardTitle>
           <CardDescription>Sign in to your account or create a new one</CardDescription>
 
         </CardHeader>
