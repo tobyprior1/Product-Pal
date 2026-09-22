@@ -13,7 +13,17 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ["'Space Grotesk'", "ui-sans-serif", "system-ui", "sans-serif"],
+        body: ["'DM Sans'", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       colors: {
+        landing: {
+          bg: "hsl(var(--landing-bg))",
+          surface: "hsl(var(--landing-surface))",
+          accent: "hsl(var(--landing-accent))",
+          fg: "hsl(var(--landing-fg))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

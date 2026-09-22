@@ -39,6 +39,7 @@ import { useDataStore } from "@/lib/pm-supabase-store";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
+import { Landing } from "@/components/Landing";
 import type { User } from "@supabase/supabase-js";
 import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Target, Trash2 } from "lucide-react";
 import { usePendingAction } from "@/hooks/usePendingAction";
@@ -88,9 +89,12 @@ const Index = () => {
   const [projectDeleteOpen, setProjectDeleteOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
+  const [authChecked, setAuthChecked] = useState(false);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      setAuthChecked(true);
     });
   }, []);
 
@@ -212,6 +216,10 @@ const Index = () => {
     await supabase.auth.signOut();
     setUser(null);
   };
+
+  if (authChecked && !user) {
+    return <Landing />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col p-8 bg-background">
