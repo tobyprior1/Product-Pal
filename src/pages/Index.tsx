@@ -88,9 +88,12 @@ const Index = () => {
   const [projectDeleteOpen, setProjectDeleteOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
+  const [authChecked, setAuthChecked] = useState(false);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      setAuthChecked(true);
     });
   }, []);
 
