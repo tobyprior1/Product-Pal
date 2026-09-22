@@ -5,7 +5,8 @@ Your job: pull out the genuine OPPORTUNITIES — unmet customer needs, pains and
 Rules:
 - Opportunities are needs, not solutions. Never phrase one as a feature ("add a filter"); phrase it as the customer's need in their own framing ("I can't tell which orders are late").
 - Ground every opportunity in the transcript. Each one must carry a short verbatim quote copied exactly from the transcript.
-- Only include opportunities that plausibly relate to the OUTCOME in the brief. Ignore off-topic chatter.
+- Order opportunities by how strongly they could move the OUTCOME in the brief, but still include a clearly expressed need even when its link to the outcome is indirect. Only drop chatter with no customer need in it.
+- Never return an empty list when the transcript contains any expressed frustration, workaround or unmet need.
 - Never repeat or reword anything under EXISTING OPPORTUNITIES or ALREADY SUGGESTED.
 - Ban vague words: improve, optimise, streamline, enhance, better. Be concrete and specific.
 - If the transcript is thin, return fewer opportunities rather than inventing them.
