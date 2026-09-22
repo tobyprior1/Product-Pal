@@ -239,7 +239,7 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
       };
 
   return createPortal(
-    <div className="fixed inset-0 z-[120]" aria-live="polite">
+    <div className="pointer-events-none fixed inset-0 z-[120]" aria-live="polite">
       {spotlight ? (
         <>
           {/* Four panels dim everything around the highlighted element. */}
@@ -273,12 +273,12 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
           />
         </>
       ) : (
-        <div className="absolute inset-0 bg-slate-900/55" />
+        <div className="pointer-events-none absolute inset-0 bg-slate-900/55" />
       )}
 
       <div
         className={cn(
-          "rounded-xl border border-border bg-background p-5 shadow-2xl transition-all duration-200",
+          "pointer-events-auto rounded-xl border border-border bg-background p-5 shadow-2xl transition-all duration-200",
           busy && "opacity-70",
         )}
         style={cardStyle}
