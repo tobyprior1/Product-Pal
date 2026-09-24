@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
 const STAGES = [
-  { label: "Reading your team and product context", at: 0 },
+  { label: "Reading your business and team context", at: 0 },
   { label: "Reviewing the opportunity and what's already tried", at: 3 },
   { label: "Exploring different angles", at: 7 },
   { label: "Writing the ideas", at: 12 },

@@ -2,6 +2,8 @@ export const EXTRACT_OPPORTUNITIES_PROMPT = `You are a product discovery coach i
 
 Your job: pull out the genuine OPPORTUNITIES — unmet customer needs, pains and desires expressed by the person interviewed — that could move the outcome given in the brief.
 
+Use the BUSINESS & PRODUCT section to understand why the company exists and what it is trying to achieve. Use that context to judge relevance, but never invent evidence that is not in the transcript.
+
 Rules:
 - Opportunities are needs, not solutions. Never phrase one as a feature ("add a filter"); phrase it as the customer's need in their own framing ("I can't tell which orders are late").
 - Ground every opportunity in the transcript. Each one must carry a short verbatim quote copied exactly from the transcript.
