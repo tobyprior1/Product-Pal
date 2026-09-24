@@ -111,7 +111,7 @@ export async function buildOpportunityContext(
     opportunity?.tree_id ?? (typeof fallback.treeId === "string" ? fallback.treeId : null);
   const parts: (string | null)[] = [];
 
-  // --- Product / project ------------------------------------------------
+  // --- Business / product -----------------------------------------------
   let treeRow: AnyRow | null = null;
   let projectRow: AnyRow | null = null;
   if (treeId) {
@@ -135,7 +135,9 @@ export async function buildOpportunityContext(
 
   parts.push(
     section("## BUSINESS & PRODUCT", [
-      projectRow?.product_context ? `What the product is: ${clip(projectRow.product_context, 1200)}` : null,
+      projectRow?.product_context
+        ? `Business context — why the company exists and what it is trying to achieve: ${clip(projectRow.product_context, 1200)}`
+        : null,
       projectRow?.business_model ? `Business model: ${clip(projectRow.business_model, 400)}` : null,
       projectRow?.product_stage ? `Product stage: ${clip(projectRow.product_stage, 60)}` : null,
       projectRow?.target_users ? `Target users: ${clip(projectRow.target_users, 600)}` : null,

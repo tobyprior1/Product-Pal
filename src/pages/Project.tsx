@@ -570,15 +570,15 @@ const Project = () => {
                 generic suggestions and ones that truly fit your product.
               </p>
               <div className="space-y-2">
-                <Label htmlFor="project-product-context">Product context</Label>
+                <Label htmlFor="project-product-context">Business context</Label>
                 <p className="text-xs text-muted-foreground">
-                  So the AI only suggests things that are actually possible with your setup.
+                  Helps the AI connect its ideas to why the company exists and what it is trying to achieve.
                 </p>
                 <Textarea
                   id="project-product-context"
                   value={productContext}
                   onChange={(e) => setProductContext(e.target.value)}
-                  placeholder="What the product does, platform, tech stack"
+                  placeholder="Why the company exists, the change it wants to create, and its main goals"
                   rows={3}
                 />
               </div>
