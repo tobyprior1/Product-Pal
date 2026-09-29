@@ -24,7 +24,7 @@ export function getOpportunityStats(nodes: OSTNode[], opportunityId: string): Op
   const allExperiments = children.filter((n) => n.type === "Experiment");
 
   const solutionsInProgress = solutions.filter(
-    (s) => (s as any).status !== "Done" && (s as any).status !== "Backlog"
+    (s) => (s as any).status !== "Done" && (s as any).status !== "Backlog" && (s as any).status !== "Rejected"
   ).length;
 
   const experimentsRunning = allExperiments.filter((e) => (e as any).status === "running").length;
