@@ -43,6 +43,8 @@ export const SolutionNode = memo(({ data }: NodeProps) => {
         return "bg-green-100 border-green-300 text-green-900"
       case "Backlog":
         return "bg-orange-100 border-orange-300 text-orange-900"
+      case "Rejected":
+        return "bg-red-100 border-red-300 text-red-900"
       default:
         return "bg-white border-gray-200"
     }
