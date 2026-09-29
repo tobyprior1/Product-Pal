@@ -22,6 +22,7 @@ const TIMEFRAME_PRIORITY: Record<string, number> = {
   Later: 3,
   Planned: 4,
   Backlog: 5,
+  Rejected: 6,
 }
 
 interface HierarchyItemButtonProps {

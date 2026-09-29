@@ -19,6 +19,7 @@ export function getStatusColor(type: string, status?: string): string {
     Planned: "bg-violet-100 dark:bg-violet-900/20",
     Backlog: "bg-orange-100 dark:bg-orange-900/20",
     Done: "bg-green-100 dark:bg-green-900/20",
+    Rejected: "bg-red-100 dark:bg-red-900/20",
     planned: "bg-yellow-100 dark:bg-yellow-900/20",
     running: "bg-blue-100 dark:bg-blue-900/20",
   }
@@ -39,6 +40,7 @@ export function getStatusBorderColor(type: string, status?: string): string {
     Planned: "border-violet-300 dark:border-violet-700",
     Backlog: "border-orange-300 dark:border-orange-700",
     Done: "border-green-300 dark:border-green-700",
+    Rejected: "border-red-300 dark:border-red-700",
     planned: "border-yellow-300 dark:border-yellow-700",
     running: "border-blue-300 dark:border-blue-700",
   }

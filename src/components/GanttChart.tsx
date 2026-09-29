@@ -139,7 +139,7 @@ export function GanttChart({ onItemClick }: GanttChartProps) {
   const getRoadmapSolutions = (opportunityId: string): SolutionNode[] => {
     const solutions = getNodeChildren(opportunityId).filter((n) => n.type === "Solution") as SolutionNode[]
     return solutions
-      .filter((s) => s.status !== "Done" && s.status !== "Backlog")
+      .filter((s) => s.status !== "Done" && s.status !== "Backlog" && s.status !== "Rejected")
       .sort((a, b) => {
         if (a.startDate && b.startDate) return new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         if (a.startDate) return -1
