@@ -105,6 +105,22 @@ export interface ExperimentNode extends BaseNode {
   confidence?: "low" | "medium" | "high" | number
   metricImpacts?: MetricImpact[]
   status: ExperimentStatus
+  /** 1-5: how critical the assumption is to the solution succeeding */
+  assumptionImportance?: number
+  /** 1-5: how much evidence we currently have that the assumption holds */
+  assumptionEvidence?: number
+}
+
+export type RiskLevel = "high" | "medium" | "low"
+
+/** Risk = importance x lack of evidence, scaled 1-25. */
+export function getExperimentRisk(node: Pick<ExperimentNode, "assumptionImportance" | "assumptionEvidence">) {
+  const i = node.assumptionImportance
+  const e = node.assumptionEvidence
+  if (!i || !e) return null
+  const score = i * (6 - e)
+  const level: RiskLevel = score >= 15 ? "high" : score >= 8 ? "medium" : "low"
+  return { score, level }
 }
 
 export interface Interview {

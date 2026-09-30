@@ -3,10 +3,23 @@ import { Handle, Position, type NodeProps } from "@xyflow/react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { FlaskConical } from "lucide-react"
-import type { ExperimentNode as ExperimentNodeType } from "@/lib/pm-types"
+import { getExperimentRisk, type ExperimentNode as ExperimentNodeType } from "@/lib/pm-types"
+
+const RISK_STYLES = {
+  high: "bg-red-600 border-red-700 text-white",
+  medium: "bg-amber-400 border-amber-500 text-amber-950",
+  low: "bg-emerald-500 border-emerald-600 text-white",
+} as const
+
+const RISK_BAR = {
+  high: "bg-red-600",
+  medium: "bg-amber-400",
+  low: "bg-emerald-500",
+} as const
 
 export const ExperimentNode = memo(({ data }: NodeProps) => {
   const nodeData = data as unknown as ExperimentNodeType
+  const risk = getExperimentRisk(nodeData)
   
   const getStatusColor = () => {
     switch (nodeData.status) {
@@ -70,8 +83,25 @@ export const ExperimentNode = memo(({ data }: NodeProps) => {
           <Badge variant="secondary" className="text-xs">
             {getStatusLabel()}
           </Badge>
+          {risk && (
+            <span
+              title={`Importance ${nodeData.assumptionImportance}/5 · Evidence ${nodeData.assumptionEvidence}/5`}
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${RISK_STYLES[risk.level]}`}
+            >
+              {risk.level === "high" ? "High" : risk.level === "medium" ? "Med" : "Low"} risk · {risk.score}
+            </span>
+          )}
           <span className="text-xs text-muted-foreground ml-auto">Experiment</span>
         </div>
+
+        {risk && (
+          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className={`h-full ${RISK_BAR[risk.level]}`}
+              style={{ width: `${(risk.score / 25) * 100}%` }}
+            />
+          </div>
+        )}
 
         {nodeData.dateRange.start && (
           <p className="text-xs text-muted-foreground">{formatDateRange()}</p>
