@@ -16,7 +16,7 @@ import {
 import "@xyflow/react/dist/style.css"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { useUIStore } from "@/lib/pm-ui-store"
-import type { OSTNode } from "@/lib/pm-types"
+import { getExperimentRisk, type OSTNode } from "@/lib/pm-types"
 import { OutcomeNode } from "./nodes/OutcomeNode"
 import { OpportunityNode } from "./nodes/OpportunityNode"
 import { SolutionNode } from "./nodes/SolutionNode"
