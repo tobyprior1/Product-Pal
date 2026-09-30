@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TextAreaField, TextField } from "./DraftFields"
-import type { ExperimentNode } from "@/lib/pm-types"
+import { getExperimentRisk, type ExperimentNode } from "@/lib/pm-types"
 
 interface ExperimentFieldsProps {
   node: ExperimentNode
@@ -10,8 +10,43 @@ interface ExperimentFieldsProps {
 
 const compactLabel = "text-xs font-medium text-muted-foreground"
 
+function ScoreSelect({
+  id,
+  label,
+  value,
+  hints,
+  onChange,
+}: {
+  id: string
+  label: string
+  value?: number
+  hints: string[]
+  onChange: (v: number) => void
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className={compactLabel}>
+        {label}
+      </Label>
+      <Select value={value ? String(value) : ""} onValueChange={(v) => onChange(Number(v))}>
+        <SelectTrigger id={id} className="h-9">
+          <SelectValue placeholder="1–5" />
+        </SelectTrigger>
+        <SelectContent>
+          {hints.map((h, i) => (
+            <SelectItem key={i} value={String(i + 1)}>
+              {i + 1} · {h}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
 export function ExperimentFields({ node, onUpdate }: ExperimentFieldsProps) {
   const isCompleted = node.status === "completed"
+  const risk = getExperimentRisk(node)
 
   return (
     <>
@@ -34,6 +69,30 @@ export function ExperimentFields({ node, onUpdate }: ExperimentFieldsProps) {
         rows={2}
         placeholder="How will you test this?"
       />
+
+      <div className="space-y-1.5">
+        <div className="grid grid-cols-2 gap-2">
+          <ScoreSelect
+            id="assumptionImportance"
+            label="Importance"
+            value={node.assumptionImportance}
+            hints={["Nice to have", "Minor", "Moderate", "Major", "Critical"]}
+            onChange={(v) => onUpdate({ assumptionImportance: v })}
+          />
+          <ScoreSelect
+            id="assumptionEvidence"
+            label="Evidence"
+            value={node.assumptionEvidence}
+            hints={["None", "Anecdotal", "Some", "Strong", "Proven"]}
+            onChange={(v) => onUpdate({ assumptionEvidence: v })}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {risk
+            ? `Risk score: ${risk.score}/25 (${risk.level}) — important assumptions with little evidence are riskiest.`
+            : "Rate importance and evidence to get a risk score."}
+        </p>
+      </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1.5">
