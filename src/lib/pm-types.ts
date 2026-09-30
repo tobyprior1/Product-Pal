@@ -111,7 +111,7 @@ export interface ExperimentNode extends BaseNode {
   assumptionEvidence?: number
 }
 
-export type RiskLevel = "high" | "medium" | "low"
+export type RiskLevel = "critical" | "high" | "medium" | "low"
 
 /** Risk = importance x lack of evidence, scaled 1-25. */
 export function getExperimentRisk(node: Pick<ExperimentNode, "assumptionImportance" | "assumptionEvidence">) {
@@ -119,7 +119,7 @@ export function getExperimentRisk(node: Pick<ExperimentNode, "assumptionImportan
   const e = node.assumptionEvidence
   if (!i || !e) return null
   const score = i * (6 - e)
-  const level: RiskLevel = score >= 15 ? "high" : score >= 8 ? "medium" : "low"
+  const level: RiskLevel = score >= 20 ? "critical" : score >= 15 ? "high" : score >= 8 ? "medium" : "low"
   return { score, level }
 }
 
