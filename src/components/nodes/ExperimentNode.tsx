@@ -6,15 +6,24 @@ import { FlaskConical } from "lucide-react"
 import { getExperimentRisk, type ExperimentNode as ExperimentNodeType } from "@/lib/pm-types"
 
 const RISK_STYLES = {
+  critical: "bg-red-950 border-red-700 text-red-50 ring-2 ring-red-500/50",
   high: "bg-red-600 border-red-700 text-white",
   medium: "bg-amber-400 border-amber-500 text-amber-950",
   low: "bg-emerald-500 border-emerald-600 text-white",
 } as const
 
 const RISK_BAR = {
+  critical: "bg-red-950",
   high: "bg-red-600",
   medium: "bg-amber-400",
   low: "bg-emerald-500",
+} as const
+
+const RISK_LABEL = {
+  critical: "Critical",
+  high: "High",
+  medium: "Med",
+  low: "Low",
 } as const
 
 export const ExperimentNode = memo(({ data }: NodeProps) => {
@@ -88,7 +97,7 @@ export const ExperimentNode = memo(({ data }: NodeProps) => {
               title={`Importance ${nodeData.assumptionImportance}/5 · Evidence ${nodeData.assumptionEvidence}/5`}
               className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${RISK_STYLES[risk.level]}`}
             >
-              {risk.level === "high" ? "High" : risk.level === "medium" ? "Med" : "Low"} risk · {risk.score}
+              {RISK_LABEL[risk.level]} risk · {risk.score}
             </span>
           )}
           <span className="text-xs text-muted-foreground ml-auto">Experiment</span>
