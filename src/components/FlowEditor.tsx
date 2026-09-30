@@ -16,7 +16,7 @@ import {
 import "@xyflow/react/dist/style.css"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { useUIStore } from "@/lib/pm-ui-store"
-import type { OSTNode } from "@/lib/pm-types"
+import { getExperimentRisk, type OSTNode } from "@/lib/pm-types"
 import { OutcomeNode } from "./nodes/OutcomeNode"
 import { OpportunityNode } from "./nodes/OpportunityNode"
 import { SolutionNode } from "./nodes/SolutionNode"
@@ -73,7 +73,28 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     positionMap.set(node.id, { ...node.position })
   })
 
+  // Order experiment siblings left-to-right by risk score, highest first.
+  // Unrated experiments sit on the far right; equal scores keep their current order.
+  const nodeById = new Map(layoutedNodes.map((node) => [node.id, node]))
+  const riskValue = (id: string) => {
+    const node = nodeById.get(id)
+    const risk = node ? getExperimentRisk(node.data as { assumptionImportance?: number; assumptionEvidence?: number }) : null
+    return risk ? risk.score : Number.NEGATIVE_INFINITY
+  }
+  childrenMap.forEach((childIds) => {
+    if (childIds.length < 2) return
+    if (!childIds.every((id) => nodeById.get(id)?.type === "Experiment")) return
+
+    const ordered = [...childIds].sort((a, b) => riskValue(b) - riskValue(a))
+    const xs = childIds.map((id) => positionMap.get(id)?.x ?? 0).sort((a, b) => a - b)
+    ordered.forEach((id, index) => {
+      const pos = positionMap.get(id)
+      if (pos) pos.x = xs[index]
+    })
+  })
+
   // Center-align single children with their parents
+
   layoutedNodes.forEach((node) => {
     const children = childrenMap.get(node.id) || []
     if (children.length === 1) {
