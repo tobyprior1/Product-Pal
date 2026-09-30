@@ -78,7 +78,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   const nodeById = new Map(layoutedNodes.map((node) => [node.id, node]))
   const riskValue = (id: string) => {
     const node = nodeById.get(id)
-    const risk = node ? getExperimentRisk(node.data as OSTNode) : null
+    const risk = node ? getExperimentRisk(node.data as { assumptionImportance?: number; assumptionEvidence?: number }) : null
     return risk ? risk.score : Number.NEGATIVE_INFINITY
   }
   childrenMap.forEach((childIds) => {
