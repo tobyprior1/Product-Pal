@@ -206,37 +206,24 @@ function FlowEditorInner() {
       visibleNodeIds = getDescendantIds(focusedNodeId, ostNodes)
     }
 
-    const filteredNodes = ostNodes.filter((node) => {
-      if (node.type === "Solution" && node.parentId && collapsedOpportunities.has(node.parentId)) {
-        return false
+    // Hide any node that has a collapsed ancestor (opportunity or solution),
+    // at any depth — including sub-opportunities and their descendants.
+    const byId = new Map(ostNodes.map((n) => [n.id, n]))
+    const isHiddenByCollapse = (node: OSTNode) => {
+      const seen = new Set<string>()
+      let parentId = node.parentId
+      while (parentId && !seen.has(parentId)) {
+        seen.add(parentId)
+        const parent = byId.get(parentId)
+        if (!parent) break
+        if (parent.type === "Opportunity" && collapsedOpportunities.has(parent.id)) return true
+        if (parent.type === "Solution" && collapsedSolutions.has(parent.id)) return true
+        parentId = parent.parentId
       }
+      return false
+    }
 
-      if (node.type === "Experiment" && node.parentId && collapsedSolutions.has(node.parentId)) {
-        return false
-      }
-
-      if (node.type === "Experiment" && node.parentId) {
-        const parentSolution = ostNodes.find((n) => n.id === node.parentId)
-        if (parentSolution && parentSolution.type === "Solution" && parentSolution.parentId) {
-          if (collapsedOpportunities.has(parentSolution.parentId)) {
-            return false
-          }
-        }
-      }
-
-      if (node.type === "Experiment") {
-        const isCompleted = (node as any).status === "completed" || (node as any).decision === "ship"
-
-        if (isCompleted) {
-          // If parent opportunity is collapsed, hide this completed experiment
-          if (node.parentId && collapsedOpportunities.has(node.parentId)) {
-            return false
-          }
-        }
-      }
-
-      return true
-    })
+    const filteredNodes = ostNodes.filter((node) => !isHiddenByCollapse(node))
 
     const flowNodes: Node[] = filteredNodes.map((node: OSTNode) => {
       const isVisible = !focusedNodeId || visibleNodeIds?.has(node.id)
