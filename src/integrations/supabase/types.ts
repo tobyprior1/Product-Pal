@@ -518,7 +518,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      attach_business_outcome: {
+        Args: { p_outcome_id: string; p_title: string }
+        Returns: string
+      }
+      remove_business_outcome: {
+        Args: { p_business_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
