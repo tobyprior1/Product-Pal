@@ -1,6 +1,7 @@
 import { Topbar } from "@/components/Topbar"
 import { WorkOpportunitySection } from "@/components/WorkOpportunitySection"
 import { WorkNodePanel } from "@/components/WorkNodePanel"
+import { BusinessOutcomeSummary } from "@/components/BusinessOutcomeSummary"
 import { PriorityMatrixTable } from "@/components/PriorityMatrixTable"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -114,6 +115,7 @@ const Work = () => {
       <div className="flex-1 flex overflow-hidden">
         <div className="flex-1 overflow-auto bg-background">
           <div className="max-w-6xl mx-auto p-6">
+            <BusinessOutcomeSummary />
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold mb-1">Work View</h1>

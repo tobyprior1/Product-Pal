@@ -55,7 +55,7 @@ export function CommandPalette() {
     command()
   }
 
-  const outcomes = nodes.filter((n) => n.type === "Outcome")
+  const outcomes = nodes.filter((n) => n.type === "Outcome" || n.type === "BusinessOutcome")
   const opportunities = nodes.filter((n) => n.type === "Opportunity")
   const solutions = nodes.filter((n) => n.type === "Solution")
   const experiments = nodes.filter((n) => n.type === "Experiment")

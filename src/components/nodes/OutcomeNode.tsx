@@ -53,7 +53,7 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             {business ? <BriefcaseBusiness className="w-5 h-5 shrink-0 text-business-outcome" /> : <Target className="w-5 h-5 shrink-0 text-outcome" />}
-            <h3 className="font-semibold text-sm text-foreground">{nodeData.title}</h3>
+            <h3 className="font-semibold text-sm text-foreground break-words min-w-0">{nodeData.title}</h3>
           </div>
           <Badge variant="outline" className="text-xs text-foreground">
             {business ? "Business Outcome" : "Product Outcome"}
@@ -102,7 +102,7 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-outcome transition-all duration-300"
+                    className={`h-full ${business ? "bg-business-outcome" : "bg-outcome"} transition-all duration-300`}
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   />
                 </div>

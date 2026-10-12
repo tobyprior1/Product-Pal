@@ -2,6 +2,7 @@ import { useDataStore } from "@/lib/pm-supabase-store"
 import { Topbar } from "@/components/Topbar"
 import { RoadmapColumn } from "@/components/RoadmapColumn"
 import { GanttChart } from "@/components/GanttChart"
+import { BusinessOutcomeSummary } from "@/components/BusinessOutcomeSummary"
 import type { SolutionNode } from "@/lib/pm-types"
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -59,6 +60,7 @@ const Roadmap = () => {
       
       <div className="flex-1 overflow-auto">
         <div className="h-full flex flex-col p-6">
+          <BusinessOutcomeSummary />
           <div className="mb-4">
             <h1 className="text-2xl font-bold text-foreground mb-1">Roadmap</h1>
             <p className="text-sm text-muted-foreground">
