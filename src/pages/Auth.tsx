@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import productPalLogo from "@/assets/product-pal-logo.png";
+import { ProductPalLogo } from "@/components/ProductPalLogo";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -167,11 +167,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <img
-            src={productPalLogo}
-            alt="Product Pal"
-            width={882}
-            height={177}
+          <ProductPalLogo
             className="h-7 w-auto self-start mb-3"
           />
           <CardTitle>Welcome back</CardTitle>

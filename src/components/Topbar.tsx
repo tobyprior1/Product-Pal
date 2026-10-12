@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import productPalLogo from "@/assets/product-pal-logo.png"
+import { ProductPalLogo } from "@/components/ProductPalLogo"
 import {
   Network,
   FileText,
@@ -92,11 +92,7 @@ export function Topbar({ onTidy, onExportPNG, onExportPDF, onNewNode }: TopbarPr
               {currentTree && (
                 <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
               )}
-              <img
-                src={productPalLogo}
-                alt="Product Pal"
-                width={882}
-                height={177}
+              <ProductPalLogo
                 className="h-6 w-auto shrink-0 group-hover:opacity-90 transition-opacity"
               />
               {currentTree && breadcrumbLabel && (
