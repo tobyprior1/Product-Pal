@@ -62,7 +62,10 @@ export const SolutionNode = memo(({ data }: NodeProps) => {
             <h3 className="font-medium text-sm">{nodeData.title}</h3>
           </div>
           <button 
-            onClick={() => toggleSolutionCollapse(nodeData.id)}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleSolutionCollapse(nodeData.id)
+            }}
             className="ml-2 p-1 hover:bg-black/5 rounded"
           >
             {isCollapsed ? (
