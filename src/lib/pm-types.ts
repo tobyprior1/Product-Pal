@@ -43,7 +43,7 @@ export interface Tree {
 export interface BaseNode {
   id: UUID
   parentId: UUID | null
-  type: "Outcome" | "Opportunity" | "Solution" | "Experiment"
+  type: "BusinessOutcome" | "Outcome" | "Opportunity" | "Solution" | "Experiment"
   title: string
   notes?: string
   links?: string[]
@@ -55,6 +55,7 @@ export interface BaseNode {
 
 export interface OutcomeNode extends BaseNode {
   type: "Outcome"
+  businessContribution?: string
   description?: string
   metric?: string
   baseline?: number
@@ -66,6 +67,10 @@ export interface OutcomeNode extends BaseNode {
   timeframeStartDate?: string
   timeframeEndDate?: string
   color?: string
+}
+
+export interface BusinessOutcomeNode extends Omit<OutcomeNode, "type" | "businessContribution"> {
+  type: "BusinessOutcome"
 }
 
 export interface OpportunityNode extends BaseNode {
@@ -188,7 +193,7 @@ export interface InterviewSnapshot {
   error?: string
 }
 
-export type OSTNode = OutcomeNode | OpportunityNode | SolutionNode | ExperimentNode
+export type OSTNode = BusinessOutcomeNode | OutcomeNode | OpportunityNode | SolutionNode | ExperimentNode
 
 export interface TreeSnapshot {
   id: string

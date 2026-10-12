@@ -126,7 +126,7 @@ export function getTimeframeDateRange(outcome: {
   return null
 }
 
-export function formatTimeframeDisplay(outcome: OutcomeNode): string | null {
+export function formatTimeframeDisplay(outcome: Pick<OutcomeNode, "timeframePeriodType" | "timeframePeriodValue" | "timeframeStartDate" | "timeframeEndDate">): string | null {
   if (outcome.timeframePeriodValue && !outcome.timeframePeriodType) {
     return outcome.timeframePeriodValue
   }

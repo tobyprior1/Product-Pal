@@ -60,7 +60,13 @@ All colors MUST be HSL.
 
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Tree hierarchy: outcome > opportunity > solution > experiment */
+    --business-outcome: 344 72% 40%;
+    --business-outcome-surface: 344 80% 97%;
+    --business-outcome-surface-strong: 344 80% 94%;
+    --business-outcome-border: 344 65% 65%;
+    --business-outcome-soft: 344 75% 91%;
+
+    /* Tree hierarchy: business outcome > product outcome > opportunity > solution > experiment */
     --outcome: 271 81% 46%;
     --outcome-surface: 270 100% 98%;
     --outcome-surface-strong: 269 100% 95%;
@@ -124,7 +130,13 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Tree hierarchy: outcome > opportunity > solution > experiment */
+    --business-outcome: 344 85% 80%;
+    --business-outcome-surface: 344 40% 13%;
+    --business-outcome-surface-strong: 344 40% 18%;
+    --business-outcome-border: 344 65% 55%;
+    --business-outcome-soft: 344 40% 22%;
+
+    /* Tree hierarchy: business outcome > product outcome > opportunity > solution > experiment */
     --outcome: 269 97% 82%;
     --outcome-surface: 274 60% 14%;
     --outcome-surface-strong: 274 60% 19%;
