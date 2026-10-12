@@ -142,6 +142,7 @@ function FlowEditorInner() {
   const { toast } = useToast()
   const { fitView } = useReactFlow()
   const flowRef = useRef<HTMLDivElement>(null)
+  const measuredHeightsRef = useRef<Map<string, number>>(new Map())
 
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
