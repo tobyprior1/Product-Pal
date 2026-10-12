@@ -103,7 +103,7 @@ export function WorkNodePanel({ nodeId, onClose }: WorkNodePanelProps) {
           onCommit={(value) => updateNode(selectedNode.id, { title: value })}
         />
 
-        {selectedNode.type === "Outcome" && (
+        {(selectedNode.type === "Outcome" || selectedNode.type === "BusinessOutcome") && (
           <OutcomeFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
         )}
 

@@ -24,6 +24,7 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 const nodeTypes = {
+  BusinessOutcome: OutcomeNode,
   Outcome: OutcomeNode,
   Opportunity: OpportunityNode,
   Solution: SolutionNode,
@@ -36,7 +37,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   dagreGraph.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 120 })
 
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 320, height: 150 })
+    dagreGraph.setNode(node.id, { width: 320, height: node.type === "Outcome" || node.type === "BusinessOutcome" ? 300 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16 : 150 })
   })
 
   edges.forEach((edge) => {
@@ -51,7 +52,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
       ...node,
       position: {
         x: nodeWithPosition.x - 160,
-        y: nodeWithPosition.y - 75,
+        y: nodeWithPosition.y - dagreGraph.node(node.id).height / 2,
       },
     }
   })
@@ -253,7 +254,7 @@ function PresentModeInner() {
               </div>
             )}
 
-            {focusedOSTNode.type === "Outcome" && (
+            {(focusedOSTNode.type === "Outcome" || focusedOSTNode.type === "BusinessOutcome") && (
               <div className="flex gap-6 text-sm">
                 {(focusedOSTNode as any).metric && (
                   <div>

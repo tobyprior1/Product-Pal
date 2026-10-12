@@ -8,12 +8,14 @@ import { NewNodeDialog } from "@/components/NewNodeDialog";
 import { SuggestSolutionsHost } from "@/components/SuggestSolutionsHost";
 import { SuggestExperimentsHost } from "@/components/SuggestExperimentsHost";
 import { InterviewOpportunitiesHost } from "@/components/InterviewOpportunitiesHost";
+import { BusinessOutcomeDialog } from "@/components/BusinessOutcomeDialog";
 
 const Editor = () => {
   const currentTree = useDataStore((state) => state.currentTree);
   const userId = useDataStore((state) => state.userId);
   const navigate = useNavigate();
   const [newNodeDialogOpen, setNewNodeDialogOpen] = useState(false);
+  const [businessOutcomeId, setBusinessOutcomeId] = useState<string | null>(null);
   const [preselectedParentId, setPreselectedParentId] = useState<string>();
   const [preselectedNodeType, setPreselectedNodeType] = useState<"Outcome" | "Opportunity" | "Solution" | "Experiment">();
 
@@ -66,6 +68,15 @@ const Editor = () => {
     return () => window.removeEventListener("add-child-node", handleAddChildNode as EventListener)
   }, [])
 
+  useEffect(() => {
+    const handle = (event: Event) => {
+      const id = (event as CustomEvent).detail?.outcomeId
+      if (typeof id === "string") setBusinessOutcomeId(id)
+    }
+    window.addEventListener("add-business-outcome", handle)
+    return () => window.removeEventListener("add-business-outcome", handle)
+  }, [])
+
   const handleTidy = () => {
     window.dispatchEvent(new Event("tidy-layout"))
   }
@@ -101,6 +112,7 @@ const Editor = () => {
       <SuggestSolutionsHost />
       <SuggestExperimentsHost />
       <InterviewOpportunitiesHost />
+      {businessOutcomeId && <BusinessOutcomeDialog outcomeId={businessOutcomeId} open onOpenChange={open => { if (!open) setBusinessOutcomeId(null) }} />}
 
       <NewNodeDialog 
         open={newNodeDialogOpen}

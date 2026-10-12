@@ -27,6 +27,7 @@ import { jsPDF } from "jspdf"
 import { useToast } from "@/hooks/use-toast"
 
 const nodeTypes = {
+  BusinessOutcome: OutcomeNode,
   Outcome: OutcomeNode,
   Opportunity: OpportunityNode,
   Solution: SolutionNode,
@@ -39,7 +40,10 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   dagreGraph.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 120 })
 
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 320, height: 150 })
+    const outcomeHeight = node.type === "Outcome" || node.type === "BusinessOutcome"
+      ? 260 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16
+      : 150
+    dagreGraph.setNode(node.id, { width: 320, height: outcomeHeight })
   })
 
   edges.forEach((edge) => {
@@ -54,7 +58,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
       ...node,
       position: {
         x: nodeWithPosition.x - 160,
-        y: nodeWithPosition.y - 75,
+        y: nodeWithPosition.y - (dagreGraph.node(node.id).height / 2),
       },
     }
   })
