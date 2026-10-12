@@ -1,3 +1,5 @@
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { NumberField, TextAreaField, TextField } from "./DraftFields"
 import { GuardrailFields } from "./GuardrailFields"
 import type { OutcomeNode, BusinessOutcomeNode } from "@/lib/pm-types"
@@ -47,6 +49,21 @@ export function OutcomeFields({ node, onUpdate }: OutcomeFieldsProps) {
         onCommit={(value) => onUpdate({ metric: value })}
         placeholder="e.g., Customer Satisfaction Score"
       />
+
+      <div className="space-y-1.5">
+        <Label className="text-xs">Show values as</Label>
+        <Select
+          value={node.metricFormat ?? "number"}
+          onValueChange={(v) => onUpdate({ metricFormat: v as "number" | "percentage" })}
+        >
+          <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="number">Number</SelectItem>
+            <SelectItem value="percentage">Percentage</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
 
       <div className="grid grid-cols-3 gap-2">
         {numericFields.map(({ key, label }) => (

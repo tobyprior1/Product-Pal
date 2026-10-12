@@ -253,7 +253,7 @@ const Work = () => {
                               <h2 className="text-lg font-bold mb-1">{outcome.title}</h2>
                               {outcome.current !== undefined && outcome.target !== undefined && (
                                 <p className="text-sm text-muted-foreground">
-                                  Current: {outcome.current}% → Target: {outcome.target}%
+                                  Current: {outcome.metricFormat === "percentage" ? `${outcome.current}%` : outcome.current} → Target: {outcome.metricFormat === "percentage" ? `${outcome.target}%` : outcome.target}
                                 </p>
                               )}
                             </div>
