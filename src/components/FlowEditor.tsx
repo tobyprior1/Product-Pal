@@ -34,16 +34,18 @@ const nodeTypes = {
   Experiment: ExperimentNode,
 }
 
-const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[], measuredHeights?: Map<string, number>) => {
   const dagreGraph = new dagre.graphlib.Graph()
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 120 })
 
   nodes.forEach((node) => {
-    const outcomeHeight = node.type === "Outcome" || node.type === "BusinessOutcome"
+    const estimatedHeight = node.type === "Outcome" || node.type === "BusinessOutcome"
       ? 260 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16
       : 150
-    dagreGraph.setNode(node.id, { width: 320, height: outcomeHeight })
+    // Prefer real rendered heights so vertical gaps stay consistent between levels
+    const height = measuredHeights?.get(node.id) ?? estimatedHeight
+    dagreGraph.setNode(node.id, { width: 320, height })
   })
 
   edges.forEach((edge) => {
