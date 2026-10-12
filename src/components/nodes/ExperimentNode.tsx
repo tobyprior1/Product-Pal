@@ -2,7 +2,7 @@ import { memo } from "react"
 import { Handle, Position, type NodeProps } from "@xyflow/react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { FlaskConical } from "lucide-react"
+import { FlaskConical, ShieldAlert } from "lucide-react"
 import { getExperimentRisk, type ExperimentNode as ExperimentNodeType } from "@/lib/pm-types"
 
 const RISK_STYLES = {
@@ -29,6 +29,7 @@ const RISK_LABEL = {
 export const ExperimentNode = memo(({ data }: NodeProps) => {
   const nodeData = data as unknown as ExperimentNodeType
   const risk = getExperimentRisk(nodeData)
+  const worsened = Object.values(nodeData.guardrailEffects ?? {}).filter(e => e === "worsened").length
   
   const getStatusColor = () => {
     switch (nodeData.status) {
@@ -98,6 +99,11 @@ export const ExperimentNode = memo(({ data }: NodeProps) => {
               className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${RISK_STYLES[risk.level]}`}
             >
               {RISK_LABEL[risk.level]} risk · {risk.score}
+            </span>
+          )}
+          {worsened > 0 && (
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full border border-destructive text-destructive flex items-center gap-1">
+              <ShieldAlert className="w-3 h-3" /> {worsened} guardrail{worsened > 1 ? "s" : ""} worsened
             </span>
           )}
           <span className="text-xs text-muted-foreground ml-auto">Experiment</span>

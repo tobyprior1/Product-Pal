@@ -53,9 +53,29 @@ export interface BaseNode {
   updatedBy?: string
 }
 
+/** Health metric that must not get worse while chasing the outcome target. */
+export interface Guardrail {
+  id: string
+  metric: string
+  direction: "above" | "below"
+  threshold?: number
+  current?: number
+}
+
+export const MAX_GUARDRAILS = 3
+
+export type GuardrailEffect = "improved" | "neutral" | "worsened"
+
+/** null = not enough data to judge. */
+export function isGuardrailBreached(g: Guardrail): boolean | null {
+  if (g.threshold === undefined || g.current === undefined) return null
+  return g.direction === "above" ? g.current < g.threshold : g.current > g.threshold
+}
+
 export interface OutcomeNode extends BaseNode {
   type: "Outcome"
   businessContribution?: string
+  guardrails?: Guardrail[]
   description?: string
   metric?: string
   baseline?: number
@@ -69,7 +89,7 @@ export interface OutcomeNode extends BaseNode {
   color?: string
 }
 
-export interface BusinessOutcomeNode extends Omit<OutcomeNode, "type" | "businessContribution"> {
+export interface BusinessOutcomeNode extends Omit<OutcomeNode, "type" | "businessContribution" | "guardrails"> {
   type: "BusinessOutcome"
 }
 
@@ -114,6 +134,9 @@ export interface ExperimentNode extends BaseNode {
   assumptionImportance?: number
   /** 1-5: how much evidence we currently have that the assumption holds */
   assumptionEvidence?: number
+  /** Effect on each Product Outcome guardrail, keyed by guardrail id */
+  guardrailEffects?: Record<string, GuardrailEffect>
+
 }
 
 export type RiskLevel = "critical" | "high" | "medium" | "low"
