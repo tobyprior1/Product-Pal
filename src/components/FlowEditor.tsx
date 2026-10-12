@@ -34,16 +34,18 @@ const nodeTypes = {
   Experiment: ExperimentNode,
 }
 
-const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+const getLayoutedElements = (nodes: Node[], edges: Edge[], measuredHeights?: Map<string, number>) => {
   const dagreGraph = new dagre.graphlib.Graph()
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 120 })
 
   nodes.forEach((node) => {
-    const outcomeHeight = node.type === "Outcome" || node.type === "BusinessOutcome"
+    const estimatedHeight = node.type === "Outcome" || node.type === "BusinessOutcome"
       ? 260 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16
       : 150
-    dagreGraph.setNode(node.id, { width: 320, height: outcomeHeight })
+    // Prefer real rendered heights so vertical gaps stay consistent between levels
+    const height = measuredHeights?.get(node.id) ?? estimatedHeight
+    dagreGraph.setNode(node.id, { width: 320, height })
   })
 
   edges.forEach((edge) => {
@@ -140,6 +142,7 @@ function FlowEditorInner() {
   const { toast } = useToast()
   const { fitView } = useReactFlow()
   const flowRef = useRef<HTMLDivElement>(null)
+  const measuredHeightsRef = useRef<Map<string, number>>(new Map())
 
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
@@ -302,7 +305,7 @@ function FlowEditorInner() {
         }
       })
 
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(flowNodes, flowEdges)
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(flowNodes, flowEdges, measuredHeightsRef.current)
 
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
@@ -318,9 +321,26 @@ function FlowEditorInner() {
     collapsedSolutions,
   ])
 
+  // Once React Flow has measured real node heights, re-run the layout so
+  // vertical gaps between levels stay consistent (dagre used estimates first).
+  useEffect(() => {
+    let changed = false
+    nodes.forEach((node) => {
+      const height = node.measured?.height
+      if (height && measuredHeightsRef.current.get(node.id) !== height) {
+        measuredHeightsRef.current.set(node.id, height)
+        changed = true
+      }
+    })
+    if (!changed || nodes.length === 0) return
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, measuredHeightsRef.current)
+    setNodes(layoutedNodes)
+    setEdges(layoutedEdges)
+  }, [nodes, edges, setNodes, setEdges])
+
   useEffect(() => {
     const handleTidy = () => {
-      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges)
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, measuredHeightsRef.current)
       setNodes(layoutedNodes)
       setEdges(layoutedEdges)
       setTimeout(() => fitView({ duration: 300 }), 100)
