@@ -88,7 +88,10 @@ export const OpportunityNode = memo(({ data }: NodeProps) => {
             <h3 className="font-medium text-sm">{nodeData.title}</h3>
           </div>
           <button 
-            onClick={() => toggleOpportunityCollapse(nodeData.id)}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleOpportunityCollapse(nodeData.id)
+            }}
             className="ml-2 p-1 hover:bg-black/5 rounded"
           >
             {isCollapsed ? (
