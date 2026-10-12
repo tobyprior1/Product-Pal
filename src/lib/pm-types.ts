@@ -57,7 +57,7 @@ export interface BaseNode {
 export interface Guardrail {
   id: string
   metric: string
-  direction: "above" | "below"
+  direction: "above" | "below" | "flat"
   threshold?: number
   current?: number
 }
@@ -69,7 +69,9 @@ export type GuardrailEffect = "improved" | "neutral" | "worsened"
 /** null = not enough data to judge. */
 export function isGuardrailBreached(g: Guardrail): boolean | null {
   if (g.threshold === undefined || g.current === undefined) return null
-  return g.direction === "above" ? g.current < g.threshold : g.current > g.threshold
+  if (g.direction === "above") return g.current < g.threshold
+  if (g.direction === "below") return g.current > g.threshold
+  return g.current !== g.threshold
 }
 
 export interface OutcomeNode extends BaseNode {

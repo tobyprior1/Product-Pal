@@ -128,7 +128,9 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
                     <span className="truncate">{g.metric || "Untitled"}</span>
                   </span>
                   <span className="text-muted-foreground shrink-0">
-                    {fmt(g.current)} · keep {g.direction} {fmt(g.threshold)}
+                    {g.direction === "flat"
+                      ? `${fmt(g.current)} · flat at ${fmt(g.threshold)}`
+                      : `${fmt(g.current)} · keep ${g.direction} ${fmt(g.threshold)}`}
                   </span>
                 </div>
               )

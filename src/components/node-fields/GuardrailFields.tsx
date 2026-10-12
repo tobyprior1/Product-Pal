@@ -69,13 +69,14 @@ export function GuardrailFields({ nodeId, guardrails = [], onChange }: Props) {
                   <SelectContent>
                     <SelectItem value="below">Below</SelectItem>
                     <SelectItem value="above">Above</SelectItem>
+                    <SelectItem value="flat">Same (flat)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <NumberField
                 key={`${nodeId}-${g.id}-threshold`}
                 id={`${g.id}-threshold`}
-                label="Limit"
+                label={g.direction === "flat" ? "Value" : "Limit"}
                 value={g.threshold}
                 onCommit={(v) => update(g.id, { threshold: v })}
               />
