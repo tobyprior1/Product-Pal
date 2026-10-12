@@ -74,6 +74,12 @@ export function isGuardrailBreached(g: Guardrail): boolean | null {
   return g.current !== g.threshold
 }
 
+/** Format an outcome metric value, honouring the percentage display option. */
+export function formatMetricValue(value: number | null | undefined, format?: "number" | "percentage") {
+  if (value === undefined || value === null) return "—"
+  return format === "percentage" ? `${value}%` : `${value}`
+}
+
 export interface OutcomeNode extends BaseNode {
   type: "Outcome"
   businessContribution?: string
@@ -83,6 +89,8 @@ export interface OutcomeNode extends BaseNode {
   baseline?: number
   current?: number
   target?: number
+  /** How metric values are displayed; values are stored as entered (12 shown as 12% when percentage) */
+  metricFormat?: "number" | "percentage"
   timeframe?: string
   timeframePeriodType?: "quarter" | "half" | "year" | "custom"
   timeframePeriodValue?: string
