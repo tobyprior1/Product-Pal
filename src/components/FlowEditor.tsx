@@ -340,7 +340,7 @@ function FlowEditorInner() {
 
   useEffect(() => {
     const handleTidy = () => {
-      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges)
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, measuredHeightsRef.current)
       setNodes(layoutedNodes)
       setEdges(layoutedEdges)
       setTimeout(() => fitView({ duration: 300 }), 100)
