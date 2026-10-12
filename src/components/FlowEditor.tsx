@@ -305,7 +305,7 @@ function FlowEditorInner() {
         }
       })
 
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(flowNodes, flowEdges)
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(flowNodes, flowEdges, measuredHeightsRef.current)
 
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
@@ -320,6 +320,23 @@ function FlowEditorInner() {
     collapsedOpportunities,
     collapsedSolutions,
   ])
+
+  // Once React Flow has measured real node heights, re-run the layout so
+  // vertical gaps between levels stay consistent (dagre used estimates first).
+  useEffect(() => {
+    let changed = false
+    nodes.forEach((node) => {
+      const height = node.measured?.height
+      if (height && measuredHeightsRef.current.get(node.id) !== height) {
+        measuredHeightsRef.current.set(node.id, height)
+        changed = true
+      }
+    })
+    if (!changed || nodes.length === 0) return
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, measuredHeightsRef.current)
+    setNodes(layoutedNodes)
+    setEdges(layoutedEdges)
+  }, [nodes, edges, setNodes, setEdges])
 
   useEffect(() => {
     const handleTidy = () => {
