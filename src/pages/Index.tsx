@@ -41,7 +41,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTour, hasSeenTour } from "@/components/tour/Tour";
 import { Landing } from "@/components/Landing";
-import productPalLogo from "@/assets/product-pal-logo.png";
+import { ProductPalLogo } from "@/components/ProductPalLogo";
 import type { User } from "@supabase/supabase-js";
 import { ArrowRight, Folder, MoreVertical, Pencil, Plus, Target, Trash2 } from "lucide-react";
 import { usePendingAction } from "@/hooks/usePendingAction";
@@ -256,11 +256,7 @@ const Index = () => {
         <div className="max-w-4xl w-full space-y-8">
           <div className="text-center space-y-4">
             <h1 className="sr-only">Product Pal</h1>
-            <img
-              src={productPalLogo}
-              alt="Product Pal"
-              width={882}
-              height={177}
+            <ProductPalLogo
               className="h-12 w-auto mx-auto"
             />
             <p className="text-lg text-muted-foreground">
