@@ -152,6 +152,7 @@ const Project = () => {
         if (!outcomeSaved) {
           throw new Error("The root Outcome node could not be saved");
         }
+        await useDataStore.getState().addBusinessOutcome(outcomeId, "New Business Outcome");
         useUIStore.getState().setSelectedNodeId(outcomeId);
 
         navigate("/editor");

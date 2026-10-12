@@ -1,7 +1,8 @@
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { useUIStore } from "@/lib/pm-ui-store"
 import { Button } from "@/components/ui/button"
-import { X, Focus, Trash2, MoreHorizontal } from "lucide-react"
+import { X, Focus, Trash2, MoreHorizontal, Plus, ArrowUpRight } from "lucide-react"
+import { hierarchyStyleForNodeType } from "@/lib/pm-hierarchy"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,7 +97,7 @@ export function NodePanel() {
     <div className="w-80 border-l border-border bg-card overflow-y-auto animate-slide-in-right">
       <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
-          <Badge variant="outline">{selectedNode.type}</Badge>
+          <Badge variant="outline">{hierarchyStyleForNodeType(selectedNode.type).label}</Badge>
         </div>
         <div className="flex items-center gap-1">
           <AlertDialog>
@@ -125,8 +126,9 @@ export function NodePanel() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete this node?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete "{selectedNode.title}" and all its child nodes. This action cannot be
-                  undone.
+                  {selectedNode.type === "BusinessOutcome"
+                    ? `Remove "${selectedNode.title}"? Your product outcome and everything below it will be kept.`
+                    : `This will permanently delete "${selectedNode.title}" and all its child nodes. This action cannot be undone.`}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -156,7 +158,7 @@ export function NodePanel() {
             onCommit={(value) => updateNode(selectedNode.id, { title: value })}
           />
 
-          {selectedNode.type === "Outcome" && (
+          {(selectedNode.type === "Outcome" || selectedNode.type === "BusinessOutcome") && (
             <OutcomeFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
           )}
 
@@ -172,6 +174,30 @@ export function NodePanel() {
             <ExperimentFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
           )}
         </PanelSection>
+
+        {selectedNode.type === "Outcome" && (
+          <PanelSection title="Business Outcome">
+            {nodes.find(n => n.id === selectedNode.parentId && n.type === "BusinessOutcome") ? (
+              <Button variant="ghost" className="w-full h-auto text-left justify-start whitespace-normal" onClick={() => setSelectedNodeId(selectedNode.parentId)}>
+                <ArrowUpRight className="w-4 h-4 mr-2 shrink-0 text-business-outcome" />
+                {nodes.find(n => n.id === selectedNode.parentId)?.title}
+              </Button>
+            ) : (
+              <Button variant="outline" disabled={isLocked} onClick={() => window.dispatchEvent(new CustomEvent("add-business-outcome", { detail: { outcomeId: selectedNode.id } }))}>
+                <Plus className="w-4 h-4 mr-2" /> Add Business Outcome
+              </Button>
+            )}
+          </PanelSection>
+        )}
+        {selectedNode.type === "BusinessOutcome" && (
+          <PanelSection title="Product Outcome">
+            {nodes.filter(n => n.type === "Outcome" && n.parentId === selectedNode.id).map(n => (
+              <Button key={n.id} variant="ghost" className="w-full h-auto text-left justify-start whitespace-normal" onClick={() => setSelectedNodeId(n.id)}>
+                <ArrowUpRight className="w-4 h-4 mr-2 shrink-0 text-outcome" />{n.title}
+              </Button>
+            ))}
+          </PanelSection>
+        )}
 
         {selectedNode.type === "Opportunity" && (
           <PanelSection title="Prioritisation">

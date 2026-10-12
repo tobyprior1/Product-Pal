@@ -1,9 +1,9 @@
 import { NumberField, TextAreaField, TextField } from "./DraftFields"
-import type { OutcomeNode } from "@/lib/pm-types"
+import type { OutcomeNode, BusinessOutcomeNode } from "@/lib/pm-types"
 
 interface OutcomeFieldsProps {
-  node: OutcomeNode
-  onUpdate: (updates: Partial<OutcomeNode>) => void
+  node: OutcomeNode | BusinessOutcomeNode
+  onUpdate: (updates: Partial<OutcomeNode | BusinessOutcomeNode>) => void
 }
 
 type NumericKey = "baseline" | "current" | "target"
@@ -25,6 +25,18 @@ export function OutcomeFields({ node, onUpdate }: OutcomeFieldsProps) {
         onCommit={(value) => onUpdate({ description: value })}
         rows={3}
       />
+
+      {node.type === "Outcome" && (
+        <TextAreaField
+          key={`${node.id}-businessContribution`}
+          id="businessContribution"
+          label="Contribution to business outcome"
+          value={node.businessContribution}
+          onCommit={(value) => onUpdate({ businessContribution: value })}
+          placeholder="e.g., Faster onboarding increases activation, which supports subscription revenue."
+          rows={3}
+        />
+      )}
 
       <TextField
         key={`${node.id}-metric`}
@@ -53,7 +65,7 @@ export function OutcomeFields({ node, onUpdate }: OutcomeFieldsProps) {
         label="Timeframe"
         value={node.timeframePeriodValue}
         onCommit={(value) => onUpdate({ timeframePeriodValue: value })}
-        placeholder="e.g., Q1 2024"
+        placeholder="e.g., Q1 2027"
       />
     </>
   )

@@ -4,8 +4,8 @@ import { updateNodeMetadata } from "../pm-utils";
 import { collectSubtreeIds } from "../pm-selectors";
 import type { DataSlice, NodesSlice } from "./types";
 import { MAX_SNAPSHOTS } from "./types";
-import { ostNodeToDbNode } from "./mappers";
-import { notifySampleReadOnly, snapshotTimeLabel, deepCloneNodes } from "./shared";
+import { ostNodeToDbNode, dbNodeToOSTNode } from "./mappers";
+import { notifySampleReadOnly, snapshotTimeLabel, deepCloneNodes, showErrorToast } from "./shared";
 
 export const createNodesSlice: DataSlice<NodesSlice> = (set, get) => ({
   /** Replaces the node list and records a local undo snapshot. */
@@ -34,6 +34,25 @@ export const createNodesSlice: DataSlice<NodesSlice> = (set, get) => ({
     state.updateTreeMetadata();
   },
 
+  addBusinessOutcome: async (productOutcomeId, title) => {
+    const state = get();
+    if (!state.currentTree) return null;
+    if (state.currentTree.isSample) { notifySampleReadOnly(); return null; }
+    const { data: id, error } = await supabase.rpc("attach_business_outcome", {
+      p_outcome_id: productOutcomeId, p_title: title,
+    });
+    if (error || !id) { showErrorToast("Business outcome could not be saved. Please try again."); return null; }
+    const { data: row, error: readError } = await supabase.from("nodes").select("*").eq("id", id).single();
+    if (readError || !row) {
+      await state.selectTree(state.currentTree.id);
+      return id;
+    }
+    const latest = get();
+    if (latest.currentTree?.id !== state.currentTree.id) return id;
+    latest.setNodes([...latest.nodes.map(n => n.id === productOutcomeId ? { ...n, parentId: id } : n), dbNodeToOSTNode(row)]);
+    return id;
+  },
+
   addNode: async (node) => {
     const state = get();
     const tree = state.currentTree;
@@ -55,10 +74,9 @@ export const createNodesSlice: DataSlice<NodesSlice> = (set, get) => ({
     state.setNodes([...state.nodes, node]);
 
     // Keep the outcome (tree) name in sync with its root Outcome node
-    if (node.type === "Outcome" && !node.parentId && node.title && node.title !== tree.name) {
+    if (node.type === "Outcome" && node.title && node.title !== tree.name) {
       await state.renameTree(tree.id, node.title);
     }
-    return true;
     return true;
   },
 
@@ -91,7 +109,6 @@ export const createNodesSlice: DataSlice<NodesSlice> = (set, get) => ({
     // Keep the outcome (tree) name in sync with its root Outcome node title
     if (
       mergedNode.type === "Outcome" &&
-      !mergedNode.parentId &&
       updates.title &&
       mergedNode.title !== tree.name
     ) {
@@ -103,6 +120,14 @@ export const createNodesSlice: DataSlice<NodesSlice> = (set, get) => ({
     const state = get();
     if (state.currentTree?.isSample) {
       notifySampleReadOnly();
+      return;
+    }
+
+    const node = state.nodes.find(n => n.id === id);
+    if (node?.type === "BusinessOutcome") {
+      const { error } = await supabase.rpc("remove_business_outcome", { p_business_id: id });
+      if (error) { showErrorToast("Business outcome could not be removed."); return; }
+      state.setNodes(get().nodes.filter(n => n.id !== id).map(n => n.parentId === id ? { ...n, parentId: null } : n));
       return;
     }
 

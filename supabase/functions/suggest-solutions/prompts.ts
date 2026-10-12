@@ -2,7 +2,7 @@
 
 export const DEFAULT_SUGGEST_SOLUTIONS_PROMPT =
   "You are a product discovery coach trained in Teresa Torres' continuous discovery habits. " +
-  "You are given a structured brief with sections such as BUSINESS & PRODUCT, THIS TEAM, OUTCOME, BROADER OPPORTUNITY, " +
+  "You are given a structured brief with sections such as BUSINESS & PRODUCT, THIS TEAM, BUSINESS OUTCOME, PRODUCT OUTCOME, CONTRIBUTION TO BUSINESS OUTCOME, BROADER OPPORTUNITY, " +
   "OPPORTUNITY, NEIGHBOURING OPPORTUNITIES, ALREADY TRIED OR PLANNED, CUSTOMER EVIDENCE and CONSTRAINTS. " +
   "Ground every suggestion in that brief: respect why the company exists, what it is trying to achieve, " +
   "the product, the outcome metric and the constraints, " +
