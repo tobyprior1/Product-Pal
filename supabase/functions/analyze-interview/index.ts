@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.79.0";
+import { buildOpportunityContext, OUTCOME_ALIGNMENT_INSTRUCTION } from "../_shared/tree-context.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -75,6 +76,8 @@ serve(async (req) => {
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     });
+    const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !authData?.user) throw new Error("Invalid session");
 
     // Get interview data - RLS will ensure user owns this interview
     const { data: interview, error: fetchError } = await supabaseClient
@@ -126,7 +129,12 @@ serve(async (req) => {
         throw new Error("Gemini API key not configured");
       }
 
+      const { context: outcomeContext } = await buildOpportunityContext(
+        supabaseClient, "00000000-0000-0000-0000-000000000000",
+        { fallback: { treeId: interview.tree_id } },
+      );
       const systemPrompt = `You are an expert product researcher analyzing customer interviews. Extract actionable insights and opportunities from interview transcripts.
+${OUTCOME_ALIGNMENT_INSTRUCTION}
 
 Respond with raw JSON only - no markdown, no code fences, no commentary. Your response must be valid JSON matching this exact structure:
 {
@@ -172,7 +180,7 @@ Respond with raw JSON only - no markdown, no code fences, no commentary. Your re
             model,
             messages: [
               { role: 'system', content: systemPrompt },
-              { role: 'user', content: `Analyze this interview transcript:\n\n${interview.transcript}` }
+              { role: 'user', content: `${outcomeContext}\n\nAnalyze this interview transcript:\n\n${interview.transcript}` }
             ],
           }),
         });

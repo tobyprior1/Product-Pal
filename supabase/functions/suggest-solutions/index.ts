@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.79.0";
-import { buildOpportunityContext } from "../_shared/tree-context.ts";
+import { buildOpportunityContext, OUTCOME_ALIGNMENT_INSTRUCTION } from "../_shared/tree-context.ts";
 import { DEFAULT_SUGGEST_SOLUTIONS_PROMPT } from "./prompts.ts";
 
 
@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
       let usedModel = "";
       const chain = chainFor(preferredModel);
       // Hard cap the batch size regardless of what the saved prompt says.
-      systemPrompt = `${systemPrompt}\n\nIMPORTANT: return exactly 3 suggestions — no more, no fewer.`;
+      systemPrompt = `${systemPrompt}\n\n${OUTCOME_ALIGNMENT_INSTRUCTION}\n\nIMPORTANT: return exactly 3 suggestions — no more, no fewer.`;
       for (const [index, model] of chain.entries()) {
         usedModel = model;
         aiResponse = await callGemini(model, systemPrompt);

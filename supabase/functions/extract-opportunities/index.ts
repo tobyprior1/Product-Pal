@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.79.0";
-import { buildOpportunityContext } from "../_shared/tree-context.ts";
+import { buildOpportunityContext, OUTCOME_ALIGNMENT_INSTRUCTION } from "../_shared/tree-context.ts";
 import { EXTRACT_OPPORTUNITIES_PROMPT } from "./prompts.ts";
 
 const corsHeaders = {
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiApiKey) return json({ error: "AI is not configured for this project." }, 500);
 
-    const systemPrompt = `${EXTRACT_OPPORTUNITIES_PROMPT}\n\nIMPORTANT: return at most 5 opportunities, ordered by how strongly the transcript supports them.`;
+    const systemPrompt = `${EXTRACT_OPPORTUNITIES_PROMPT}\n\n${OUTCOME_ALIGNMENT_INSTRUCTION}\n\nIMPORTANT: return at most 5 opportunities, ordered by how strongly the transcript supports them.`;
 
     const callGemini = (model: string) =>
       fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {

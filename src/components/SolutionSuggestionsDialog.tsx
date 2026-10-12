@@ -73,7 +73,7 @@ export function SolutionSuggestionsDialog({
         exclude,
         opportunity: {
           title: localOpp?.title ?? opportunityTitle,
-          data: (localOpp as any)?.data ?? {},
+          data: localOpp ?? {},
           outcomeTitle,
           treeId: currentTree?.id,
         },

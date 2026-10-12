@@ -6,6 +6,14 @@
 
 type AnyRow = Record<string, any>;
 
+export const OUTCOME_ALIGNMENT_INSTRUCTION =
+  "Distinguish BUSINESS OUTCOME (the measurable value to the company) from PRODUCT OUTCOME (the change in customer behaviour or product performance). " +
+  "When both are supplied, use the stated CONTRIBUTION TO BUSINESS OUTCOME to connect the customer need, solution or experiment to product progress and then business value. " +
+  "Do not claim causation or invent business targets: treat the contribution as an assumption to test unless evidence supports it. " +
+  "For solutions, explain this connection briefly in rationale. For experiments, test a relevant assumption in this chain where appropriate and use a measurable success signal. " +
+  "For interview opportunities, explain relevant product and business value in whyItMatters/why_it_matters, but never manufacture customer evidence to fit a business goal. " +
+  "If a business outcome or contribution is missing, use the supplied product outcome without inventing the missing information.";
+
 const MAX_SIBLING_OPPS = 8;
 const MAX_SOLUTIONS = 12;
 const MAX_EXPERIMENTS = 8;
@@ -37,7 +45,7 @@ const section = (heading: string, lines: (string | null | undefined | false)[]) 
 };
 
 function describeOutcome(outcome: AnyRow | null, fallbackTitle?: string): string | null {
-  if (!outcome) return fallbackTitle ? section("## OUTCOME", [clip(fallbackTitle)]) : null;
+  if (!outcome) return fallbackTitle ? section("## PRODUCT OUTCOME", [clip(fallbackTitle)]) : null;
   const d = (outcome.data ?? {}) as AnyRow;
   const measure = [
     d.metric ? `Metric: ${clip(d.metric, 120)}` : null,
@@ -48,11 +56,11 @@ function describeOutcome(outcome: AnyRow | null, fallbackTitle?: string): string
     .filter(Boolean)
     .join(", ");
 
-  return section("## OUTCOME", [
+  return section(outcome.type === "BusinessOutcome" ? "## BUSINESS OUTCOME" : "## PRODUCT OUTCOME", [
     clip(outcome.title, 200),
     d.description ? `Description: ${clip(d.description)}` : null,
     measure || null,
-    d.timeframe ? `Timeframe: ${clip(d.timeframe, 80)}` : null,
+    d.timeframePeriodValue || d.timeframe ? `Timeframe: ${clip(d.timeframePeriodValue || d.timeframe, 80)}` : null,
     d.timeframeStartDate || d.timeframeEndDate
       ? `Window: ${d.timeframeStartDate ?? "?"} → ${d.timeframeEndDate ?? "?"}`
       : null,
@@ -169,7 +177,19 @@ export async function buildOpportunityContext(
 
   const byId = new Map(allNodes.map((n) => [n.id, n]));
   const outcome = allNodes.find((n) => n.type === "Outcome") ?? null;
+  const businessOutcome = outcome?.parent_id
+    ? allNodes.find(n => n.id === outcome.parent_id && n.type === "BusinessOutcome") ?? null
+    : null;
+  parts.push(describeOutcome(businessOutcome));
   parts.push(describeOutcome(outcome, fallback.outcomeTitle));
+  if (businessOutcome && outcome) {
+    parts.push(section("## CONTRIBUTION TO BUSINESS OUTCOME", [
+      `Product outcome "${clip(outcome.title, 200)}" contributes to business outcome "${clip(businessOutcome.title, 200)}".`,
+      outcome.data?.businessContribution
+        ? `Stated contribution (not proven causation): ${clip(outcome.data.businessContribution, 1000)}`
+        : "No contribution explanation supplied; the link is a hypothesis, not evidence of business impact.",
+    ]));
+  }
 
   // --- Ancestry ---------------------------------------------------------
   const ancestors: AnyRow[] = [];
