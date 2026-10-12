@@ -68,7 +68,11 @@ function describeOutcome(outcome: AnyRow | null, fallbackTitle?: string): string
       ? [
           "Guardrails (health metrics that must NOT be harmed; avoid ideas likely to breach them and flag any risk):",
           ...d.guardrails.slice(0, 3).map((g: AnyRow) =>
-            `  guardrail: ${clip(g.metric || "unnamed", 120)} — keep ${g.direction} ${g.threshold ?? "?"}${
+            `  guardrail: ${clip(g.metric || "unnamed", 120)} — ${
+              g.direction === "flat"
+                ? `keep flat at ${g.threshold ?? "?"}`
+                : `keep ${g.direction} ${g.threshold ?? "?"}`
+            }${
               g.current !== undefined && g.current !== null ? ` (current ${g.current})` : ""
             }`,
           ),
