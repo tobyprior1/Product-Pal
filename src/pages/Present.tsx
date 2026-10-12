@@ -37,7 +37,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   dagreGraph.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 120 })
 
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 320, height: node.type === "Outcome" || node.type === "BusinessOutcome" ? 300 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16 : 150 })
+    dagreGraph.setNode(node.id, { width: 320, height: node.measured?.height ?? (node.type === "Outcome" || node.type === "BusinessOutcome" ? 300 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16 : 150) })
   })
 
   edges.forEach((edge) => {
@@ -46,13 +46,19 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
 
   dagre.layout(dagreGraph)
 
+  const rowHeights = new Map<number, number>()
+  nodes.forEach((node) => {
+    const { y, height } = dagreGraph.node(node.id)
+    rowHeights.set(y, Math.max(rowHeights.get(y) ?? 0, height))
+  })
+
   const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id)
     return {
       ...node,
       position: {
         x: nodeWithPosition.x - 160,
-        y: nodeWithPosition.y - dagreGraph.node(node.id).height / 2,
+        y: nodeWithPosition.y - (rowHeights.get(nodeWithPosition.y) ?? nodeWithPosition.height) / 2,
       },
     }
   })
@@ -104,6 +110,17 @@ function PresentModeInner() {
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
   }, [ostNodes])
+
+  // Reconcile estimates with rendered card heights without changing focus styles.
+  useEffect(() => {
+    if (!nodes.some(node => node.measured?.height)) return
+    const { nodes: layoutedNodes } = getLayoutedElements(nodes, edges)
+    if (layoutedNodes.some((node, index) =>
+      node.position.x !== nodes[index]?.position.x || node.position.y !== nodes[index]?.position.y
+    )) {
+      setNodes(layoutedNodes)
+    }
+  }, [nodes, edges, setNodes])
 
   // Calculate path to root for focused node
   useEffect(() => {
