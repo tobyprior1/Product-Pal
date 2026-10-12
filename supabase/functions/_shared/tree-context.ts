@@ -47,11 +47,13 @@ const section = (heading: string, lines: (string | null | undefined | false)[]) 
 function describeOutcome(outcome: AnyRow | null, fallbackTitle?: string): string | null {
   if (!outcome) return fallbackTitle ? section("## PRODUCT OUTCOME", [clip(fallbackTitle)]) : null;
   const d = (outcome.data ?? {}) as AnyRow;
+  const pct = d.metricFormat === "percentage"
+  const suffix = pct ? "%" : ""
   const measure = [
-    d.metric ? `Metric: ${clip(d.metric, 120)}` : null,
-    d.baseline !== undefined && d.baseline !== null ? `baseline ${d.baseline}` : null,
-    d.current !== undefined && d.current !== null ? `current ${d.current}` : null,
-    d.target !== undefined && d.target !== null ? `target ${d.target}` : null,
+    d.metric ? `Metric: ${clip(d.metric, 120)}${pct ? " (values shown as percentages)" : ""}` : null,
+    d.baseline !== undefined && d.baseline !== null ? `baseline ${d.baseline}${suffix}` : null,
+    d.current !== undefined && d.current !== null ? `current ${d.current}${suffix}` : null,
+    d.target !== undefined && d.target !== null ? `target ${d.target}${suffix}` : null,
   ]
     .filter(Boolean)
     .join(", ");

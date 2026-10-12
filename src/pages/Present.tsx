@@ -265,7 +265,9 @@ function PresentModeInner() {
                   <div>
                     <span className="text-muted-foreground">Target:</span>{" "}
                     <span className="font-mono">
-                      {(focusedOSTNode as any).baseline}% → {(focusedOSTNode as any).target}%
+                      {(focusedOSTNode as any).metricFormat === "percentage"
+                        ? `${(focusedOSTNode as any).baseline}% → ${(focusedOSTNode as any).target}%`
+                        : `${(focusedOSTNode as any).baseline} → ${(focusedOSTNode as any).target}`}
                     </span>
                   </div>
                 )}
