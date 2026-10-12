@@ -1,7 +1,8 @@
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TextAreaField, TextField } from "./DraftFields"
-import { getExperimentRisk, type ExperimentNode } from "@/lib/pm-types"
+import { getExperimentRisk, type ExperimentNode, type GuardrailEffect, type OutcomeNode } from "@/lib/pm-types"
+import { useDataStore } from "@/lib/pm-supabase-store"
 
 interface ExperimentFieldsProps {
   node: ExperimentNode
@@ -40,6 +41,41 @@ function ScoreSelect({
           ))}
         </SelectContent>
       </Select>
+    </div>
+  )
+}
+
+function GuardrailEffects({ node, onUpdate }: ExperimentFieldsProps) {
+  const nodes = useDataStore(s => s.nodes)
+  const outcome = nodes.find(n => n.type === "Outcome") as OutcomeNode | undefined
+  const guardrails = outcome?.guardrails ?? []
+  if (guardrails.length === 0) return null
+  const effects = node.guardrailEffects ?? {}
+  return (
+    <div className="space-y-1.5">
+      <Label className={compactLabel}>Effect on guardrails</Label>
+      {guardrails.map(g => (
+        <div key={g.id} className="grid grid-cols-2 gap-2 items-center">
+          <span className="text-xs text-foreground truncate">{g.metric || "Untitled"}</span>
+          <Select
+            value={effects[g.id] ?? "unknown"}
+            onValueChange={(v) => {
+              const next = { ...effects }
+              if (v === "unknown") delete next[g.id]
+              else next[g.id] = v as GuardrailEffect
+              onUpdate({ guardrailEffects: next })
+            }}
+          >
+            <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="unknown">Not measured</SelectItem>
+              <SelectItem value="improved">Improved</SelectItem>
+              <SelectItem value="neutral">No change</SelectItem>
+              <SelectItem value="worsened">Worsened</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      ))}
     </div>
   )
 }
@@ -167,6 +203,8 @@ export function ExperimentFields({ node, onUpdate }: ExperimentFieldsProps) {
           placeholder="What did you learn?"
         />
       )}
+
+      <GuardrailEffects node={node} onUpdate={onUpdate} />
     </>
   )
 }

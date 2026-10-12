@@ -64,6 +64,16 @@ function describeOutcome(outcome: AnyRow | null, fallbackTitle?: string): string
     d.timeframeStartDate || d.timeframeEndDate
       ? `Window: ${d.timeframeStartDate ?? "?"} → ${d.timeframeEndDate ?? "?"}`
       : null,
+    ...(Array.isArray(d.guardrails) && d.guardrails.length
+      ? [
+          "Guardrails (health metrics that must NOT be harmed; avoid ideas likely to breach them and flag any risk):",
+          ...d.guardrails.slice(0, 3).map((g: AnyRow) =>
+            `  guardrail: ${clip(g.metric || "unnamed", 120)} — keep ${g.direction} ${g.threshold ?? "?"}${
+              g.current !== undefined && g.current !== null ? ` (current ${g.current})` : ""
+            }`,
+          ),
+        ]
+      : []),
   ]);
 }
 
@@ -244,10 +254,13 @@ export async function buildOpportunityContext(
         .slice(0, MAX_EXPERIMENTS);
       for (const e of experiments) {
         const ed = (e.data ?? {}) as AnyRow;
+        const guards = ((outcome?.data?.guardrails ?? []) as AnyRow[])
+          .filter((g) => ed.guardrailEffects?.[g.id])
+          .map((g) => `${clip(g.metric || "guardrail", 60)} ${ed.guardrailEffects[g.id]}`);
         lines.push(
           `   experiment: ${clip(e.title, 120)}${ed.decision ? ` → decision ${ed.decision}` : ""}${
             ed.resultSummary ? ` — ${clip(ed.resultSummary, 200)}` : ""
-          }`,
+          }${guards.length ? ` [guardrails: ${guards.join(", ")}]` : ""}`,
         );
       }
     }
