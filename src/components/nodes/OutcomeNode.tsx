@@ -2,10 +2,10 @@ import { memo } from "react"
 import { Handle, Position, type NodeProps } from "@xyflow/react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Target, BriefcaseBusiness, ArrowUpRight, Plus } from "lucide-react"
+import { Target, BriefcaseBusiness, ArrowUpRight, Plus, ShieldCheck } from "lucide-react"
 import { useUIStore } from "@/lib/pm-ui-store"
 import { formatTimeframeDisplay } from "@/lib/pm-utils"
-import type { OutcomeNode as OutcomeNodeType, BusinessOutcomeNode } from "@/lib/pm-types"
+import { isGuardrailBreached, type OutcomeNode as OutcomeNodeType, type BusinessOutcomeNode } from "@/lib/pm-types"
 import { AddChildButton } from "@/components/AddChildButton"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { Button } from "@/components/ui/button"
@@ -108,6 +108,31 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {nodeData.type === "Outcome" && (nodeData.guardrails?.length ?? 0) > 0 && (
+          <div className="border-t border-border pt-2 space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5" /> GUARDRAILS</span>
+              {nodeData.guardrails!.some(g => isGuardrailBreached(g)) && (
+                <span className="font-semibold text-destructive">Guardrail breached</span>
+              )}
+            </div>
+            {nodeData.guardrails!.map(g => {
+              const breached = isGuardrailBreached(g)
+              return (
+                <div key={g.id} className="flex items-center justify-between gap-2 text-xs">
+                  <span className="flex items-center gap-1.5 min-w-0 text-foreground">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${breached === null ? "bg-muted-foreground" : breached ? "bg-destructive" : "bg-outcome"}`} />
+                    <span className="truncate">{g.metric || "Untitled"}</span>
+                  </span>
+                  <span className="text-muted-foreground shrink-0">
+                    {fmt(g.current)} · keep {g.direction} {fmt(g.threshold)}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

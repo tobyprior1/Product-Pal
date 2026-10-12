@@ -1,4 +1,5 @@
 import { NumberField, TextAreaField, TextField } from "./DraftFields"
+import { GuardrailFields } from "./GuardrailFields"
 import type { OutcomeNode, BusinessOutcomeNode } from "@/lib/pm-types"
 
 interface OutcomeFieldsProps {
@@ -67,6 +68,14 @@ export function OutcomeFields({ node, onUpdate }: OutcomeFieldsProps) {
         onCommit={(value) => onUpdate({ timeframePeriodValue: value })}
         placeholder="e.g., Q1 2027"
       />
+
+      {node.type === "Outcome" && (
+        <GuardrailFields
+          nodeId={node.id}
+          guardrails={node.guardrails}
+          onChange={(guardrails) => onUpdate({ guardrails } as Partial<OutcomeNode>)}
+        />
+      )}
     </>
   )
 }
