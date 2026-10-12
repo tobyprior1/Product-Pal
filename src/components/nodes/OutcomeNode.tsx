@@ -5,7 +5,12 @@ import { Badge } from "@/components/ui/badge"
 import { Target, BriefcaseBusiness, ArrowUpRight, Plus, ShieldCheck } from "lucide-react"
 import { useUIStore } from "@/lib/pm-ui-store"
 import { formatTimeframeDisplay } from "@/lib/pm-utils"
-import { isGuardrailBreached, type OutcomeNode as OutcomeNodeType, type BusinessOutcomeNode } from "@/lib/pm-types"
+import {
+  formatMetricValue,
+  isGuardrailBreached,
+  type OutcomeNode as OutcomeNodeType,
+  type BusinessOutcomeNode,
+} from "@/lib/pm-types"
 import { AddChildButton } from "@/components/AddChildButton"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { Button } from "@/components/ui/button"
@@ -90,9 +95,9 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
               <span className="text-muted-foreground">TARGET</span>
             </div>
             <div className="flex justify-between text-sm font-semibold text-foreground">
-              <span>{fmt(nodeData.baseline)}</span>
-              <span>{fmt(nodeData.current)}</span>
-              <span>{fmt(nodeData.target)}</span>
+              <span>{formatMetricValue(nodeData.baseline, nodeData.metricFormat)}</span>
+              <span>{formatMetricValue(nodeData.current, nodeData.metricFormat)}</span>
+              <span>{formatMetricValue(nodeData.target, nodeData.metricFormat)}</span>
             </div>
             {progress > 0 && (
               <div className="space-y-1">
