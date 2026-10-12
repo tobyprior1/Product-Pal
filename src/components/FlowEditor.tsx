@@ -54,13 +54,20 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], measuredHeights?: Map
 
   dagre.layout(dagreGraph)
 
+  // Dagre centers nodes in each row; use the tallest card to share a top edge.
+  const rowHeights = new Map<number, number>()
+  nodes.forEach((node) => {
+    const { y, height } = dagreGraph.node(node.id)
+    rowHeights.set(y, Math.max(rowHeights.get(y) ?? 0, height))
+  })
+
   const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id)
     return {
       ...node,
       position: {
         x: nodeWithPosition.x - 160,
-        y: nodeWithPosition.y - (dagreGraph.node(node.id).height / 2),
+        y: nodeWithPosition.y - (rowHeights.get(nodeWithPosition.y) ?? nodeWithPosition.height) / 2,
       },
     }
   })
