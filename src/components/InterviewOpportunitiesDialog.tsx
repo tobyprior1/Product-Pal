@@ -150,7 +150,7 @@ export function InterviewOpportunitiesDialog({
         await addInterview({
           id,
           treeId,
-          transcript: transcript.trim(),
+          transcript: source === "csv" ? feedback.text : transcript.trim(),
           participantName: participantName || undefined,
           uploadedAt: new Date().toISOString(),
           status: "completed",
@@ -175,7 +175,10 @@ export function InterviewOpportunitiesDialog({
           description: opportunity.need ?? "",
           whyItMatters: opportunity.whyItMatters ?? "",
           evidenceQuote: opportunity.quote ?? "",
-          evidenceRef: participantName || "Interview",
+          evidenceRef:
+            source === "csv"
+              ? `${participantName}${opportunity.mentions ? ` · ~${opportunity.mentions} mentions` : ""}`
+              : participantName || "Interview",
           suggestedNextStep: "",
           createdAt: new Date().toISOString(),
           applied: false,
@@ -195,10 +198,14 @@ export function InterviewOpportunitiesDialog({
 
     const { currentTree } = useDataStore.getState()
 
+    const isCsv = source === "csv"
     const { data, error: fnError } = await supabase.functions.invoke("extract-opportunities", {
       body: {
-        transcript,
-        participantName: participant.trim() || undefined,
+        transcript: isCsv ? feedback.text : transcript,
+        source,
+        feedbackCount: isCsv ? feedback.count : undefined,
+        participantName: isCsv ? undefined : participant.trim() || undefined,
+        parentOpportunityTitle: targetIsOpportunity ? parentNode?.title : undefined,
         treeId: currentTree?.id,
         outcomeTitle,
         exclude: opportunities.map((o) => o.title),
@@ -212,10 +219,12 @@ export function InterviewOpportunitiesDialog({
     }
 
     const incoming = ((data as any)?.opportunities ?? []) as ExtractedOpportunity[]
-    const resolvedParticipant = participant.trim() || ((data as any)?.participantName ?? "")
+    const resolvedParticipant = isCsv
+      ? `Feedback CSV: ${fileName} (${feedback.count} responses)`
+      : participant.trim() || ((data as any)?.participantName ?? "")
     setOpportunities(incoming)
     setSelected(new Set(incoming.map((_, index) => `opp-${index}`)))
-    if ((data as any)?.participantName && !participant.trim()) {
+    if (!isCsv && (data as any)?.participantName && !participant.trim()) {
       setParticipant((data as any).participantName)
     }
 
