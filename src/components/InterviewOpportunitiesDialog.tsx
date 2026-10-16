@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { Sparkles, AlertCircle, Lightbulb, Quote, RefreshCw } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Sparkles, AlertCircle, Lightbulb, Quote, RefreshCw, FileSpreadsheet, Users } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,11 +13,15 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SuggestionProgress } from "@/components/SuggestionProgress"
 import { supabase } from "@/integrations/supabase/client"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { useUIStore } from "@/lib/pm-ui-store"
 import { generateUUID, createNodeMetadata } from "@/lib/pm-utils"
+import { canAddSubOpportunity } from "@/lib/pm-selectors"
+import { parseCsv, guessFeedbackColumn, buildFeedbackText, MAX_FEEDBACK_ROWS } from "@/lib/csv"
 import type { OSTNode } from "@/lib/pm-types"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -27,21 +31,30 @@ export interface ExtractedOpportunity {
   need: string
   quote: string
   whyItMatters: string
+  mentions?: number
 }
 
 interface InterviewOpportunitiesDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** The Product Outcome of the current tree. */
   outcomeId: string
   outcomeTitle: string
+  /** Where new opportunities attach by default (the outcome or an opportunity). */
+  defaultParentId?: string
 }
+
+type Source = "interview" | "csv"
+const NONE = "__none__"
 
 export function InterviewOpportunitiesDialog({
   open,
   onOpenChange,
   outcomeId,
   outcomeTitle,
+  defaultParentId,
 }: InterviewOpportunitiesDialogProps) {
+  const [source, setSource] = useState<Source>("interview")
   const [transcript, setTranscript] = useState("")
   const [participant, setParticipant] = useState("")
   const [loading, setLoading] = useState(false)
@@ -51,12 +64,39 @@ export function InterviewOpportunitiesDialog({
   const [adding, setAdding] = useState(false)
   const [interviewId, setInterviewId] = useState<string | null>(null)
   const [rowIds, setRowIds] = useState<string[]>([])
+  const [parentId, setParentId] = useState(defaultParentId ?? outcomeId)
+
+  // CSV state
+  const [fileName, setFileName] = useState("")
+  const [headers, setHeaders] = useState<string[]>([])
+  const [csvRows, setCsvRows] = useState<string[][]>([])
+  const [textCol, setTextCol] = useState(0)
+  const [segmentCol, setSegmentCol] = useState<number | null>(null)
 
   const addNode = useDataStore((state) => state.addNode)
+  const nodes = useDataStore((state) => state.nodes)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
+
+  // Valid targets: the outcome, plus any opportunity that doesn't already hold solutions.
+  const targets = useMemo(() => {
+    const opps = nodes.filter((n) => n.type === "Opportunity" && canAddSubOpportunity(nodes, n.id))
+    return [{ id: outcomeId, title: `${outcomeTitle} (outcome)` }, ...opps.map((o) => ({ id: o.id, title: o.title }))]
+  }, [nodes, outcomeId, outcomeTitle])
+  const parentNode = nodes.find((n) => n.id === parentId)
+  const targetIsOpportunity = parentNode?.type === "Opportunity"
+
+  const feedback = useMemo(
+    () => (csvRows.length ? buildFeedbackText(csvRows, textCol, segmentCol) : { text: "", count: 0 }),
+    [csvRows, textCol, segmentCol],
+  )
+
+  useEffect(() => {
+    if (open) setParentId(defaultParentId ?? outcomeId)
+  }, [open, defaultParentId, outcomeId])
 
   useEffect(() => {
     if (!open) {
+      setSource("interview")
       setTranscript("")
       setParticipant("")
       setOpportunities([])
@@ -65,8 +105,32 @@ export function InterviewOpportunitiesDialog({
       setLoading(false)
       setInterviewId(null)
       setRowIds([])
+      setFileName("")
+      setHeaders([])
+      setCsvRows([])
+      setSegmentCol(null)
     }
   }, [open])
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return
+    setError(null)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("That file is over 5 MB. Try exporting just the feedback column.")
+      return
+    }
+    const parsed = parseCsv(await file.text())
+    if (parsed.length < 2) {
+      setError("Couldn't find any rows in that file. Make sure it's a CSV with a header row.")
+      return
+    }
+    const [head, ...rest] = parsed
+    setFileName(file.name)
+    setHeaders(head.map((h, i) => h.trim() || `Column ${i + 1}`))
+    setCsvRows(rest)
+    setTextCol(guessFeedbackColumn(head, rest))
+    setSegmentCol(null)
+  }
 
   // Save the transcript and the extracted opportunities into the interview library
   // so every extraction stays traceable back to the conversation it came from.
@@ -86,7 +150,7 @@ export function InterviewOpportunitiesDialog({
         await addInterview({
           id,
           treeId,
-          transcript: transcript.trim(),
+          transcript: source === "csv" ? feedback.text : transcript.trim(),
           participantName: participantName || undefined,
           uploadedAt: new Date().toISOString(),
           status: "completed",
@@ -111,7 +175,10 @@ export function InterviewOpportunitiesDialog({
           description: opportunity.need ?? "",
           whyItMatters: opportunity.whyItMatters ?? "",
           evidenceQuote: opportunity.quote ?? "",
-          evidenceRef: participantName || "Interview",
+          evidenceRef:
+            source === "csv"
+              ? `${participantName}${opportunity.mentions ? ` · ~${opportunity.mentions} mentions` : ""}`
+              : participantName || "Interview",
           suggestedNextStep: "",
           createdAt: new Date().toISOString(),
           applied: false,
@@ -131,10 +198,14 @@ export function InterviewOpportunitiesDialog({
 
     const { currentTree } = useDataStore.getState()
 
+    const isCsv = source === "csv"
     const { data, error: fnError } = await supabase.functions.invoke("extract-opportunities", {
       body: {
-        transcript,
-        participantName: participant.trim() || undefined,
+        transcript: isCsv ? feedback.text : transcript,
+        source,
+        feedbackCount: isCsv ? feedback.count : undefined,
+        participantName: isCsv ? undefined : participant.trim() || undefined,
+        parentOpportunityTitle: targetIsOpportunity ? parentNode?.title : undefined,
         treeId: currentTree?.id,
         outcomeTitle,
         exclude: opportunities.map((o) => o.title),
@@ -148,10 +219,12 @@ export function InterviewOpportunitiesDialog({
     }
 
     const incoming = ((data as any)?.opportunities ?? []) as ExtractedOpportunity[]
-    const resolvedParticipant = participant.trim() || ((data as any)?.participantName ?? "")
+    const resolvedParticipant = isCsv
+      ? `Feedback CSV: ${fileName} (${feedback.count} responses)`
+      : participant.trim() || ((data as any)?.participantName ?? "")
     setOpportunities(incoming)
     setSelected(new Set(incoming.map((_, index) => `opp-${index}`)))
-    if ((data as any)?.participantName && !participant.trim()) {
+    if (!isCsv && (data as any)?.participantName && !participant.trim()) {
       setParticipant((data as any).participantName)
     }
 
@@ -184,10 +257,15 @@ export function InterviewOpportunitiesDialog({
 
     for (const index of chosenIndexes) {
       const opportunity = opportunities[index]
-      const attribution = participant.trim() ? ` — ${participant.trim()}` : ""
+      const attribution =
+        source === "csv"
+          ? ` — feedback CSV${opportunity.mentions ? `, ~${opportunity.mentions} of ${feedback.count} responses` : ""}`
+          : participant.trim()
+            ? ` — ${participant.trim()}`
+            : ""
       const node = {
         id: generateUUID(),
-        parentId: outcomeId,
+        parentId,
         type: "Opportunity",
         title: opportunity.title,
         evidenceSummary: [
@@ -223,7 +301,9 @@ export function InterviewOpportunitiesDialog({
       toast({
         title: `${added} opportunit${added > 1 ? "ies" : "y"} added`,
         description: interviewId
-          ? "The transcript is saved in your interview library, with each quote as evidence."
+          ? source === "csv"
+            ? "The feedback is saved in your interview library, with each quote as evidence."
+            : "The transcript is saved in your interview library, with each quote as evidence."
           : "The customer quote is saved as evidence on each one.",
       })
       if (lastId) setSelectedNodeId(lastId)
@@ -236,51 +316,151 @@ export function InterviewOpportunitiesDialog({
 
   const hasResults = opportunities.length > 0
 
+  const canAnalyse = source === "csv" ? feedback.text.length >= 40 : transcript.trim().length >= 40
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            Turn an interview into opportunities
+            Turn customer evidence into opportunities
           </DialogTitle>
           <DialogDescription>
-            Paste what a customer said. The AI pulls out the unmet needs behind it and adds the ones you pick
-            under “{outcomeTitle}”.
+            Paste an interview or upload a feedback spreadsheet. The AI pulls out the unmet needs and adds the ones
+            you pick to your tree.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {!hasResults && !loading && (
             <>
-              <div className="space-y-1.5">
-                <Label htmlFor="interview-participant">Who did you speak to? (optional)</Label>
-                <Input
-                  id="interview-participant"
-                  value={participant}
-                  onChange={(e) => setParticipant(e.target.value)}
-                  placeholder="e.g. Sam, freelance designer"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="interview-transcript">Interview transcript or notes</Label>
-                <Textarea
-                  id="interview-transcript"
-                  value={transcript}
-                  onChange={(e) => setTranscript(e.target.value)}
-                  placeholder="Paste the conversation here — rough notes work too."
-                  className="min-h-[220px]"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Quotes are kept word-for-word, and the whole conversation is saved to your
-                  interview library so you can always trace an opportunity back to it.
+              <Tabs value={source} onValueChange={(v) => { setSource(v as Source); setError(null) }}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="interview" className="gap-1.5">
+                    <Users className="h-3.5 w-3.5" /> Interview transcript
+                  </TabsTrigger>
+                  <TabsTrigger value="csv" className="gap-1.5">
+                    <FileSpreadsheet className="h-3.5 w-3.5" /> Feedback CSV
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
+              <div className="space-y-1.5">
+                <Label>Add opportunities under</Label>
+                <Select value={parentId} onValueChange={setParentId}>
+                  <SelectTrigger aria-label="Add opportunities under">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {targets.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.id === outcomeId ? t.title : `↳ ${t.title}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {targetIsOpportunity
+                    ? "They'll be added as sub-opportunities, and the AI looks for narrower needs within this one."
+                    : "Opportunities that already have solutions can't hold sub-opportunities, so they aren't listed."}
                 </p>
               </div>
+
+              {source === "interview" ? (
+                <>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="interview-participant">Who did you speak to? (optional)</Label>
+                    <Input
+                      id="interview-participant"
+                      value={participant}
+                      onChange={(e) => setParticipant(e.target.value)}
+                      placeholder="e.g. Sam, freelance designer"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="interview-transcript">Interview transcript or notes</Label>
+                    <Textarea
+                      id="interview-transcript"
+                      value={transcript}
+                      onChange={(e) => setTranscript(e.target.value)}
+                      placeholder="Paste the conversation here — rough notes work too."
+                      className="min-h-[220px]"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Quotes are kept word-for-word, and the whole conversation is saved to your interview library
+                      so you can always trace an opportunity back to it.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="feedback-csv">Feedback spreadsheet (.csv)</Label>
+                    <Input
+                      id="feedback-csv"
+                      type="file"
+                      accept=".csv,text/csv"
+                      onChange={(e) => handleFile(e.target.files?.[0])}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Survey answers, support tickets, reviews — anything with one response per row. Up to{" "}
+                      {MAX_FEEDBACK_ROWS} rows are read.
+                    </p>
+                  </div>
+
+                  {headers.length > 0 && (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label>Feedback column</Label>
+                          <Select value={String(textCol)} onValueChange={(v) => setTextCol(Number(v))}>
+                            <SelectTrigger aria-label="Feedback column"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {headers.map((h, i) => (
+                                <SelectItem key={i} value={String(i)}>{h}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Customer / segment column (optional)</Label>
+                          <Select
+                            value={segmentCol === null ? NONE : String(segmentCol)}
+                            onValueChange={(v) => setSegmentCol(v === NONE ? null : Number(v))}
+                          >
+                            <SelectTrigger aria-label="Segment column"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={NONE}>None</SelectItem>
+                              {headers.map((h, i) => (
+                                <SelectItem key={i} value={String(i)}>{h}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="rounded-md border border-border bg-muted/30 p-2 text-xs">
+                        <p className="mb-1 font-medium text-foreground">
+                          {feedback.count} feedback responses ready from {fileName}
+                        </p>
+                        {csvRows.slice(0, 3).map((r, i) => (
+                          <p key={i} className="truncate text-muted-foreground">
+                            {segmentCol !== null && r[segmentCol] ? `[${r[segmentCol]}] ` : ""}
+                            {r[textCol] || "—"}
+                          </p>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
 
-          {loading && <SuggestionProgress label="Reading the interview" />}
+          {loading && (
+            <SuggestionProgress label={source === "csv" ? "Clustering the feedback" : "Reading the interview"} />
+          )}
 
           {hasResults && !loading && (
             <div className="space-y-2">
@@ -302,6 +482,11 @@ export function InterviewOpportunitiesDialog({
                       <div className="flex items-center gap-2">
                         <Lightbulb className="h-3.5 w-3.5 flex-shrink-0 text-amber-600" />
                         <span className="text-sm font-medium">{opportunity.title}</span>
+                        {opportunity.mentions ? (
+                          <span className="ml-auto shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            ~{opportunity.mentions} mentions
+                          </span>
+                        ) : null}
                       </div>
                       {opportunity.need && (
                         <p className="text-xs text-muted-foreground">{opportunity.need}</p>
@@ -347,7 +532,7 @@ export function InterviewOpportunitiesDialog({
 
               >
                 <RefreshCw className="h-3.5 w-3.5" />
-                Edit transcript
+                {source === "csv" ? "Back to file" : "Edit transcript"}
               </Button>
               <Button onClick={handleAddSelected} disabled={adding || selected.size === 0}>
                 {adding ? "Adding…" : `Add ${selected.size} opportunit${selected.size === 1 ? "y" : "ies"}`}
@@ -358,7 +543,7 @@ export function InterviewOpportunitiesDialog({
               <Button variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button onClick={analyse} disabled={loading || transcript.trim().length < 40} className="gap-2">
+              <Button onClick={analyse} disabled={loading || !canAnalyse} className="gap-2">
                 <Sparkles className="h-3.5 w-3.5" />
                 {loading ? "Reading…" : "Find opportunities"}
               </Button>
