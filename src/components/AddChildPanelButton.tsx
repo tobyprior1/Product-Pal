@@ -50,13 +50,13 @@ export function AddChildPanelButton({
                 disabled={disabled}
               >
                 <Sparkles className="h-3.5 w-3.5" />
-                Paste an interview → get opportunities
+                Interview or feedback CSV → opportunities
               </Button>
             </span>
           </TooltipTrigger>
           <TooltipContent side="left" className="max-w-xs">
-            Paste a customer conversation and the AI turns the unmet needs in it into opportunities, each with
-            the customer's own words as evidence.
+            Paste a customer conversation or upload a feedback spreadsheet, and the AI turns the unmet needs in it
+            into opportunities, each with the customer's own words as evidence.
           </TooltipContent>
         </Tooltip>
       )}

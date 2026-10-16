@@ -301,7 +301,9 @@ export function InterviewOpportunitiesDialog({
       toast({
         title: `${added} opportunit${added > 1 ? "ies" : "y"} added`,
         description: interviewId
-          ? "The transcript is saved in your interview library, with each quote as evidence."
+          ? source === "csv"
+            ? "The feedback is saved in your interview library, with each quote as evidence."
+            : "The transcript is saved in your interview library, with each quote as evidence."
           : "The customer quote is saved as evidence on each one.",
       })
       if (lastId) setSelectedNodeId(lastId)
@@ -480,6 +482,11 @@ export function InterviewOpportunitiesDialog({
                       <div className="flex items-center gap-2">
                         <Lightbulb className="h-3.5 w-3.5 flex-shrink-0 text-amber-600" />
                         <span className="text-sm font-medium">{opportunity.title}</span>
+                        {opportunity.mentions ? (
+                          <span className="ml-auto shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            ~{opportunity.mentions} mentions
+                          </span>
+                        ) : null}
                       </div>
                       {opportunity.need && (
                         <p className="text-xs text-muted-foreground">{opportunity.need}</p>
@@ -525,7 +532,7 @@ export function InterviewOpportunitiesDialog({
 
               >
                 <RefreshCw className="h-3.5 w-3.5" />
-                Edit transcript
+                {source === "csv" ? "Back to file" : "Edit transcript"}
               </Button>
               <Button onClick={handleAddSelected} disabled={adding || selected.size === 0}>
                 {adding ? "Adding…" : `Add ${selected.size} opportunit${selected.size === 1 ? "y" : "ies"}`}
@@ -536,7 +543,7 @@ export function InterviewOpportunitiesDialog({
               <Button variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button onClick={analyse} disabled={loading || transcript.trim().length < 40} className="gap-2">
+              <Button onClick={analyse} disabled={loading || !canAnalyse} className="gap-2">
                 <Sparkles className="h-3.5 w-3.5" />
                 {loading ? "Reading…" : "Find opportunities"}
               </Button>

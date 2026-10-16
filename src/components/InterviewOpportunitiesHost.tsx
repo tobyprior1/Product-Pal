@@ -3,13 +3,14 @@ import { useDataStore } from "@/lib/pm-supabase-store"
 import { InterviewOpportunitiesDialog } from "./InterviewOpportunitiesDialog"
 
 interface Target {
-  id: string
-  title: string
+  outcomeId: string
+  outcomeTitle: string
+  parentId: string
 }
 
 /**
- * Hosts the "paste interview → get opportunities" dialog so it can open from
- * the outcome side panel or the canvas pill via the "extract-opportunities" event.
+ * Hosts the "customer evidence → opportunities" dialog (interview or feedback CSV).
+ * Opens via the "extract-opportunities" event from the Outcome or an Opportunity.
  */
 export function InterviewOpportunitiesHost() {
   const [target, setTarget] = useState<Target | null>(null)
@@ -17,10 +18,11 @@ export function InterviewOpportunitiesHost() {
   useEffect(() => {
     const handle = (event: CustomEvent) => {
       const { parentId } = event.detail
-      const node = useDataStore.getState().nodes.find((n) => n.id === parentId)
-      if (node && node.type === "Outcome") {
-        setTarget({ id: node.id, title: node.title })
-      }
+      const nodes = useDataStore.getState().nodes
+      const node = nodes.find((n) => n.id === parentId)
+      const outcome = nodes.find((n) => n.type === "Outcome")
+      if (!node || !outcome || (node.type !== "Outcome" && node.type !== "Opportunity")) return
+      setTarget({ outcomeId: outcome.id, outcomeTitle: outcome.title, parentId: node.id })
     }
 
     window.addEventListener("extract-opportunities", handle as EventListener)
@@ -35,8 +37,9 @@ export function InterviewOpportunitiesHost() {
       onOpenChange={(open) => {
         if (!open) setTarget(null)
       }}
-      outcomeId={target.id}
-      outcomeTitle={target.title}
+      outcomeId={target.outcomeId}
+      outcomeTitle={target.outcomeTitle}
+      defaultParentId={target.parentId}
     />
   )
 }
