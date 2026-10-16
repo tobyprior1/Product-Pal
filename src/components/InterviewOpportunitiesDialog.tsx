@@ -257,10 +257,15 @@ export function InterviewOpportunitiesDialog({
 
     for (const index of chosenIndexes) {
       const opportunity = opportunities[index]
-      const attribution = participant.trim() ? ` — ${participant.trim()}` : ""
+      const attribution =
+        source === "csv"
+          ? ` — feedback CSV${opportunity.mentions ? `, ~${opportunity.mentions} of ${feedback.count} responses` : ""}`
+          : participant.trim()
+            ? ` — ${participant.trim()}`
+            : ""
       const node = {
         id: generateUUID(),
-        parentId: outcomeId,
+        parentId,
         type: "Opportunity",
         title: opportunity.title,
         evidenceSummary: [
@@ -309,51 +314,151 @@ export function InterviewOpportunitiesDialog({
 
   const hasResults = opportunities.length > 0
 
+  const canAnalyse = source === "csv" ? feedback.text.length >= 40 : transcript.trim().length >= 40
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            Turn an interview into opportunities
+            Turn customer evidence into opportunities
           </DialogTitle>
           <DialogDescription>
-            Paste what a customer said. The AI pulls out the unmet needs behind it and adds the ones you pick
-            under “{outcomeTitle}”.
+            Paste an interview or upload a feedback spreadsheet. The AI pulls out the unmet needs and adds the ones
+            you pick to your tree.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {!hasResults && !loading && (
             <>
-              <div className="space-y-1.5">
-                <Label htmlFor="interview-participant">Who did you speak to? (optional)</Label>
-                <Input
-                  id="interview-participant"
-                  value={participant}
-                  onChange={(e) => setParticipant(e.target.value)}
-                  placeholder="e.g. Sam, freelance designer"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="interview-transcript">Interview transcript or notes</Label>
-                <Textarea
-                  id="interview-transcript"
-                  value={transcript}
-                  onChange={(e) => setTranscript(e.target.value)}
-                  placeholder="Paste the conversation here — rough notes work too."
-                  className="min-h-[220px]"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Quotes are kept word-for-word, and the whole conversation is saved to your
-                  interview library so you can always trace an opportunity back to it.
+              <Tabs value={source} onValueChange={(v) => { setSource(v as Source); setError(null) }}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="interview" className="gap-1.5">
+                    <Users className="h-3.5 w-3.5" /> Interview transcript
+                  </TabsTrigger>
+                  <TabsTrigger value="csv" className="gap-1.5">
+                    <FileSpreadsheet className="h-3.5 w-3.5" /> Feedback CSV
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
+              <div className="space-y-1.5">
+                <Label>Add opportunities under</Label>
+                <Select value={parentId} onValueChange={setParentId}>
+                  <SelectTrigger aria-label="Add opportunities under">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {targets.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.id === outcomeId ? t.title : `↳ ${t.title}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {targetIsOpportunity
+                    ? "They'll be added as sub-opportunities, and the AI looks for narrower needs within this one."
+                    : "Opportunities that already have solutions can't hold sub-opportunities, so they aren't listed."}
                 </p>
               </div>
+
+              {source === "interview" ? (
+                <>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="interview-participant">Who did you speak to? (optional)</Label>
+                    <Input
+                      id="interview-participant"
+                      value={participant}
+                      onChange={(e) => setParticipant(e.target.value)}
+                      placeholder="e.g. Sam, freelance designer"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="interview-transcript">Interview transcript or notes</Label>
+                    <Textarea
+                      id="interview-transcript"
+                      value={transcript}
+                      onChange={(e) => setTranscript(e.target.value)}
+                      placeholder="Paste the conversation here — rough notes work too."
+                      className="min-h-[220px]"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Quotes are kept word-for-word, and the whole conversation is saved to your interview library
+                      so you can always trace an opportunity back to it.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="feedback-csv">Feedback spreadsheet (.csv)</Label>
+                    <Input
+                      id="feedback-csv"
+                      type="file"
+                      accept=".csv,text/csv"
+                      onChange={(e) => handleFile(e.target.files?.[0])}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Survey answers, support tickets, reviews — anything with one response per row. Up to{" "}
+                      {MAX_FEEDBACK_ROWS} rows are read.
+                    </p>
+                  </div>
+
+                  {headers.length > 0 && (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label>Feedback column</Label>
+                          <Select value={String(textCol)} onValueChange={(v) => setTextCol(Number(v))}>
+                            <SelectTrigger aria-label="Feedback column"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {headers.map((h, i) => (
+                                <SelectItem key={i} value={String(i)}>{h}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Customer / segment column (optional)</Label>
+                          <Select
+                            value={segmentCol === null ? NONE : String(segmentCol)}
+                            onValueChange={(v) => setSegmentCol(v === NONE ? null : Number(v))}
+                          >
+                            <SelectTrigger aria-label="Segment column"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={NONE}>None</SelectItem>
+                              {headers.map((h, i) => (
+                                <SelectItem key={i} value={String(i)}>{h}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="rounded-md border border-border bg-muted/30 p-2 text-xs">
+                        <p className="mb-1 font-medium text-foreground">
+                          {feedback.count} feedback responses ready from {fileName}
+                        </p>
+                        {csvRows.slice(0, 3).map((r, i) => (
+                          <p key={i} className="truncate text-muted-foreground">
+                            {segmentCol !== null && r[segmentCol] ? `[${r[segmentCol]}] ` : ""}
+                            {r[textCol] || "—"}
+                          </p>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
 
-          {loading && <SuggestionProgress label="Reading the interview" />}
+          {loading && (
+            <SuggestionProgress label={source === "csv" ? "Clustering the feedback" : "Reading the interview"} />
+          )}
 
           {hasResults && !loading && (
             <div className="space-y-2">
