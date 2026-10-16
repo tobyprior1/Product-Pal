@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { Sparkles, AlertCircle, Lightbulb, Quote, RefreshCw } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Sparkles, AlertCircle, Lightbulb, Quote, RefreshCw, FileSpreadsheet, Users } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,11 +13,15 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SuggestionProgress } from "@/components/SuggestionProgress"
 import { supabase } from "@/integrations/supabase/client"
 import { useDataStore } from "@/lib/pm-supabase-store"
 import { useUIStore } from "@/lib/pm-ui-store"
 import { generateUUID, createNodeMetadata } from "@/lib/pm-utils"
+import { canAddSubOpportunity } from "@/lib/pm-selectors"
+import { parseCsv, guessFeedbackColumn, buildFeedbackText, MAX_FEEDBACK_ROWS } from "@/lib/csv"
 import type { OSTNode } from "@/lib/pm-types"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -27,21 +31,30 @@ export interface ExtractedOpportunity {
   need: string
   quote: string
   whyItMatters: string
+  mentions?: number
 }
 
 interface InterviewOpportunitiesDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** The Product Outcome of the current tree. */
   outcomeId: string
   outcomeTitle: string
+  /** Where new opportunities attach by default (the outcome or an opportunity). */
+  defaultParentId?: string
 }
+
+type Source = "interview" | "csv"
+const NONE = "__none__"
 
 export function InterviewOpportunitiesDialog({
   open,
   onOpenChange,
   outcomeId,
   outcomeTitle,
+  defaultParentId,
 }: InterviewOpportunitiesDialogProps) {
+  const [source, setSource] = useState<Source>("interview")
   const [transcript, setTranscript] = useState("")
   const [participant, setParticipant] = useState("")
   const [loading, setLoading] = useState(false)
@@ -51,12 +64,39 @@ export function InterviewOpportunitiesDialog({
   const [adding, setAdding] = useState(false)
   const [interviewId, setInterviewId] = useState<string | null>(null)
   const [rowIds, setRowIds] = useState<string[]>([])
+  const [parentId, setParentId] = useState(defaultParentId ?? outcomeId)
+
+  // CSV state
+  const [fileName, setFileName] = useState("")
+  const [headers, setHeaders] = useState<string[]>([])
+  const [csvRows, setCsvRows] = useState<string[][]>([])
+  const [textCol, setTextCol] = useState(0)
+  const [segmentCol, setSegmentCol] = useState<number | null>(null)
 
   const addNode = useDataStore((state) => state.addNode)
+  const nodes = useDataStore((state) => state.nodes)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
+
+  // Valid targets: the outcome, plus any opportunity that doesn't already hold solutions.
+  const targets = useMemo(() => {
+    const opps = nodes.filter((n) => n.type === "Opportunity" && canAddSubOpportunity(nodes, n.id))
+    return [{ id: outcomeId, title: `${outcomeTitle} (outcome)` }, ...opps.map((o) => ({ id: o.id, title: o.title }))]
+  }, [nodes, outcomeId, outcomeTitle])
+  const parentNode = nodes.find((n) => n.id === parentId)
+  const targetIsOpportunity = parentNode?.type === "Opportunity"
+
+  const feedback = useMemo(
+    () => (csvRows.length ? buildFeedbackText(csvRows, textCol, segmentCol) : { text: "", count: 0 }),
+    [csvRows, textCol, segmentCol],
+  )
+
+  useEffect(() => {
+    if (open) setParentId(defaultParentId ?? outcomeId)
+  }, [open, defaultParentId, outcomeId])
 
   useEffect(() => {
     if (!open) {
+      setSource("interview")
       setTranscript("")
       setParticipant("")
       setOpportunities([])
@@ -65,8 +105,32 @@ export function InterviewOpportunitiesDialog({
       setLoading(false)
       setInterviewId(null)
       setRowIds([])
+      setFileName("")
+      setHeaders([])
+      setCsvRows([])
+      setSegmentCol(null)
     }
   }, [open])
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return
+    setError(null)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("That file is over 5 MB. Try exporting just the feedback column.")
+      return
+    }
+    const parsed = parseCsv(await file.text())
+    if (parsed.length < 2) {
+      setError("Couldn't find any rows in that file. Make sure it's a CSV with a header row.")
+      return
+    }
+    const [head, ...rest] = parsed
+    setFileName(file.name)
+    setHeaders(head.map((h, i) => h.trim() || `Column ${i + 1}`))
+    setCsvRows(rest)
+    setTextCol(guessFeedbackColumn(head, rest))
+    setSegmentCol(null)
+  }
 
   // Save the transcript and the extracted opportunities into the interview library
   // so every extraction stays traceable back to the conversation it came from.
