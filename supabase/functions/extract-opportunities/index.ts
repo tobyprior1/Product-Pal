@@ -18,6 +18,7 @@ interface ExtractedOpportunity {
   need: string;
   quote: string;
   whyItMatters: string;
+  mentions?: number;
 }
 
 const clip = (v: unknown, max = 400) => {
@@ -47,6 +48,7 @@ function parseResult(raw: string): { participantName: string; opportunities: Ext
           need: String(item?.need ?? item?.description ?? "").trim(),
           quote: String(item?.quote ?? item?.evidence_quote ?? "").trim(),
           whyItMatters: String(item?.whyItMatters ?? item?.why_it_matters ?? "").trim(),
+          ...(Number(item?.mentions) > 0 ? { mentions: Math.round(Number(item.mentions)) } : {}),
         }))
         .filter((o) => o.title.length > 0)
         .slice(0, 6)
@@ -74,8 +76,10 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const transcript = String(body?.transcript ?? "").trim();
+    const isCsv = body?.source === "csv";
+    const feedbackCount = Math.max(0, Math.min(5000, Number(body?.feedbackCount) || 0));
     if (transcript.length < 40) {
-      return json({ error: "Paste a longer transcript so the AI has something to work with." }, 400);
+      return json({ error: isCsv ? "That file doesn't have enough feedback text to analyse." : "Paste a longer transcript so the AI has something to work with." }, 400);
     }
 
     const treeId = typeof body?.treeId === "string" ? body.treeId : undefined;
@@ -104,15 +108,22 @@ Deno.serve(async (req) => {
         .map((n) => clip(n.title, 160));
     }
 
+    const parentTitle = clip(body?.parentOpportunityTitle, 200);
+
     const sections = [
       baseContext,
+      parentTitle
+        ? `## TARGET PARENT OPPORTUNITY\nNew opportunities will be added as sub-opportunities of: "${parentTitle}". Only return needs that are a narrower part of this parent.`
+        : null,
       existing.length
         ? `## EXISTING OPPORTUNITIES (do not repeat or reword these)\n${existing.map((t) => `- ${t}`).join("\n")}`
         : null,
       exclude.length
         ? `## ALREADY SUGGESTED (do not repeat or reword these)\n${exclude.map((t) => `- ${t}`).join("\n")}`
         : null,
-      `## INTERVIEW TRANSCRIPT${participantName ? ` (participant: ${participantName})` : ""}\n${transcript.slice(0, 60000)}`,
+      isCsv
+        ? `## CUSTOMER FEEDBACK ROWS (${feedbackCount || "many"} responses; [brackets] = customer segment)\n${transcript.slice(0, 80000)}`
+        : `## INTERVIEW TRANSCRIPT${participantName ? ` (participant: ${participantName})` : ""}\n${transcript.slice(0, 60000)}`,
     ].filter(Boolean);
 
     const context = sections.join("\n\n");
@@ -120,7 +131,8 @@ Deno.serve(async (req) => {
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiApiKey) return json({ error: "AI is not configured for this project." }, 500);
 
-    const systemPrompt = `${EXTRACT_OPPORTUNITIES_PROMPT}\n\n${OUTCOME_ALIGNMENT_INSTRUCTION}\n\nIMPORTANT: return at most 5 opportunities, ordered by how strongly the transcript supports them.`;
+    const csvInstruction = `SOURCE: this is a spreadsheet of many short feedback responses, not one interview. Treat each numbered line as a separate customer. CLUSTER recurring needs across many rows into distinct themes instead of summarising single comments. For each opportunity add "mentions": the approximate number of rows that express it, and pick the most representative verbatim quote (copied exactly from one row). Order by mentions × relevance to the outcome. "participantName" must be an empty string.`;
+    const systemPrompt = `${EXTRACT_OPPORTUNITIES_PROMPT}\n\n${OUTCOME_ALIGNMENT_INSTRUCTION}${isCsv ? `\n\n${csvInstruction}` : ""}\n\nIMPORTANT: return at most 5 opportunities, ordered by how strongly the ${isCsv ? "feedback" : "transcript"} supports them.`;
 
     const callGemini = (model: string) =>
       fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
