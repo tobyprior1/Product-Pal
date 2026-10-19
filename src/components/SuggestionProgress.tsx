@@ -3,7 +3,12 @@ import { Check, Loader2 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
-const STAGES = [
+export interface ProgressStage {
+  label: string
+  at: number
+}
+
+const STAGES: ProgressStage[] = [
   { label: "Reading your business and team context", at: 0 },
   { label: "Reviewing the opportunity and what's already tried", at: 3 },
   { label: "Exploring different angles", at: 7 },
@@ -12,8 +17,15 @@ const STAGES = [
 ]
 
 /** Estimated-progress indicator: the AI returns in one go, so we pace a
- *  realistic ~25s estimate and hold just short of complete until it lands. */
-export function SuggestionProgress({ label = "Generating ideas" }: { label?: string }) {
+ *  realistic ~25s estimate and hold just short of complete until it lands.
+ *  Callers can pass their own `stages` to describe the work actually being done. */
+export function SuggestionProgress({
+  label = "Generating ideas",
+  stages = STAGES,
+}: {
+  label?: string
+  stages?: ProgressStage[]
+}) {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
