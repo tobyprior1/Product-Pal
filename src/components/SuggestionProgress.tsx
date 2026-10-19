@@ -34,7 +34,7 @@ export function SuggestionProgress({
   }, [])
 
   const percent = Math.min(94, Math.round((1 - Math.exp(-elapsed / 11)) * 100))
-  const activeIndex = STAGES.reduce((acc, stage, i) => (elapsed >= stage.at ? i : acc), 0)
+  const activeIndex = stages.reduce((acc, stage, i) => (elapsed >= stage.at ? i : acc), 0)
 
   return (
     <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
@@ -49,7 +49,7 @@ export function SuggestionProgress({
       <Progress value={percent} className="h-1.5" />
 
       <ul className="space-y-1.5">
-        {STAGES.map((stage, index) => {
+        {stages.map((stage, index) => {
           const done = index < activeIndex
           const active = index === activeIndex
           return (
