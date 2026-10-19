@@ -3,7 +3,12 @@ import { Check, Loader2 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
-const STAGES = [
+export interface ProgressStage {
+  label: string
+  at: number
+}
+
+const STAGES: ProgressStage[] = [
   { label: "Reading your business and team context", at: 0 },
   { label: "Reviewing the opportunity and what's already tried", at: 3 },
   { label: "Exploring different angles", at: 7 },
@@ -12,8 +17,15 @@ const STAGES = [
 ]
 
 /** Estimated-progress indicator: the AI returns in one go, so we pace a
- *  realistic ~25s estimate and hold just short of complete until it lands. */
-export function SuggestionProgress({ label = "Generating ideas" }: { label?: string }) {
+ *  realistic ~25s estimate and hold just short of complete until it lands.
+ *  Callers can pass their own `stages` to describe the work actually being done. */
+export function SuggestionProgress({
+  label = "Generating ideas",
+  stages = STAGES,
+}: {
+  label?: string
+  stages?: ProgressStage[]
+}) {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
@@ -22,7 +34,7 @@ export function SuggestionProgress({ label = "Generating ideas" }: { label?: str
   }, [])
 
   const percent = Math.min(94, Math.round((1 - Math.exp(-elapsed / 11)) * 100))
-  const activeIndex = STAGES.reduce((acc, stage, i) => (elapsed >= stage.at ? i : acc), 0)
+  const activeIndex = stages.reduce((acc, stage, i) => (elapsed >= stage.at ? i : acc), 0)
 
   return (
     <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
@@ -37,7 +49,7 @@ export function SuggestionProgress({ label = "Generating ideas" }: { label?: str
       <Progress value={percent} className="h-1.5" />
 
       <ul className="space-y-1.5">
-        {STAGES.map((stage, index) => {
+        {stages.map((stage, index) => {
           const done = index < activeIndex
           const active = index === activeIndex
           return (

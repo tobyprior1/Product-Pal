@@ -36,13 +36,31 @@ export function parseCsv(text: string): string[][] {
 
 const TEXT_HINTS = ["feedback", "comment", "message", "review", "response", "pain", "note", "text", "body", "verbatim"]
 
+/** Columns that name a row rather than hold what the customer said — "response_id"
+ *  looks like a feedback column by name alone, but only holds "1", "2", "3". */
+const ID_HINTS = ["id", "uuid", "key", "number", "num", "no", "date", "time", "timestamp", "score", "rating"]
+
+const isIdLike = (header: string) => {
+  const h = header.toLowerCase().replace(/[\s-]+/g, "_")
+  return ID_HINTS.some((hint) => h === hint || h.endsWith(`_${hint}`) || h.startsWith(`${hint}_`))
+}
+
+const isNumericColumn = (rows: string[][], col: number) =>
+  rows.some((r) => (r[col] ?? "").trim() !== "") &&
+  rows.every((r) => {
+    const v = (r[col] ?? "").trim()
+    return v === "" || !Number.isNaN(Number(v))
+  })
+
 /** Guess the column most likely to hold free-text feedback: name hint first, then longest average text. */
 export function guessFeedbackColumn(headers: string[], rows: string[][]): number {
-  const hinted = headers.findIndex((h) => TEXT_HINTS.some((hint) => h.toLowerCase().includes(hint)))
+  const usable = headers.map((h) => !isIdLike(h))
+  const hinted = headers.findIndex((h, i) => usable[i] && TEXT_HINTS.some((hint) => h.toLowerCase().includes(hint)))
   if (hinted >= 0) return hinted
   let best = 0
   let bestLen = -1
   headers.forEach((_, col) => {
+    if (!usable[col] || isNumericColumn(rows, col)) return
     const avg = rows.reduce((sum, r) => sum + (r[col]?.length ?? 0), 0) / Math.max(rows.length, 1)
     if (avg > bestLen) {
       bestLen = avg
