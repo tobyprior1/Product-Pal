@@ -90,6 +90,50 @@ export function InterviewOpportunitiesDialog({
     [csvRows, textCol, segmentCol],
   )
 
+  // The wait reads differently for a spreadsheet of many responses than for a
+  // single conversation, so each source gets stages describing its own work.
+  const progress = useMemo(() => {
+    const placement = targetIsOpportunity && parentNode
+      ? { label: `Checking they fit under ${shorten(parentNode.title)}`, at: 22 }
+      : { label: "Checking against what's already in your tree", at: 22 }
+
+    if (source === "csv") {
+      const count = feedback.count
+      return {
+        label: count ? `Clustering ${count} responses` : "Clustering the feedback",
+        stages: [
+          { label: "Reading your business and team context", at: 0 },
+          {
+            label: count
+              ? `Reading ${count} responses${fileName ? ` from ${shorten(fileName)}` : ""}`
+              : "Reading the spreadsheet",
+            at: 3,
+          },
+          { label: "Grouping similar comments into themes", at: 8 },
+          { label: "Lifting the clearest customer quotes", at: 14 },
+          placement,
+        ],
+      }
+    }
+
+    const who = participant.trim()
+    return {
+      label: "Reading the interview",
+      stages: [
+        { label: "Reading your business and team context", at: 0 },
+        {
+          label: who
+            ? `Going through the conversation with ${shorten(who)}`
+            : "Going through the conversation",
+          at: 3,
+        },
+        { label: "Pulling out the unmet needs behind what they said", at: 8 },
+        { label: "Lifting their own words as evidence", at: 14 },
+        placement,
+      ],
+    }
+  }, [source, fileName, feedback.count, participant, targetIsOpportunity, parentNode])
+
   useEffect(() => {
     if (open) setParentId(defaultParentId ?? outcomeId)
   }, [open, defaultParentId, outcomeId])
@@ -459,7 +503,7 @@ export function InterviewOpportunitiesDialog({
           )}
 
           {loading && (
-            <SuggestionProgress label={source === "csv" ? "Clustering the feedback" : "Reading the interview"} />
+            <SuggestionProgress label={progress.label} stages={progress.stages} />
           )}
 
           {hasResults && !loading && (
