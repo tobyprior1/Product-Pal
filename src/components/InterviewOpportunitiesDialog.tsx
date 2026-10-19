@@ -47,6 +47,9 @@ interface InterviewOpportunitiesDialogProps {
 type Source = "interview" | "csv"
 const NONE = "__none__"
 
+/** Keeps names and file names from wrapping the progress lines. */
+const shorten = (text: string, max = 38) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text)
+
 export function InterviewOpportunitiesDialog({
   open,
   onOpenChange,
