@@ -1,4 +1,13 @@
-import { User, Lightbulb, Quote, Target, Sparkles } from "lucide-react"
+import { User, Lightbulb, Quote, Target, Sparkles, Plus, Check, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export interface SummaryOpportunity {
+  id?: string
+  onTree?: boolean
+  title: string
+  description: string
+  evidence_quote?: string
+}
 
 interface InterviewSnapshotSummaryProps {
   snapshot: {
@@ -8,20 +17,18 @@ interface InterviewSnapshotSummaryProps {
       quote: string
       evidence_ref: string
     }
-    opportunities?: Array<{
-      title: string
-      description: string
-      evidence_quote?: string
-    }>
+    opportunities?: SummaryOpportunity[]
     insights?: Array<{
       statement: string
       evidence_quote?: string
       why_it_might_matter?: string
     }>
   }
+  addingOpportunityId?: string | null
+  onAddOpportunity?: (opp: SummaryOpportunity) => void
 }
 
-export function InterviewSnapshotSummary({ snapshot }: InterviewSnapshotSummaryProps) {
+export function InterviewSnapshotSummary({ snapshot, addingOpportunityId, onAddOpportunity }: InterviewSnapshotSummaryProps) {
   return (
     <div className="space-y-4">
       {snapshot.participant_name && (

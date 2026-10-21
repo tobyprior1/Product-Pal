@@ -517,6 +517,9 @@ const Interviews = () => {
                   status: "completed" as const,
                   participant_name: interview.participantName,
                   opportunities: opportunities.map(opp => ({
+                    id: opp.id,
+                    applied: opp.applied,
+                    opportunityNodeId: opp.opportunityNodeId,
                     title: opp.title,
                     description: opp.description,
                     evidence_quote: opp.evidenceQuote,
@@ -524,10 +527,20 @@ const Interviews = () => {
                   insights: [],
                 } : undefined)
 
+                const isOnTree = (opp: any) => {
+                  if (!opp.applied || !opp.opportunityNodeId) return false
+                  if (currentTree?.id === interview.treeId) {
+                    return treeNodes.some((n) => n.id === opp.opportunityNodeId)
+                  }
+                  return true
+                }
+
                 // Format snapshot for display
                 const displaySnapshot = snapshot ? {
                   ...snapshot,
-                  opportunities: snapshot.opportunities?.map(opp => ({
+                  opportunities: snapshot.opportunities?.map((opp: any) => ({
+                    id: opp.id,
+                    onTree: isOnTree(opp),
                     title: opp.title,
                     description: opp.description,
                     evidence_quote: opp.evidenceQuote || opp.evidence_quote,
@@ -553,6 +566,8 @@ const Interviews = () => {
                     key={interview.id}
                     interview={interview}
                     snapshot={displaySnapshot}
+                    addingOpportunityId={addingOppId}
+                    onAddOpportunity={(opp) => handleQuickAddOpportunity(interview, opp)}
                     onEdit={handleEditInterview}
                     onDelete={handleDeleteInterview}
                     onCreateSnapshot={async () => {
