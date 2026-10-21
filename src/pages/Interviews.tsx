@@ -274,7 +274,7 @@ const Interviews = () => {
     })
 
     return sorted
-  }, [interviews, searchQuery, sortBy])
+  }, [interviews, currentTree?.id, searchQuery, sortBy])
 
   const handleUploadInterview = async (data: {
     participantName?: string
