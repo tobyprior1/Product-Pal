@@ -200,8 +200,8 @@ export function InterviewOpportunitiesDialog({
           transcript: source === "csv" ? feedback.text : transcript.trim(),
           participantName: participantName || undefined,
           uploadedAt: new Date().toISOString(),
-          status: "completed",
-        } as any)
+          status: "analyzed",
+        })
 
         await supabase.from("interview_snapshots").insert({
           interview_id: id,
