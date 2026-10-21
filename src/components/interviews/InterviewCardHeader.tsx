@@ -12,7 +12,10 @@ interface InterviewCardHeaderProps {
 }
 
 export function InterviewCardHeader({ interview, onEdit, onDelete }: InterviewCardHeaderProps) {
-  const statusConfig = INTERVIEW_STATUS_CONFIG[interview.status]
+  const statusConfig =
+    INTERVIEW_STATUS_CONFIG[interview.status as keyof typeof INTERVIEW_STATUS_CONFIG] ??
+    INTERVIEW_STATUS_CONFIG.analyzed ??
+    INTERVIEW_STATUS_CONFIG.pending
 
   return (
     <div className="flex items-start justify-between w-full border-b-0 pb-0">
