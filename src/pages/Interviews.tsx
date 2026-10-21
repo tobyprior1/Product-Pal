@@ -246,7 +246,8 @@ const Interviews = () => {
   }, [interviews, currentTree])
 
   const filteredAndSortedInterviews = useMemo(() => {
-    let filtered = interviews
+    // Only show evidence that belongs to the open outcome tree
+    let filtered = currentTree ? interviews.filter((i) => i.treeId === currentTree.id) : []
 
     // Filter by search query
     if (searchQuery.trim()) {
