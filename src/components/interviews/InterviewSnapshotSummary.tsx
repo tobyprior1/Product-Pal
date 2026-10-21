@@ -1,4 +1,13 @@
-import { User, Lightbulb, Quote, Target, Sparkles } from "lucide-react"
+import { User, Lightbulb, Quote, Target, Sparkles, Plus, Check, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export interface SummaryOpportunity {
+  id?: string
+  onTree?: boolean
+  title: string
+  description: string
+  evidence_quote?: string
+}
 
 interface InterviewSnapshotSummaryProps {
   snapshot: {
@@ -8,20 +17,18 @@ interface InterviewSnapshotSummaryProps {
       quote: string
       evidence_ref: string
     }
-    opportunities?: Array<{
-      title: string
-      description: string
-      evidence_quote?: string
-    }>
+    opportunities?: SummaryOpportunity[]
     insights?: Array<{
       statement: string
       evidence_quote?: string
       why_it_might_matter?: string
     }>
   }
+  addingOpportunityId?: string | null
+  onAddOpportunity?: (opp: SummaryOpportunity) => void
 }
 
-export function InterviewSnapshotSummary({ snapshot }: InterviewSnapshotSummaryProps) {
+export function InterviewSnapshotSummary({ snapshot, addingOpportunityId, onAddOpportunity }: InterviewSnapshotSummaryProps) {
   return (
     <div className="space-y-4">
       {snapshot.participant_name && (
@@ -72,7 +79,31 @@ export function InterviewSnapshotSummary({ snapshot }: InterviewSnapshotSummaryP
           <div className="space-y-2">
             {snapshot.opportunities.map((opp, idx) => (
               <div key={idx} className="p-3 bg-primary/5 border border-primary/10 rounded-md">
-                <p className="text-sm font-medium text-foreground mb-1">{opp.title}</p>
+                <div className="flex items-start justify-between gap-3 mb-1">
+                  <p className="text-sm font-medium text-foreground">{opp.title}</p>
+                  {opp.id && onAddOpportunity && (
+                    opp.onTree ? (
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                        <Check className="w-3 h-3" /> On tree
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 shrink-0"
+                        disabled={addingOpportunityId === opp.id}
+                        onClick={() => onAddOpportunity(opp)}
+                      >
+                        {addingOpportunityId === opp.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Plus className="w-3 h-3" />
+                        )}
+                        Add to tree
+                      </Button>
+                    )
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">{opp.description}</p>
                 {opp.evidence_quote && (
                   <p className="text-xs text-muted-foreground italic mt-2 pl-3 border-l-2 border-primary/20">

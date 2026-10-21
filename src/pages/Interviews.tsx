@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Accordion } from "@/components/ui/accordion"
 import { FileText, Upload, Search, SortAsc } from "lucide-react"
-import { generateUUID, createTimestamp } from "@/lib/pm-utils"
-import type { Interview, InterviewSnapshot } from "@/lib/pm-types"
+import { generateUUID, createTimestamp, createNodeMetadata } from "@/lib/pm-utils"
+import type { Interview, InterviewSnapshot, OSTNode } from "@/lib/pm-types"
+import { ostNodeToDbNode } from "@/lib/store/mappers"
 import { useToast } from "@/hooks/use-toast"
 import { InterviewCard } from "@/components/interviews/InterviewCard"
 import { InterviewUploadDialog } from "@/components/interviews/InterviewUploadDialog"
@@ -32,6 +33,79 @@ const Interviews = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<"date" | "name" | "status">("date")
   const [snapshots, setSnapshots] = useState<Record<string, InterviewSnapshot>>({})
+  const [addingOppId, setAddingOppId] = useState<string | null>(null)
+  const treeNodes = useDataStore((state) => state.nodes)
+
+  /** Quick add: turn a library opportunity into an Opportunity node under the tree's Product Outcome. */
+  const handleQuickAddOpportunity = async (
+    interview: Interview,
+    opp: { id?: string; title: string; description: string; evidence_quote?: string },
+  ) => {
+    if (!opp.id) return
+    setAddingOppId(opp.id)
+    try {
+      const isCurrent = currentTree?.id === interview.treeId
+      let parentId: string | null = null
+      if (isCurrent) {
+        parentId = treeNodes.find((n) => n.type === "Outcome")?.id ?? null
+      } else {
+        const { data } = await supabase
+          .from("nodes")
+          .select("id")
+          .eq("tree_id", interview.treeId)
+          .eq("type", "Outcome")
+          .limit(1)
+          .maybeSingle()
+        parentId = data?.id ?? null
+      }
+      if (!parentId) throw new Error("This outcome has no Product Outcome to add to yet.")
+
+      const who = interview.participantName ? ` — ${interview.participantName}` : ""
+      const node = {
+        id: generateUUID(),
+        parentId,
+        type: "Opportunity",
+        title: opp.title,
+        evidenceSummary: [opp.description, opp.evidence_quote ? `"${opp.evidence_quote}"${who}` : ""]
+          .filter(Boolean)
+          .join("\n\n"),
+        status: "in-discovery",
+        ...createNodeMetadata(),
+      } as unknown as OSTNode
+
+      if (isCurrent) {
+        const ok = await useDataStore.getState().addNode(node)
+        if (!ok) throw new Error("The opportunity couldn't be saved.")
+      } else {
+        const { error } = await supabase.from("nodes").insert([ostNodeToDbNode(node, interview.treeId) as any])
+        if (error) throw error
+      }
+
+      await supabase
+        .from("interview_opportunities")
+        .update({ applied: true, opportunity_node_id: node.id })
+        .eq("id", opp.id)
+
+      setSnapshots((prev) => {
+        const s = prev[interview.id]
+        if (!s) return prev
+        return {
+          ...prev,
+          [interview.id]: {
+            ...s,
+            opportunities: s.opportunities.map((o) =>
+              o.id === opp.id ? { ...o, applied: true, opportunityNodeId: node.id } : o,
+            ),
+          },
+        }
+      })
+      toast({ title: "Added to tree", description: `"${opp.title}" is now under your Product Outcome.` })
+    } catch (e: any) {
+      toast({ title: "Couldn't add opportunity", description: e?.message ?? "Please try again.", variant: "destructive" })
+    } finally {
+      setAddingOppId(null)
+    }
+  }
 
   // Load interview snapshots
   useEffect(() => {
@@ -443,6 +517,9 @@ const Interviews = () => {
                   status: "completed" as const,
                   participant_name: interview.participantName,
                   opportunities: opportunities.map(opp => ({
+                    id: opp.id,
+                    applied: opp.applied,
+                    opportunityNodeId: opp.opportunityNodeId,
                     title: opp.title,
                     description: opp.description,
                     evidence_quote: opp.evidenceQuote,
@@ -450,10 +527,20 @@ const Interviews = () => {
                   insights: [],
                 } : undefined)
 
+                const isOnTree = (opp: any) => {
+                  if (!opp.applied || !opp.opportunityNodeId) return false
+                  if (currentTree?.id === interview.treeId) {
+                    return treeNodes.some((n) => n.id === opp.opportunityNodeId)
+                  }
+                  return true
+                }
+
                 // Format snapshot for display
                 const displaySnapshot = snapshot ? {
                   ...snapshot,
-                  opportunities: snapshot.opportunities?.map(opp => ({
+                  opportunities: snapshot.opportunities?.map((opp: any) => ({
+                    id: opp.id,
+                    onTree: isOnTree(opp),
                     title: opp.title,
                     description: opp.description,
                     evidence_quote: opp.evidenceQuote || opp.evidence_quote,
@@ -479,6 +566,8 @@ const Interviews = () => {
                     key={interview.id}
                     interview={interview}
                     snapshot={displaySnapshot}
+                    addingOpportunityId={addingOppId}
+                    onAddOpportunity={(opp) => handleQuickAddOpportunity(interview, opp)}
                     onEdit={handleEditInterview}
                     onDelete={handleDeleteInterview}
                     onCreateSnapshot={async () => {
