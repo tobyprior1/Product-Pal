@@ -57,6 +57,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "north-star": {
+          DEFAULT: "hsl(var(--north-star))",
+          surface: "hsl(var(--north-star-surface))",
+          "surface-strong": "hsl(var(--north-star-surface-strong))",
+          border: "hsl(var(--north-star-border))",
+          soft: "hsl(var(--north-star-soft))",
+        },
         "business-outcome": {
           DEFAULT: "hsl(var(--business-outcome))",
           surface: "hsl(var(--business-outcome-surface))",
