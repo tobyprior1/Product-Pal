@@ -36,8 +36,9 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
     nodeData.current !== undefined ||
     nodeData.target !== undefined
   const { baseline, current, target } = nodeData
-  const progress = baseline !== undefined && current !== undefined && target !== undefined && target !== baseline
-    ? ((current - baseline) / (target - baseline)) * 100 : 0
+  const canShowProgress =
+    baseline !== undefined && current !== undefined && target !== undefined && target !== baseline
+  const progress = canShowProgress ? ((current - baseline) / (target - baseline)) * 100 : 0
 
 
   const handleAddChild = () => {
@@ -109,7 +110,7 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
               <span>{formatMetricValue(nodeData.current, nodeData.metricFormat)}</span>
               <span>{formatMetricValue(nodeData.target, nodeData.metricFormat)}</span>
             </div>
-            {progress > 0 && (
+            {canShowProgress && (
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>PROGRESS</span>
@@ -118,7 +119,7 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                   <div 
                     className={`h-full ${northStar ? "bg-north-star" : business ? "bg-business-outcome" : "bg-outcome"} transition-all duration-300`}
-                    style={{ width: `${Math.min(progress, 100)}%` }}
+                    style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }}
                   />
                 </div>
               </div>
