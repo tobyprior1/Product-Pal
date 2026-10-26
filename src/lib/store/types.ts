@@ -56,6 +56,7 @@ export interface NodesSlice {
   setNodes: (nodes: OSTNode[]) => void;
   addNode: (node: OSTNode) => Promise<boolean>;
   addBusinessOutcome: (productOutcomeId: string, title: string) => Promise<string | null>;
+  addProductNorthStar: (productOutcomeId: string, title: string) => Promise<string | null>;
   updateNode: (id: string, updates: Partial<OSTNode>, userId?: string) => Promise<void>;
   deleteNode: (id: string) => Promise<void>;
 }

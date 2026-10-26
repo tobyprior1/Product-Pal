@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, Target, Lightbulb, Zap, FlaskConical, type LucideIcon } from "lucide-react";
+import { Star, BriefcaseBusiness, Target, Lightbulb, Zap, FlaskConical, type LucideIcon } from "lucide-react";
 
 /**
  * Single source of truth for how the tree hierarchy is presented.
@@ -7,7 +7,7 @@ import { BriefcaseBusiness, Target, Lightbulb, Zap, FlaskConical, type LucideIco
  * canvas nodes all read from here so the colour language stays consistent.
  * All values are semantic design tokens defined in `index.css`.
  */
-export type HierarchyKind = "business-outcome" | "outcome" | "opportunity" | "solution" | "experiment";
+export type HierarchyKind = "north-star" | "business-outcome" | "outcome" | "opportunity" | "solution" | "experiment";
 
 export interface HierarchyStyle {
   /** Uppercase type label shown above titles. */
@@ -28,6 +28,16 @@ export interface HierarchyStyle {
 }
 
 export const HIERARCHY_STYLES: Record<HierarchyKind, HierarchyStyle> = {
+  "north-star": {
+    label: "Product North Star",
+    icon: Star,
+    text: "text-north-star",
+    surface: "bg-north-star-surface",
+    surfaceHover: "hover:bg-north-star-surface-strong",
+    accentBorder: "border-l-north-star-border",
+    iconBg: "bg-north-star-soft",
+    badge: "bg-north-star-surface text-north-star border-north-star-border",
+  },
   "business-outcome": {
     label: "Business Outcome",
     icon: BriefcaseBusiness,
@@ -81,6 +91,7 @@ export const HIERARCHY_STYLES: Record<HierarchyKind, HierarchyStyle> = {
 };
 
 const NODE_TYPE_TO_KIND: Record<string, HierarchyKind> = {
+  ProductNorthStar: "north-star",
   BusinessOutcome: "business-outcome",
   Outcome: "outcome",
   Opportunity: "opportunity",

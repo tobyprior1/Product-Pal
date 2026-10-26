@@ -2,11 +2,11 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { NumberField, TextAreaField, TextField } from "./DraftFields"
 import { GuardrailFields } from "./GuardrailFields"
-import type { OutcomeNode, BusinessOutcomeNode } from "@/lib/pm-types"
+import type { OutcomeNode, BusinessOutcomeNode, ProductNorthStarNode } from "@/lib/pm-types"
 
 interface OutcomeFieldsProps {
-  node: OutcomeNode | BusinessOutcomeNode
-  onUpdate: (updates: Partial<OutcomeNode | BusinessOutcomeNode>) => void
+  node: OutcomeNode | BusinessOutcomeNode | ProductNorthStarNode
+  onUpdate: (updates: Partial<OutcomeNode | BusinessOutcomeNode | ProductNorthStarNode>) => void
 }
 
 type NumericKey = "baseline" | "current" | "target"
@@ -33,7 +33,7 @@ export function OutcomeFields({ node, onUpdate }: OutcomeFieldsProps) {
         <TextAreaField
           key={`${node.id}-businessContribution`}
           id="businessContribution"
-          label="Contribution to business outcome"
+          label="Contribution to longer-term goals"
           value={node.businessContribution}
           onCommit={(value) => onUpdate({ businessContribution: value })}
           placeholder="e.g., Faster onboarding increases activation, which supports subscription revenue."
@@ -80,10 +80,10 @@ export function OutcomeFields({ node, onUpdate }: OutcomeFieldsProps) {
       <TextField
         key={`${node.id}-timeframe`}
         id="timeframe"
-        label="Timeframe"
+        label={node.type === "ProductNorthStar" ? "Multi-year horizon" : "Timeframe"}
         value={node.timeframePeriodValue}
         onCommit={(value) => onUpdate({ timeframePeriodValue: value })}
-        placeholder="e.g., Q1 2027"
+        placeholder={node.type === "ProductNorthStar" ? "e.g., 2027–2030" : "e.g., Q1 2027"}
       />
 
       {node.type === "Outcome" && (

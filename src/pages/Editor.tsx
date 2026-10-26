@@ -16,6 +16,7 @@ const Editor = () => {
   const navigate = useNavigate();
   const [newNodeDialogOpen, setNewNodeDialogOpen] = useState(false);
   const [businessOutcomeId, setBusinessOutcomeId] = useState<string | null>(null);
+  const [northStarOutcomeId, setNorthStarOutcomeId] = useState<string | null>(null);
   const [preselectedParentId, setPreselectedParentId] = useState<string>();
   const [preselectedNodeType, setPreselectedNodeType] = useState<"Outcome" | "Opportunity" | "Solution" | "Experiment">();
 
@@ -74,7 +75,15 @@ const Editor = () => {
       if (typeof id === "string") setBusinessOutcomeId(id)
     }
     window.addEventListener("add-business-outcome", handle)
-    return () => window.removeEventListener("add-business-outcome", handle)
+    const handleNorthStar = (event: Event) => {
+      const id = (event as CustomEvent).detail?.outcomeId
+      if (typeof id === "string") setNorthStarOutcomeId(id)
+    }
+    window.addEventListener("add-product-north-star", handleNorthStar)
+    return () => {
+      window.removeEventListener("add-business-outcome", handle)
+      window.removeEventListener("add-product-north-star", handleNorthStar)
+    }
   }, [])
 
   const handleTidy = () => {
@@ -113,6 +122,7 @@ const Editor = () => {
       <SuggestExperimentsHost />
       <InterviewOpportunitiesHost />
       {businessOutcomeId && <BusinessOutcomeDialog outcomeId={businessOutcomeId} open onOpenChange={open => { if (!open) setBusinessOutcomeId(null) }} />}
+      {northStarOutcomeId && <BusinessOutcomeDialog kind="ProductNorthStar" outcomeId={northStarOutcomeId} open onOpenChange={open => { if (!open) setNorthStarOutcomeId(null) }} />}
 
       <NewNodeDialog 
         open={newNodeDialogOpen}

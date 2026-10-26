@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge"
 
 const nodeTypes = {
   BusinessOutcome: OutcomeNode,
+  ProductNorthStar: OutcomeNode,
   Outcome: OutcomeNode,
   Opportunity: OpportunityNode,
   Solution: SolutionNode,
@@ -37,7 +38,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   dagreGraph.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 120 })
 
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 320, height: node.measured?.height ?? (node.type === "Outcome" || node.type === "BusinessOutcome" ? 300 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16 : 150) })
+    dagreGraph.setNode(node.id, { width: 320, height: node.measured?.height ?? (node.type === "Outcome" || node.type === "BusinessOutcome" || node.type === "ProductNorthStar" ? 300 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16 : 150) })
   })
 
   edges.forEach((edge) => {
@@ -271,7 +272,7 @@ function PresentModeInner() {
               </div>
             )}
 
-            {(focusedOSTNode.type === "Outcome" || focusedOSTNode.type === "BusinessOutcome") && (
+            {(focusedOSTNode.type === "Outcome" || focusedOSTNode.type === "BusinessOutcome" || focusedOSTNode.type === "ProductNorthStar") && (
               <div className="flex gap-6 text-sm">
                 {(focusedOSTNode as any).metric && (
                   <div>

@@ -60,6 +60,11 @@ All colors MUST be HSL.
 
     --sidebar-ring: 217.2 91.2% 59.8%;
 
+    --north-star: 145 65% 28%;
+    --north-star-surface: 145 45% 96%;
+    --north-star-surface-strong: 145 45% 91%;
+    --north-star-border: 145 48% 52%;
+    --north-star-soft: 145 45% 87%;
     --business-outcome: 344 72% 40%;
     --business-outcome-surface: 344 80% 97%;
     --business-outcome-surface-strong: 344 80% 94%;
@@ -130,6 +135,11 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
+    --north-star: 145 60% 75%;
+    --north-star-surface: 145 35% 12%;
+    --north-star-surface-strong: 145 35% 17%;
+    --north-star-border: 145 48% 47%;
+    --north-star-soft: 145 35% 22%;
     --business-outcome: 344 85% 80%;
     --business-outcome-surface: 344 40% 13%;
     --business-outcome-surface-strong: 344 40% 18%;

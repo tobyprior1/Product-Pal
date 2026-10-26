@@ -8,6 +8,13 @@
       "when": 1791807496199,
       "tag": "0000_business_outcome_parent",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793016528880,
+      "tag": "0001_optional_product_north_star",
+      "breakpoints": true
     }
   ]
 }
