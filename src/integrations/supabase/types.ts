@@ -522,8 +522,16 @@ export type Database = {
         Args: { p_outcome_id: string; p_title: string }
         Returns: string
       }
+      attach_product_north_star: {
+        Args: { p_outcome_id: string; p_title: string }
+        Returns: string
+      }
       remove_business_outcome: {
         Args: { p_business_id: string }
+        Returns: undefined
+      }
+      remove_product_north_star: {
+        Args: { p_north_star_id: string }
         Returns: undefined
       }
     }
