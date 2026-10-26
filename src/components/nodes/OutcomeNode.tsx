@@ -36,8 +36,9 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
     nodeData.current !== undefined ||
     nodeData.target !== undefined
   const { baseline, current, target } = nodeData
-  const progress = baseline !== undefined && current !== undefined && target !== undefined && target !== baseline
-    ? ((current - baseline) / (target - baseline)) * 100 : 0
+  const canShowProgress =
+    baseline !== undefined && current !== undefined && target !== undefined && target !== baseline
+  const progress = canShowProgress ? ((current - baseline) / (target - baseline)) * 100 : 0
 
 
   const handleAddChild = () => {
