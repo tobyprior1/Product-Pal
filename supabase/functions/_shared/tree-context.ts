@@ -7,7 +7,8 @@
 type AnyRow = Record<string, any>;
 
 export const OUTCOME_ALIGNMENT_INSTRUCTION =
-  "Distinguish BUSINESS OUTCOME (the measurable value to the company) from PRODUCT OUTCOME (the change in customer behaviour or product performance). " +
+  "Distinguish BUSINESS OUTCOME (the measurable value to the company), PRODUCT NORTH STAR (the multi-year product goal), and PRODUCT OUTCOME (the nearer-term change in customer behaviour or product performance). " +
+  "When supplied, the alignment chain is BUSINESS OUTCOME → PRODUCT NORTH STAR → PRODUCT OUTCOME. Use the North Star to assess strategic fit without replacing the nearer-term product target or inventing missing goals. " +
   "When both are supplied, use the stated CONTRIBUTION TO BUSINESS OUTCOME to connect the customer need, solution or experiment to product progress and then business value. " +
   "Do not claim causation or invent business targets: treat the contribution as an assumption to test unless evidence supports it. " +
   "For solutions, explain this connection briefly in rationale. For experiments, test a relevant assumption in this chain where appropriate and use a measurable success signal. " +
@@ -58,7 +59,7 @@ function describeOutcome(outcome: AnyRow | null, fallbackTitle?: string): string
     .filter(Boolean)
     .join(", ");
 
-  return section(outcome.type === "BusinessOutcome" ? "## BUSINESS OUTCOME" : "## PRODUCT OUTCOME", [
+  return section(outcome.type === "BusinessOutcome" ? "## BUSINESS OUTCOME" : outcome.type === "ProductNorthStar" ? "## PRODUCT NORTH STAR (multi-year product goal)" : "## PRODUCT OUTCOME", [
     clip(outcome.title, 200),
     d.description ? `Description: ${clip(d.description)}` : null,
     measure || null,
@@ -193,11 +194,19 @@ export async function buildOpportunityContext(
 
   const byId = new Map(allNodes.map((n) => [n.id, n]));
   const outcome = allNodes.find((n) => n.type === "Outcome") ?? null;
-  const businessOutcome = outcome?.parent_id
-    ? allNodes.find(n => n.id === outcome.parent_id && n.type === "BusinessOutcome") ?? null
-    : null;
+  const parent = outcome?.parent_id ? byId.get(outcome.parent_id) : null;
+  const northStar = parent?.type === "ProductNorthStar" ? parent : null;
+  const businessParent = northStar?.parent_id ? byId.get(northStar.parent_id) : parent;
+  const businessOutcome = businessParent?.type === "BusinessOutcome" ? businessParent : null;
   parts.push(describeOutcome(businessOutcome));
+  parts.push(describeOutcome(northStar));
   parts.push(describeOutcome(outcome, fallback.outcomeTitle));
+  if (northStar && outcome) {
+    parts.push(section("## PRODUCT OUTCOME CONTRIBUTION TO NORTH STAR", [
+      `Nearer-term product outcome "${clip(outcome.title, 200)}" ladders up to multi-year goal "${clip(northStar.title, 200)}".`,
+      outcome.data?.businessContribution ? `Stated contribution (not proven causation): ${clip(outcome.data.businessContribution, 1000)}` : "No contribution explanation supplied; strategic fit is a hypothesis to test.",
+    ]));
+  }
   if (businessOutcome && outcome) {
     parts.push(section("## CONTRIBUTION TO BUSINESS OUTCOME", [
       `Product outcome "${clip(outcome.title, 200)}" contributes to business outcome "${clip(businessOutcome.title, 200)}".`,
