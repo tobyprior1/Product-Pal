@@ -1,4 +1,4 @@
-# Business outcome level
-- [x] Add a business outcome above each product outcome with safe persistence and existing-tree support.
-- [x] Show the product outcome’s contribution and include both levels in AI prompts.
-- [x] Verify creation, editing, saved relationships, and AI generation in the preview.
+# Product North Star
+- [ ] Add the optional North Star between Business Outcome and Product Outcome with safe attach/remove persistence.
+- [ ] Show and edit the multi-year goal across tree views and include it in AI context.
+- [ ] Test hierarchy rules and verify saved creation, editing, and removal in the preview.
