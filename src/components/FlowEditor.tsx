@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const nodeTypes = {
   BusinessOutcome: OutcomeNode,
+  ProductNorthStar: OutcomeNode,
   Outcome: OutcomeNode,
   Opportunity: OpportunityNode,
   Solution: SolutionNode,
@@ -40,7 +41,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], measuredHeights?: Map
   dagreGraph.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 120 })
 
   nodes.forEach((node) => {
-    const estimatedHeight = node.type === "Outcome" || node.type === "BusinessOutcome"
+    const estimatedHeight = node.type === "Outcome" || node.type === "BusinessOutcome" || node.type === "ProductNorthStar"
       ? 260 + Math.ceil(String(node.data.businessContribution ?? "").length / 42) * 16
       : 150
     // Prefer real rendered heights so vertical gaps stay consistent between levels

@@ -73,8 +73,9 @@ export function WorkNodePanel({ nodeId, onClose }: WorkNodePanelProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete this node?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete "{selectedNode.title}" and all its child nodes. This action cannot be
-                  undone.
+                  {selectedNode.type === "BusinessOutcome" || selectedNode.type === "ProductNorthStar"
+                    ? `Remove "${selectedNode.title}"? Your product outcome and everything below it will be kept.`
+                    : `This will permanently delete "${selectedNode.title}" and all its child nodes. This action cannot be undone.`}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -103,7 +104,7 @@ export function WorkNodePanel({ nodeId, onClose }: WorkNodePanelProps) {
           onCommit={(value) => updateNode(selectedNode.id, { title: value })}
         />
 
-        {(selectedNode.type === "Outcome" || selectedNode.type === "BusinessOutcome") && (
+        {(selectedNode.type === "Outcome" || selectedNode.type === "BusinessOutcome" || selectedNode.type === "ProductNorthStar") && (
           <OutcomeFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
         )}
 

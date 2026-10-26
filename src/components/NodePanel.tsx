@@ -27,6 +27,7 @@ import { OpportunityFields, OpportunityPrioritisation } from "./node-fields/Oppo
 import { PanelSection } from "./node-fields/PanelSection"
 import { SolutionFields } from "./node-fields/SolutionFields"
 import { ExperimentFields } from "./node-fields/ExperimentFields"
+import { StrategicOutcomeLinks } from "./StrategicOutcomeLinks"
 import { AddChildPanelButton } from "./AddChildPanelButton"
 
 
@@ -126,7 +127,7 @@ export function NodePanel() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete this node?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {selectedNode.type === "BusinessOutcome"
+                  {(selectedNode.type === "BusinessOutcome" || selectedNode.type === "ProductNorthStar")
                     ? `Remove "${selectedNode.title}"? Your product outcome and everything below it will be kept.`
                     : `This will permanently delete "${selectedNode.title}" and all its child nodes. This action cannot be undone.`}
                 </AlertDialogDescription>
@@ -158,7 +159,7 @@ export function NodePanel() {
             onCommit={(value) => updateNode(selectedNode.id, { title: value })}
           />
 
-          {(selectedNode.type === "Outcome" || selectedNode.type === "BusinessOutcome") && (
+          {(selectedNode.type === "Outcome" || selectedNode.type === "BusinessOutcome" || selectedNode.type === "ProductNorthStar") && (
             <OutcomeFields node={selectedNode} onUpdate={(updates) => updateNode(selectedNode.id, updates)} />
           )}
 
@@ -175,29 +176,7 @@ export function NodePanel() {
           )}
         </PanelSection>
 
-        {selectedNode.type === "Outcome" && (
-          <PanelSection title="Business Outcome">
-            {nodes.find(n => n.id === selectedNode.parentId && n.type === "BusinessOutcome") ? (
-              <Button variant="ghost" className="w-full h-auto text-left justify-start whitespace-normal" onClick={() => setSelectedNodeId(selectedNode.parentId)}>
-                <ArrowUpRight className="w-4 h-4 mr-2 shrink-0 text-business-outcome" />
-                {nodes.find(n => n.id === selectedNode.parentId)?.title}
-              </Button>
-            ) : (
-              <Button variant="outline" disabled={isLocked} onClick={() => window.dispatchEvent(new CustomEvent("add-business-outcome", { detail: { outcomeId: selectedNode.id } }))}>
-                <Plus className="w-4 h-4 mr-2" /> Add Business Outcome
-              </Button>
-            )}
-          </PanelSection>
-        )}
-        {selectedNode.type === "BusinessOutcome" && (
-          <PanelSection title="Product Outcome">
-            {nodes.filter(n => n.type === "Outcome" && n.parentId === selectedNode.id).map(n => (
-              <Button key={n.id} variant="ghost" className="w-full h-auto text-left justify-start whitespace-normal" onClick={() => setSelectedNodeId(n.id)}>
-                <ArrowUpRight className="w-4 h-4 mr-2 shrink-0 text-outcome" />{n.title}
-              </Button>
-            ))}
-          </PanelSection>
-        )}
+        <StrategicOutcomeLinks node={selectedNode} />
 
         {selectedNode.type === "Opportunity" && (
           <PanelSection title="Prioritisation">
