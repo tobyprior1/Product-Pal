@@ -112,11 +112,11 @@ export const OutcomeNode = memo(({ data }: NodeProps) => {
             </div>
             {canShowProgress && (
               <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>PROGRESS</span>
-                  <span>{Math.round(progress)}%</span>
+                <div className="flex justify-between text-xs">
+                  <span className="font-medium text-muted-foreground">PROGRESS</span>
+                  <span className="font-semibold text-foreground">{Math.round(progress)}%</span>
                 </div>
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div className="w-full h-2 rounded-full overflow-hidden bg-foreground/20 ring-1 ring-inset ring-border">
                   <div 
                     className={`h-full ${northStar ? "bg-north-star" : business ? "bg-business-outcome" : "bg-outcome"} transition-all duration-300`}
                     style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }}
