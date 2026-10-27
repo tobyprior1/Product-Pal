@@ -60,6 +60,7 @@ export function SolutionSuggestionsDialog({
 
   const addNode = useDataStore((state) => state.addNode)
   const setSelectedNodeId = useUIStore((state) => state.setSelectedNodeId)
+  const modelLabel = formatAiModelName(model)
 
   const fetchSuggestions = async (mode: "replace" | "append" = "replace") => {
     if (mode === "append") setLoadingMore(true)
@@ -210,6 +211,24 @@ export function SolutionSuggestionsDialog({
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             Solution ideas
+            {modelLabel && (
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Which AI model generated these ideas"
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Info className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-[240px] text-xs">
+                    Generated with <span className="font-medium">{modelLabel}</span>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </DialogTitle>
           <DialogDescription>
             AI-generated inspiration for <span className="font-medium text-foreground">"{opportunityTitle}"</span>. Pick
