@@ -20,6 +20,7 @@ import { generateUUID, createNodeMetadata } from "@/lib/pm-utils"
 import type { OSTNode } from "@/lib/pm-types"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { getAiFunctionError } from "@/lib/ai-function-error"
 
 export interface ExperimentSuggestion {
   title: string
@@ -87,7 +88,7 @@ export function ExperimentSuggestionsDialog({
     })
 
     if (fnError || (data as any)?.error) {
-      setError((data as any)?.error ?? "Couldn't reach the AI right now. Please try again.")
+      setError(await getAiFunctionError(data, fnError))
       setLoading(false)
       setLoadingMore(false)
       return

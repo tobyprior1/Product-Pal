@@ -25,6 +25,7 @@ import { parseCsv, guessFeedbackColumn, buildFeedbackText, MAX_FEEDBACK_ROWS } f
 import type { OSTNode } from "@/lib/pm-types"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { getAiFunctionError } from "@/lib/ai-function-error"
 
 export interface ExtractedOpportunity {
   title: string
@@ -260,7 +261,7 @@ export function InterviewOpportunitiesDialog({
     })
 
     if (fnError || (data as any)?.error) {
-      setError((data as any)?.error ?? "Couldn't reach the AI right now. Please try again.")
+      setError(await getAiFunctionError(data, fnError))
       setLoading(false)
       return
     }
