@@ -1,4 +1,5 @@
 # Architecture rules
+- Resolve AI function HTTP errors through the shared client error helper so failed responses retain actionable server messages across all suggestion dialogs.
 - Keep one Product Outcome per tree, with optional single BusinessOutcome and ProductNorthStar ancestors ordered BusinessOutcome → ProductNorthStar → Outcome; tree names follow the Product Outcome so adding strategic levels never renames it.
 - Attach and remove strategic ancestors through owner-authorized, tree-locked atomic database functions so existing product subtrees remain intact in either attachment order.
 - Reuse outcome metrics fields and rendering for all strategic outcome types; keep contribution text on the Product Outcome and include all linked levels in the shared AI tree brief so suggestions retain strategic context.

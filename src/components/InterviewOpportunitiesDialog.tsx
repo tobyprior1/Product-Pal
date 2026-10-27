@@ -260,7 +260,7 @@ export function InterviewOpportunitiesDialog({
     })
 
     if (fnError || (data as any)?.error) {
-      setError((data as any)?.error ?? "Couldn't reach the AI right now. Please try again.")
+      setError(await getAiFunctionError(data, fnError))
       setLoading(false)
       return
     }
