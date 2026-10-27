@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Sparkles, RefreshCw, AlertCircle, Zap } from "lucide-react"
+import { Sparkles, RefreshCw, AlertCircle, Info, Zap } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,13 @@ import type { OSTNode } from "@/lib/pm-types"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { getAiFunctionError } from "@/lib/ai-function-error"
+import { formatAiModelName } from "@/lib/ai-model"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export interface SolutionSuggestion {
   title: string
@@ -45,6 +52,7 @@ export function SolutionSuggestionsDialog({
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [model, setModel] = useState<string | null>(null)
   const [suggestions, setSuggestions] = useState<SolutionSuggestion[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [adding, setAdding] = useState(false)
@@ -83,12 +91,14 @@ export function SolutionSuggestionsDialog({
 
     if (fnError || (data as any)?.error) {
       setError(await getAiFunctionError(data, fnError))
+      setModel(null)
       setLoading(false)
       setLoadingMore(false)
       return
     }
 
     const incoming = ((data as any)?.suggestions ?? []) as SolutionSuggestion[]
+    setModel(typeof (data as any)?.model === "string" ? (data as any).model : null)
     if (mode === "append") {
       setSuggestions((prev) => {
         const seen = new Set(prev.map((s) => s.title.trim().toLowerCase()))
@@ -107,6 +117,7 @@ export function SolutionSuggestionsDialog({
     } else {
       setSuggestions([])
       setSelected(new Set())
+      setModel(null)
       setError(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
